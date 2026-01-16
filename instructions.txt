@@ -1,0 +1,196 @@
+Rolün: Kıdemli Full-Stack PHP geliştiricisisin. CodeIgniter 4 + MySQL + TailwindCSS ile bir “Şirket Finans Takip” web uygulaması geliştireceksin.
+Hedef: MVP’yi uçtan uca çalışır halde üret (DB migration, seed, auth, ekranlar, CRUD, raporlar).
+
+1) Teknoloji & Standartlar
+Backend: CodeIgniter 4
+
+DB: MySQL 8
+
+Frontend: TailwindCSS (tercihen CDN ile başla; build pipeline opsiyonel)
+
+Kod standardı: PSR-12, servis katmanı + repository mantığı (abartmadan)
+
+Güvenlik: CSRF açık, XSS filtre, server-side validation, yetkilendirme
+
+Çok kullanıcılı: En az “Admin” ve “Staff” rolü
+
+Para birimleri: TRY, USD, EUR (extensible)
+
+2) Modüller (MVP)
+Aşağıdaki modülleri ayrı menüler halinde yap:
+
+Kimlik Doğrulama & Kullanıcı Yönetimi
+
+login/logout
+
+kullanıcı CRUD (admin)
+
+rol bazlı yetki
+
+Gelir/Gider (Transactions)
+
+Tip: income / expense
+
+Kategori
+
+Tarih, açıklama, belge no, karşı taraf (müşteri/tedarikçi)
+
+Tutar + para birimi (TRY varsayılan olsun)
+
+İsteğe bağlı: “iş/proje” ile ilişkilendirme
+
+Liste filtreleri: tarih aralığı, kategori, para birimi, iş/proje
+
+Borç/Alacak (Debts/Receivables)
+
+Borç türü: debt (biz borçluyuz) / receivable (bize borç)
+
+Karşı taraf (vendor/customer)
+
+Anapara, para birimi
+
+Vade tarihi (opsiyonel)
+
+Durum: open/closed
+
+Borcun “taksit planı” olabilsin (installments)
+
+Taksitler (Installments)
+
+Her borç kaydına bağlı taksit planı
+
+Taksit: due_date, amount, currency (genelde borcun currency’si), status (pending/paid/partial)
+
+Ödeme yapılınca “payment” kaydı düş
+
+Kısmi ödeme destekle
+
+İş/Proje Bazlı Ödeme Parçaları (Project Payments)
+
+“Job/Project” oluştur: müşteri, toplam sözleşme bedeli, para birimi, başlangıç/bitiş, notlar
+
+İşe bağlı “milestone/ödemeler”: beklenen tarih + tutar
+
+Gerçekleşen tahsilatlar transaction olarak düşsün ve projeye bağlansın
+
+Proje bazlı “kalan alacak” hesapları
+
+Döviz Kurları
+
+exchange_rates tablosu: date, base_currency (TRY), quote_currency (USD/EUR...), rate
+
+Transaction ve borçlarda “raporlama para birimi” olarak TRY’ye çevrim:
+
+Eğer işlem currency TRY değilse: ilgili tarihteki kurdan TRY karşılığını hesapla
+
+Kur yoksa: en yakın önceki tarihli kuru kullan (fallback)
+
+Kullanıcı kur girip güncelleyebilsin (admin)
+
+Raporlar / Dashboard
+
+Günlük/aylık gelir-gider grafiği (basit)
+
+Toplam açık borç/alacak (para birimi bazlı ve TRY karşılığı)
+
+Proje bazlı tahsilat durumu
+
+Filtrelenebilir rapor export: CSV (MVP)
+
+3) Veri Modeli (MySQL)
+Aşağıdaki tabloları migrations ile oluştur:
+
+users: id, name, email, password_hash, role, created_at, updated_at
+
+parties: id, type(customer/vendor/other), name, tax_no (nullable), phone (nullable), notes
+
+categories: id, name, type(income/expense), parent_id (nullable)
+
+projects: id, party_id(customer), title, contract_amount, currency, start_date, end_date, status, notes
+
+project_milestones: id, project_id, title, expected_date, expected_amount, currency, status
+
+transactions: id, type(income/expense), party_id, category_id, project_id(nullable), date, amount, currency, description, ref_no, created_by
+
+debts: id, kind(debt/receivable), party_id, principal_amount, currency, start_date, due_date, status, notes
+
+installments: id, debt_id, due_date, amount, currency, status
+
+payments: id, related_type(transaction/debt/installment/project), related_id, date, amount, currency, method(cash/bank/card/other), notes
+
+exchange_rates: id, rate_date, base_currency, quote_currency, rate
+
+audit_logs (opsiyonel MVP): id, user_id, action, entity, entity_id, meta_json, created_at
+
+Indexler:
+
+transactions(date), transactions(project_id), debts(status), exchange_rates(rate_date, quote_currency)
+
+4) İş Kuralları (kritik)
+Taksit toplamı borç anaparasını aşamaz (uyarı/engelle)
+
+Ödemeler:
+
+installment paid => status güncelle
+
+debt closed => tüm taksitler paid veya principal tamamen ödendi
+
+Raporlama:
+
+Her kayıt için amount_try hesaplayan bir helper/service yaz (transaction ve debt için)
+
+Kur fallback: işlem tarihinden geriye doğru ilk bulunan kur
+
+5) UI/UX (Tailwind)
+Layout: sol menü + üst bar
+
+Her modül için:
+
+Liste + filtre paneli
+
+“Yeni Ekle” modal veya ayrı sayfa
+
+Detay sayfası + düzenle/sil
+
+Dashboard: 4 kart + 2 tablo (son işlemler, yaklaşan taksitler)
+
+6) Çıktı Formatı (Claude Code nasıl teslim edecek)
+Üretimi şu sırada yap ve her adımda dosya/dizinleri net söyle:
+
+Proje iskeleti & .env örneği
+
+Migrations + Seeders
+
+Auth & RBAC
+
+Modül modül controllers/models/views
+
+Exchange rate service + TRY dönüşüm helper
+
+Dashboard & Reports
+
+README: kurulum, migration, seed, örnek kullanıcılar
+
+Ek:
+
+Kodları “çalışır” şekilde üret; eksik fonksiyon bırakma.
+
+Her controller’da validation rules yaz.
+
+Örnek seed data: 2 kullanıcı, 5 kategori, 5 parti, 2 proje, örnek işlemler, örnek borç+taksit.
+
+İstersen daha da iyi çalışması için 6 net karar
+Claude’un hata yapmasını azaltır:
+
+CodeIgniter sürümü: CI4 latest mi yoksa belirli versiyon mu?
+
+Kur kaynağı: önce manuel, sonra API’den çekilsin
+
+Tek şirket olsun, multi sonra düşünürüz
+
+Muhasebe detayı: KDV/stopaj/fiş ekleri var mı? (MVP: yok)
+
+Yetki matrisi: Staff neleri yapamaz? (Örn: kur/ kullanıcı yönetimi)
+
+MVP’de bunları sabitle, sonra “Aşama 2”de genişlet.
+

@@ -1,0 +1,199 @@
+CRITICAL - 2026-01-16 14:02:29 --> Error: Class "Config\Kint" not found
+[Method: GET, Route: /]
+in SYSTEMPATH/Autoloader/Autoloader.php on line 531.
+ 1 SYSTEMPATH/Autoloader/Autoloader.php(498): CodeIgniter\Autoloader\Autoloader->configureKint()
+ 2 SYSTEMPATH/Boot.php(331): CodeIgniter\Autoloader\Autoloader->initializeKint(true)
+ 3 SYSTEMPATH/Boot.php(127): CodeIgniter\Boot::initializeKint()
+ 4 ROOTPATH/spark(66): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+CRITICAL - 2026-01-16 14:02:29 --> ErrorException: Uncaught TypeError: CodeIgniter\HTTP\ContentSecurityPolicy::__construct(): Argument #1 ($config) must be of type Config\ContentSecurityPolicy, null given, called in /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/Services.php on line 194 and defined in /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/HTTP/ContentSecurityPolicy.php:272
+Stack trace:
+#0 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/Services.php(194): CodeIgniter\HTTP\ContentSecurityPolicy->__construct(NULL)
+#1 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/BaseService.php(312): CodeIgniter\Config\Services::csp(NULL, false)
+#2 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/BaseService.php(251): CodeIgniter\Config\BaseService::__callStatic('csp', Array)
+#3 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/Services.php(189): CodeIgniter\Config\BaseService::getSharedInstance('csp', NULL)
+#4 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/BaseService.php(321): CodeIgniter\Config\Services::csp()
+#5 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/BaseService.php(202): CodeIgniter\Config\BaseService::__callStatic('csp', Array)
+#6 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Common.php(1027): CodeIgniter\Config\BaseService::get('csp')
+#7 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/HTTP/Response.php(160): service('csp')
+#8 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/Services.php(589): CodeIgniter\HTTP\Response->__construct(Object(Config\App))
+#9 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/BaseService.php(312): CodeIgniter\Config\Services::response(Object(Config\App), false)
+#10 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/BaseService.php(251): CodeIgniter\Config\BaseService::__callStatic('response', Array)
+#11 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/Services.php(584): CodeIgniter\Config\BaseService::getSharedInstance('response', NULL)
+#12 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/BaseService.php(321): CodeIgniter\Config\Services::response()
+#13 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/BaseService.php(202): CodeIgniter\Config\BaseService::__callStatic('response', Array)
+#14 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Common.php(1027): CodeIgniter\Config\BaseService::get('response')
+#15 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Debug/Exceptions.php(157): service('response')
+#16 [internal function]: CodeIgniter\Debug\Exceptions->exceptionHandler(Object(Error))
+#17 {main}
+  thrown
+【Previous Exception】
+Error
+Class "Config\Kint" not found
+#0 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Autoloader/Autoloader.php(498): CodeIgniter\Autoloader\Autoloader->configureKint()
+#1 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Boot.php(331): CodeIgniter\Autoloader\Autoloader->initializeKint(true)
+#2 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Boot.php(127): CodeIgniter\Boot::initializeKint()
+#3 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/spark(66): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#4 {main}
+[Method: GET, Route: /]
+in SYSTEMPATH/HTTP/ContentSecurityPolicy.php on line 272.
+ 1 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+CRITICAL - 2026-01-16 14:02:42 --> Error: Class "Config\Kint" not found
+[Method: GET, Route: /]
+in SYSTEMPATH/Autoloader/Autoloader.php on line 531.
+ 1 SYSTEMPATH/Autoloader/Autoloader.php(498): CodeIgniter\Autoloader\Autoloader->configureKint()
+ 2 SYSTEMPATH/Boot.php(331): CodeIgniter\Autoloader\Autoloader->initializeKint(true)
+ 3 SYSTEMPATH/Boot.php(127): CodeIgniter\Boot::initializeKint()
+ 4 ROOTPATH/spark(66): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+CRITICAL - 2026-01-16 14:02:42 --> ErrorException: Uncaught ErrorException: Undefined property: Config\App::$CSPEnabled in /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/HTTP/ContentSecurityPolicy.php:275
+Stack trace:
+#0 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/HTTP/ContentSecurityPolicy.php(275): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined prope...', '/Users/mehmetak...', 275)
+#1 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/Services.php(194): CodeIgniter\HTTP\ContentSecurityPolicy->__construct(Object(Config\ContentSecurityPolicy))
+#2 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/BaseService.php(312): CodeIgniter\Config\Services::csp(Object(Config\ContentSecurityPolicy), false)
+#3 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/BaseService.php(251): CodeIgniter\Config\BaseService::__callStatic('csp', Array)
+#4 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/Services.php(189): CodeIgniter\Config\BaseService::getSharedInstance('csp', NULL)
+#5 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/BaseService.php(321): CodeIgniter\Config\Services::csp()
+#6 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/BaseService.php(202): CodeIgniter\Config\BaseService::__callStatic('csp', Array)
+#7 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Common.php(1027): CodeIgniter\Config\BaseService::get('csp')
+#8 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/HTTP/Response.php(160): service('csp')
+#9 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/Services.php(589): CodeIgniter\HTTP\Response->__construct(Object(Config\App))
+#10 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/BaseService.php(312): CodeIgniter\Config\Services::response(Object(Config\App), false)
+#11 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/BaseService.php(251): CodeIgniter\Config\BaseService::__callStatic('response', Array)
+#12 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/Services.php(584): CodeIgniter\Config\BaseService::getSharedInstance('response', NULL)
+#13 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/BaseService.php(321): CodeIgniter\Config\Services::response()
+#14 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/BaseService.php(202): CodeIgniter\Config\BaseService::__callStatic('response', Array)
+#15 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Common.php(1027): CodeIgniter\Config\BaseService::get('response')
+#16 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Debug/Exceptions.php(157): service('response')
+#17 [internal function]: CodeIgniter\Debug\Exceptions->exceptionHandler(Object(Error))
+#18 {main}
+  thrown
+【Previous Exception】
+Error
+Class "Config\Kint" not found
+#0 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Autoloader/Autoloader.php(498): CodeIgniter\Autoloader\Autoloader->configureKint()
+#1 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Boot.php(331): CodeIgniter\Autoloader\Autoloader->initializeKint(true)
+#2 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Boot.php(127): CodeIgniter\Boot::initializeKint()
+#3 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/spark(66): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#4 {main}
+[Method: GET, Route: /]
+in SYSTEMPATH/HTTP/ContentSecurityPolicy.php on line 275.
+ 1 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+CRITICAL - 2026-01-16 14:24:10 --> Error: Class "Config\Kint" not found
+[Method: GET, Route: /]
+in SYSTEMPATH/Autoloader/Autoloader.php on line 531.
+ 1 SYSTEMPATH/Autoloader/Autoloader.php(498): CodeIgniter\Autoloader\Autoloader->configureKint()
+ 2 SYSTEMPATH/Boot.php(331): CodeIgniter\Autoloader\Autoloader->initializeKint(true)
+ 3 SYSTEMPATH/Boot.php(127): CodeIgniter\Boot::initializeKint()
+ 4 ROOTPATH/spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+CRITICAL - 2026-01-16 14:24:10 --> ErrorException: Uncaught TypeError: CodeIgniter\Format\Format::__construct(): Argument #1 ($config) must be of type Config\Format, null given, called in /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/Services.php on line 313 and defined in /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Format/Format.php:26
+Stack trace:
+#0 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/Services.php(313): CodeIgniter\Format\Format->__construct(NULL)
+#1 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/BaseService.php(312): CodeIgniter\Config\Services::format(NULL, false)
+#2 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/BaseService.php(251): CodeIgniter\Config\BaseService::__callStatic('format', Array)
+#3 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/Services.php(308): CodeIgniter\Config\BaseService::getSharedInstance('format', NULL)
+#4 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/BaseService.php(321): CodeIgniter\Config\Services::format()
+#5 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Config/BaseService.php(202): CodeIgniter\Config\BaseService::__callStatic('format', Array)
+#6 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Common.php(1027): CodeIgniter\Config\BaseService::get('format')
+#7 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/API/ResponseTrait.php(301): service('format')
+#8 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/API/ResponseTrait.php(106): CodeIgniter\Debug\ExceptionHandler->format(Array)
+#9 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Debug/ExceptionHandler.php(95): CodeIgniter\Debug\ExceptionHandler->respond(Array, 500)
+#10 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Debug/Exceptions.php(162): CodeIgniter\Debug\ExceptionHandler->handle(Object(Error), Object(CodeIgniter\HTTP\IncomingRequest), Object(CodeIgniter\HTTP\Response), 500, 1)
+#11 [internal function]: CodeIgniter\Debug\Exceptions->exceptionHandler(Object(Error))
+#12 {main}
+  thrown
+【Previous Exception】
+Error
+Class "Config\Kint" not found
+#0 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Autoloader/Autoloader.php(498): CodeIgniter\Autoloader\Autoloader->configureKint()
+#1 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Boot.php(331): CodeIgniter\Autoloader\Autoloader->initializeKint(true)
+#2 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Boot.php(127): CodeIgniter\Boot::initializeKint()
+#3 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#4 {main}
+[Method: GET, Route: /]
+in SYSTEMPATH/Format/Format.php on line 26.
+ 1 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+ERROR - 2026-01-16 14:27:56 --> Error connecting to the database: mysqli_sql_exception: Access denied for user 'root'@'localhost' (using password: NO) in /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:201
+Stack trace:
+#0 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(201): mysqli->real_connect('localhost', 'root', Object(SensitiveParameterValue), 'sirket_finans', 3306, '', 0)
+#1 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/BaseConnection.php(614): CodeIgniter\Database\BaseConnection->initialize()
+#3 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/BaseConnection.php(1525): CodeIgniter\Database\BaseConnection->query('SHOW TABLES FRO...')
+#4 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/BaseConnection.php(1545): CodeIgniter\Database\BaseConnection->listTables()
+#5 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/MigrationRunner.php(766): CodeIgniter\Database\BaseConnection->tableExists('migrations')
+#6 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/MigrationRunner.php(160): CodeIgniter\Database\MigrationRunner->ensureTable()
+#7 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Commands/Database/Migrate.php(85): CodeIgniter\Database\MigrationRunner->latest(NULL)
+#8 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/CLI/Commands.php(74): CodeIgniter\Commands\Database\Migrate->run(Array)
+#9 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/CLI/Console.php(47): CodeIgniter\CLI\Commands->run('migrate', Array)
+#10 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Boot.php(388): CodeIgniter\CLI\Console->run()
+#11 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Boot.php(133): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#12 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#13 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Access denied for user '****'@'localhost' (using password: NO) in /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:246
+Stack trace:
+#0 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/BaseConnection.php(614): CodeIgniter\Database\BaseConnection->initialize()
+#2 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/BaseConnection.php(1525): CodeIgniter\Database\BaseConnection->query('SHOW TABLES FRO...')
+#3 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/BaseConnection.php(1545): CodeIgniter\Database\BaseConnection->listTables()
+#4 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/MigrationRunner.php(766): CodeIgniter\Database\BaseConnection->tableExists('migrations')
+#5 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/MigrationRunner.php(160): CodeIgniter\Database\MigrationRunner->ensureTable()
+#6 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Commands/Database/Migrate.php(85): CodeIgniter\Database\MigrationRunner->latest(NULL)
+#7 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/CLI/Commands.php(74): CodeIgniter\Commands\Database\Migrate->run(Array)
+#8 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/CLI/Console.php(47): CodeIgniter\CLI\Commands->run('migrate', Array)
+#9 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Boot.php(388): CodeIgniter\CLI\Console->run()
+#10 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Boot.php(133): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#11 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#12 {main}
+CRITICAL - 2026-01-16 14:27:56 --> ErrorException: require(/Users/mehmetakif/Documents/GitHub/şirket-finans-takip/app/Views/errors/cli/error_exception.php): Failed to open stream: No such file or directory
+[Method: CLI, Route: migrate]
+in SYSTEMPATH/CLI/BaseCommand.php on line 133.
+ 1 SYSTEMPATH/CLI/BaseCommand.php(133): CodeIgniter\Debug\Exceptions->errorHandler(2, 'require(/Users/mehmetakif/Documents/GitHub/şirket-finans-takip/app/Views/errors/cli/error_exception.php): Failed to open stream: No such file or directory', '/Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/CLI/BaseCommand.php', 133)
+ 2 SYSTEMPATH/CLI/BaseCommand.php(133): require()
+ 3 SYSTEMPATH/Commands/Database/Migrate.php(99): CodeIgniter\CLI\BaseCommand->showError(Object(CodeIgniter\Database\Exceptions\DatabaseException))
+ 4 SYSTEMPATH/CLI/Commands.php(74): CodeIgniter\Commands\Database\Migrate->run([])
+ 5 SYSTEMPATH/CLI/Console.php(47): CodeIgniter\CLI\Commands->run('migrate', [])
+ 6 SYSTEMPATH/Boot.php(388): CodeIgniter\CLI\Console->run()
+ 7 SYSTEMPATH/Boot.php(133): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+ 8 ROOTPATH/spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+ERROR - 2026-01-16 14:28:17 --> Error connecting to the database: mysqli_sql_exception: Access denied for user 'root'@'localhost' (using password: NO) in /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:201
+Stack trace:
+#0 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(201): mysqli->real_connect('localhost', 'root', Object(SensitiveParameterValue), 'sirket_finans', 3306, '', 0)
+#1 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/BaseConnection.php(614): CodeIgniter\Database\BaseConnection->initialize()
+#3 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/BaseConnection.php(1525): CodeIgniter\Database\BaseConnection->query('SHOW TABLES FRO...')
+#4 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/BaseConnection.php(1545): CodeIgniter\Database\BaseConnection->listTables()
+#5 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/MigrationRunner.php(766): CodeIgniter\Database\BaseConnection->tableExists('migrations')
+#6 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/MigrationRunner.php(160): CodeIgniter\Database\MigrationRunner->ensureTable()
+#7 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Commands/Database/Migrate.php(85): CodeIgniter\Database\MigrationRunner->latest(NULL)
+#8 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/CLI/Commands.php(74): CodeIgniter\Commands\Database\Migrate->run(Array)
+#9 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/CLI/Console.php(47): CodeIgniter\CLI\Commands->run('migrate', Array)
+#10 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Boot.php(388): CodeIgniter\CLI\Console->run()
+#11 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Boot.php(133): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#12 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#13 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Access denied for user '****'@'localhost' (using password: NO) in /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:246
+Stack trace:
+#0 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/BaseConnection.php(614): CodeIgniter\Database\BaseConnection->initialize()
+#2 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/BaseConnection.php(1525): CodeIgniter\Database\BaseConnection->query('SHOW TABLES FRO...')
+#3 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/BaseConnection.php(1545): CodeIgniter\Database\BaseConnection->listTables()
+#4 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/MigrationRunner.php(766): CodeIgniter\Database\BaseConnection->tableExists('migrations')
+#5 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Database/MigrationRunner.php(160): CodeIgniter\Database\MigrationRunner->ensureTable()
+#6 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Commands/Database/Migrate.php(85): CodeIgniter\Database\MigrationRunner->latest(NULL)
+#7 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/CLI/Commands.php(74): CodeIgniter\Commands\Database\Migrate->run(Array)
+#8 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/CLI/Console.php(47): CodeIgniter\CLI\Commands->run('migrate', Array)
+#9 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Boot.php(388): CodeIgniter\CLI\Console->run()
+#10 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/vendor/codeigniter4/framework/system/Boot.php(133): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#11 /Users/mehmetakif/Documents/GitHub/şirket-finans-takip/spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#12 {main}
+CRITICAL - 2026-01-16 14:32:25 --> CodeIgniter\Filters\Exceptions\FilterException: "auth" filter must have a matching alias defined.
+[Method: GET, Route: /]
+in SYSTEMPATH/Filters/Filters.php on line 590.
+ 1 SYSTEMPATH/Filters/Filters.php(590): CodeIgniter\Filters\Exceptions\FilterException::forNoAlias('auth')
+ 2 SYSTEMPATH/Filters/Filters.php(641): CodeIgniter\Filters\Filters->enableFilter('auth', 'before')
+ 3 SYSTEMPATH/CodeIgniter.php(467): CodeIgniter\Filters\Filters->enableFilters([...], 'before')
+ 4 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 SYSTEMPATH/Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 7 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 8 SYSTEMPATH/rewrite.php(44): require_once('/Users/mehmetakif/Documents/GitHub/şirket-finans-takip/public/index.php')
