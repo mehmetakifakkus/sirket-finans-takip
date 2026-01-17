@@ -2,6 +2,38 @@
 
 A comprehensive desktop application for managing company finances, built with Electron, React, TypeScript, and SQLite.
 
+## Screenshots
+
+### Dashboard
+Real-time financial overview with monthly summaries, upcoming payments, and active projects.
+
+![Dashboard](assets/dashboard.png)
+
+### Transactions
+Track all income and expense transactions with VAT and withholding tax calculations.
+
+![Transactions](assets/transactions.png)
+
+### Debts & Receivables
+Manage payables and receivables with automatic installment generation and payment tracking.
+
+![Debts & Receivables](assets/debts.png)
+
+### Projects
+Track contracts and projects with milestone-based payment schedules.
+
+![Projects](assets/projects.png)
+
+### Parties
+Maintain customer, vendor, and other business partner records.
+
+![Parties](assets/parties.png)
+
+### Reports
+Generate comprehensive reports with multiple views and CSV export functionality.
+
+![Reports](assets/reports.png)
+
 ## Features
 
 ### Core Modules

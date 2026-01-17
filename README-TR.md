@@ -2,6 +2,38 @@
 
 Electron, React, TypeScript ve SQLite ile geliştirilmiş kapsamlı bir şirket finans yönetimi masaüstü uygulaması.
 
+## Ekran Görüntüleri
+
+### Kontrol Paneli (Dashboard)
+Aylık özetler, yaklaşan ödemeler ve aktif projelerle anlık finansal görünüm.
+
+![Kontrol Paneli](assets/dashboard.png)
+
+### İşlemler (Gelir/Gider)
+KDV ve stopaj hesaplamaları ile tüm gelir ve gider işlemlerini takip edin.
+
+![İşlemler](assets/transactions.png)
+
+### Borç & Alacak
+Otomatik taksit oluşturma ve ödeme takibi ile borç ve alacakları yönetin.
+
+![Borç & Alacak](assets/debts.png)
+
+### Projeler
+Aşama bazlı ödeme takvimleri ile sözleşme ve projeleri izleyin.
+
+![Projeler](assets/projects.png)
+
+### Taraflar
+Müşteri, tedarikçi ve diğer iş ortağı kayıtlarını tutun.
+
+![Taraflar](assets/parties.png)
+
+### Raporlar
+Çoklu görünüm ve CSV dışa aktarım özelliği ile kapsamlı raporlar oluşturun.
+
+![Raporlar](assets/reports.png)
+
 ## Özellikler
 
 ### Ana Modüller
@@ -345,50 +377,3 @@ Bu proje MIT Lisansı altında lisanslanmıştır - detaylar için [LICENSE](LIC
 - [Zustand](https://github.com/pmndrs/zustand) - Durum yönetimi
 - [TCMB](https://www.tcmb.gov.tr/) - Döviz kuru verileri
 
----
-
-## Ekran Görüntüleri
-
-### Giriş Ekranı
-Kullanıcı adı ve şifre ile güvenli giriş yapın.
-
-### Kontrol Paneli
-- Aylık gelir ve gider özeti
-- Net bakiye göstergesi
-- Yaklaşan taksitler listesi
-- Vadesi geçmiş ödemeler uyarısı
-- Aktif projeler durumu
-- Son işlemler
-
-### İşlemler
-- Gelir/gider filtreleme
-- Taraf, kategori ve proje bazlı arama
-- Tarih aralığı filtresi
-- Para birimi filtresi
-- CSV dışa aktarım
-- KDV ve stopaj otomatik hesaplama
-
-### Borç/Alacak Yönetimi
-- Borç ve alacak ayrımı
-- Otomatik taksit oluşturma
-- Taksit bazlı ödeme takibi
-- Vadesi geçmiş taksit uyarıları
-- Kısmi ödeme desteği
-
-### Proje Takibi
-- Sözleşme tutarı takibi
-- Aşama bazlı ödeme planı
-- Tahsilat yüzdesi göstergesi
-- Proje durumu yönetimi
-
-### Döviz Kurları (Admin)
-- Manuel kur girişi
-- TCMB'den otomatik kur çekme
-- Günlük kur geçmişi
-- USD ve EUR desteği
-
-### Kullanıcı Yönetimi (Admin)
-- Kullanıcı ekleme/düzenleme/silme
-- Rol atama (Admin/Personel)
-- Aktif/Pasif durum yönetimi
-- Son giriş takibi
