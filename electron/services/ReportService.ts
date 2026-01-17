@@ -96,8 +96,14 @@ export class ReportService {
     }
   }
 
-  getTransactionReport(filters?: object): object {
-    const transactions = this.transactionService.getFiltered(filters as { type?: 'income' | 'expense'; party_id?: number; category_id?: number; project_id?: number; date_from?: string; date_to?: string; currency?: string })
+  getTransactionReport(filters?: { start_date?: string; end_date?: string; type?: string }): object {
+    // Map frontend filter names to service filter names
+    const serviceFilters: { type?: 'income' | 'expense'; date_from?: string; date_to?: string } = {}
+    if (filters?.type) serviceFilters.type = filters.type as 'income' | 'expense'
+    if (filters?.start_date) serviceFilters.date_from = filters.start_date
+    if (filters?.end_date) serviceFilters.date_to = filters.end_date
+
+    const transactions = this.transactionService.getFiltered(serviceFilters)
 
     const totals = {
       income: { TRY: 0, USD: 0, EUR: 0, total_try: 0 },
@@ -122,8 +128,15 @@ export class ReportService {
     }
   }
 
-  getDebtReport(filters?: object): object {
-    const debts = this.debtService.getFiltered(filters as { kind?: 'debt' | 'receivable'; party_id?: number; status?: 'open' | 'closed' })
+  getDebtReport(filters?: { kind?: string; start_date?: string; end_date?: string }): object {
+    // Map frontend filter names - DebtService uses 'kind' which matches frontend
+    const serviceFilters: { kind?: 'debt' | 'receivable' | 'payable' } = {}
+    if (filters?.kind) {
+      // Frontend may send 'receivable' or 'payable', map to service expected values
+      serviceFilters.kind = filters.kind as 'debt' | 'receivable' | 'payable'
+    }
+
+    const debts = this.debtService.getFiltered(serviceFilters as { kind?: 'debt' | 'receivable'; party_id?: number; status?: 'open' | 'closed' })
     const today = formatDate(new Date())
 
     const totals = {

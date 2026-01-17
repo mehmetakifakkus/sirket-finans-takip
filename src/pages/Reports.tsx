@@ -89,16 +89,16 @@ export function Reports() {
           setSummaryData(summary as SummaryData)
           break
         case 'transactions':
-          const transactions = await window.api.getTransactionReport(filterParams)
-          setTransactionData(transactions as TransactionReport[])
+          const transactionResult = await window.api.getTransactionReport(filterParams) as { transactions: TransactionReport[] }
+          setTransactionData(transactionResult.transactions || [])
           break
         case 'debts':
-          const debts = await window.api.getDebtReport(filterParams)
-          setDebtData(debts as DebtReport[])
+          const debtResult = await window.api.getDebtReport(filterParams) as { debts: DebtReport[] }
+          setDebtData(debtResult.debts || [])
           break
         case 'projects':
-          const projects = await window.api.getProjectReport(filterParams)
-          setProjectData(projects as ProjectReport[])
+          const projectResult = await window.api.getProjectReport(filterParams) as { projects: ProjectReport[] }
+          setProjectData(projectResult.projects || [])
           break
       }
     } catch {
