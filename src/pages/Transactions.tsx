@@ -15,6 +15,15 @@ export function Transactions() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
+  const [showCategoryForm, setShowCategoryForm] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [showPartyForm, setShowPartyForm] = useState(false)
+  const [newPartyData, setNewPartyData] = useState({
+    type: 'customer' as 'customer' | 'vendor' | 'other',
+    name: ''
+  })
+  const [showProjectForm, setShowProjectForm] = useState(false)
+  const [newProjectTitle, setNewProjectTitle] = useState('')
   const { addAlert } = useAppStore()
   const { user } = useAuthStore()
   const isAdmin = user?.role === 'admin'
@@ -199,6 +208,97 @@ export function Transactions() {
   const closeForm = () => {
     setShowForm(false)
     setEditingTransaction(null)
+  }
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) {
+      addAlert('error', 'Kategori adi gerekli')
+      return
+    }
+
+    try {
+      const result = await window.api.createCategory({
+        name: newCategoryName.trim(),
+        type: formData.type,
+        parent_id: null,
+        is_active: true
+      })
+
+      if (result.success) {
+        addAlert('success', 'Kategori olusturuldu')
+        const categoriesRes = await window.api.getCategories()
+        setCategories(categoriesRes as Category[])
+        setFormData({ ...formData, category_id: result.id.toString() })
+        setShowCategoryForm(false)
+        setNewCategoryName('')
+      } else {
+        addAlert('error', result.message)
+      }
+    } catch {
+      addAlert('error', 'Kategori olusturulamadi')
+    }
+  }
+
+  const handleCreateParty = async () => {
+    if (!newPartyData.name.trim()) {
+      addAlert('error', 'Taraf adi gerekli')
+      return
+    }
+    try {
+      const result = await window.api.createParty({
+        type: newPartyData.type,
+        name: newPartyData.name.trim(),
+        tax_no: null, phone: null, email: null, address: null, notes: null
+      })
+      if (result.success) {
+        addAlert('success', 'Taraf olusturuldu')
+        const partiesRes = await window.api.getParties()
+        setParties(partiesRes as Party[])
+        setFormData({ ...formData, party_id: result.id!.toString() })
+        setShowPartyForm(false)
+        setNewPartyData({ type: 'customer', name: '' })
+      } else {
+        addAlert('error', result.message)
+      }
+    } catch {
+      addAlert('error', 'Taraf olusturulamadi')
+    }
+  }
+
+  const handleCreateProject = async () => {
+    if (!newProjectTitle.trim()) {
+      addAlert('error', 'Proje adi gerekli')
+      return
+    }
+    if (!formData.party_id) {
+      addAlert('error', 'Proje olusturmak icin once bir taraf secin')
+      setShowProjectForm(false)
+      return
+    }
+    try {
+      const result = await window.api.createProject({
+        party_id: parseInt(formData.party_id),
+        title: newProjectTitle.trim(),
+        contract_amount: 0,
+        currency: 'TRY',
+        start_date: null,
+        end_date: null,
+        status: 'active',
+        notes: 'Hizli olusturuldu - detaylar eksik'
+      })
+      if (result.success) {
+        addAlert('success', 'Proje olusturuldu (Detaylar eksik)')
+        const projectsRes = await window.api.getProjects()
+        setProjects(projectsRes as Project[])
+        setFormData({ ...formData, project_id: result.id!.toString() })
+        setShowProjectForm(false)
+        setNewProjectTitle('')
+      } else {
+        addAlert('error', result.message)
+      }
+    } catch {
+      addAlert('error', 'Proje olusturulamadi')
+    }
   }
 
   const filteredCategories = categories.filter(c => c.type === formData.type && c.is_active)
@@ -397,10 +497,19 @@ export function Transactions() {
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="px-6 py-4 border-b border-gray-200">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
               <h3 className="text-lg font-semibold text-gray-900">
                 {editingTransaction ? 'Islem Duzenle' : `Yeni ${formData.type === 'income' ? 'Gelir' : 'Gider'}`}
               </h3>
+              <button
+                type="button"
+                onClick={closeForm}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -435,23 +544,60 @@ export function Transactions() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                <select value={formData.category_id} onChange={(e) => setFormData({ ...formData, category_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                <select
+                  value={formData.category_id}
+                  onChange={(e) => {
+                    if (e.target.value === 'new') {
+                      setShowCategoryForm(true)
+                    } else {
+                      setFormData({ ...formData, category_id: e.target.value })
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                >
                   <option value="">Secin</option>
                   {filteredCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  <option value="new">➕ Yeni Kategori Ekle</option>
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Taraf</label>
-                <select value={formData.party_id} onChange={(e) => setFormData({ ...formData, party_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                <select
+                  value={formData.party_id}
+                  onChange={(e) => {
+                    if (e.target.value === 'new') {
+                      setShowPartyForm(true)
+                    } else {
+                      setFormData({ ...formData, party_id: e.target.value })
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                >
                   <option value="">Secin</option>
                   {parties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  <option value="new">➕ Yeni Taraf Ekle</option>
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Proje</label>
-                <select value={formData.project_id} onChange={(e) => setFormData({ ...formData, project_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                <select
+                  value={formData.project_id}
+                  onChange={(e) => {
+                    if (e.target.value === 'new') {
+                      if (!formData.party_id) {
+                        addAlert('error', 'Proje olusturmak icin once bir taraf secin')
+                      } else {
+                        setShowProjectForm(true)
+                      }
+                    } else {
+                      setFormData({ ...formData, project_id: e.target.value })
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                >
                   <option value="">Secin</option>
                   {projects.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+                  <option value="new">➕ Yeni Proje Ekle</option>
                 </select>
               </div>
               <div>
@@ -467,6 +613,213 @@ export function Transactions() {
                 <button type="submit" className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">{editingTransaction ? 'Guncelle' : 'Kaydet'}</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Category Form Mini Modal */}
+      {showCategoryForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-lg shadow-xl max-w-sm w-full mx-4">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-900">Yeni Kategori</h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCategoryForm(false)
+                  setNewCategoryName('')
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Kategori Adi *</label>
+                <input
+                  type="text"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleCreateCategory()
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Kategori adini girin"
+                  autoFocus
+                />
+              </div>
+              <p className="text-sm text-gray-500">
+                Tip: {formData.type === 'income' ? 'Gelir' : 'Gider'} (otomatik)
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCategoryForm(false)
+                    setNewCategoryName('')
+                  }}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Iptal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCreateCategory}
+                  className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                >
+                  Kaydet
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Party Form Mini Modal */}
+      {showPartyForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-lg shadow-xl max-w-sm w-full mx-4">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-900">Yeni Taraf</h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPartyForm(false)
+                  setNewPartyData({ type: 'customer', name: '' })
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Taraf Tipi *</label>
+                <select
+                  value={newPartyData.type}
+                  onChange={(e) => setNewPartyData({ ...newPartyData, type: e.target.value as 'customer' | 'vendor' | 'other' })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="customer">Musteri</option>
+                  <option value="vendor">Tedarikci</option>
+                  <option value="other">Diger</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Taraf Adi *</label>
+                <input
+                  type="text"
+                  value={newPartyData.name}
+                  onChange={(e) => setNewPartyData({ ...newPartyData, name: e.target.value })}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleCreateParty()
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Taraf adini girin"
+                  autoFocus
+                />
+              </div>
+              <p className="text-sm text-gray-500">
+                Diger bilgileri Taraflar sayfasindan ekleyebilirsiniz.
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPartyForm(false)
+                    setNewPartyData({ type: 'customer', name: '' })
+                  }}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Iptal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCreateParty}
+                  className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                >
+                  Kaydet
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Project Form Mini Modal */}
+      {showProjectForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-lg shadow-xl max-w-sm w-full mx-4">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-900">Yeni Proje</h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowProjectForm(false)
+                  setNewProjectTitle('')
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Proje Adi *</label>
+                <input
+                  type="text"
+                  value={newProjectTitle}
+                  onChange={(e) => setNewProjectTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleCreateProject()
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Proje adini girin"
+                  autoFocus
+                />
+              </div>
+              <p className="text-sm text-gray-500">
+                Taraf: {parties.find(p => p.id.toString() === formData.party_id)?.name || '-'}
+              </p>
+              <p className="text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-md">
+                Diger bilgileri (sozlesme tutari, tarihler) Projeler sayfasindan ekleyebilirsiniz.
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowProjectForm(false)
+                    setNewProjectTitle('')
+                  }}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Iptal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCreateProject}
+                  className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                >
+                  Kaydet
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
