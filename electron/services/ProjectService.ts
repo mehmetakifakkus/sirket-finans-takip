@@ -1,5 +1,4 @@
-import Database from 'better-sqlite3'
-import { getCurrentTimestamp } from '../database/connection'
+import { DatabaseWrapper, getCurrentTimestamp } from '../database/connection'
 import { CurrencyService } from './CurrencyService'
 
 interface Project {
@@ -40,10 +39,10 @@ interface ProjectFilters {
 }
 
 export class ProjectService {
-  private db: Database.Database
+  private db: DatabaseWrapper
   private currencyService: CurrencyService
 
-  constructor(db: Database.Database) {
+  constructor(db: DatabaseWrapper) {
     this.db = db
     this.currencyService = new CurrencyService(db)
   }
@@ -287,5 +286,15 @@ export class ProjectService {
 
   getActiveProjects(): Project[] {
     return this.getAll({ status: 'active' })
+  }
+
+  getIncompleteProjectsCount(): number {
+    const result = this.db.prepare(`
+      SELECT COUNT(*) as count FROM projects
+      WHERE status = 'active'
+      AND (contract_amount = 0 OR contract_amount IS NULL
+           OR start_date IS NULL OR end_date IS NULL)
+    `).get() as { count: number }
+    return result.count
   }
 }

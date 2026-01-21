@@ -1,4 +1,4 @@
-import Database from 'better-sqlite3'
+import { DatabaseWrapper } from '../database/connection'
 
 interface Payment {
   id: number
@@ -23,9 +23,9 @@ interface PaymentFilters {
 }
 
 export class PaymentService {
-  private db: Database.Database
+  private db: DatabaseWrapper
 
-  constructor(db: Database.Database) {
+  constructor(db: DatabaseWrapper) {
     this.db = db
   }
 

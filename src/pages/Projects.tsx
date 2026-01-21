@@ -20,6 +20,21 @@ const statusColors = {
   on_hold: 'bg-yellow-100 text-yellow-800'
 }
 
+const isProjectIncomplete = (project: Project): boolean => {
+  return !project.contract_amount ||
+         project.contract_amount === 0 ||
+         !project.start_date ||
+         !project.end_date
+}
+
+const getIncompleteMissingFields = (project: Project): string[] => {
+  const missing: string[] = []
+  if (!project.contract_amount || project.contract_amount === 0) missing.push('Sozlesme tutari')
+  if (!project.start_date) missing.push('Baslangic tarihi')
+  if (!project.end_date) missing.push('Bitis tarihi')
+  return missing
+}
+
 export function Projects() {
   const [projects, setProjects] = useState<Project[]>([])
   const [parties, setParties] = useState<Party[]>([])
@@ -222,9 +237,22 @@ export function Projects() {
                     <Link to={`/projects/${project.id}`} className="text-lg font-semibold text-gray-900 hover:text-blue-600">{project.title}</Link>
                     <p className="text-sm text-gray-500">{project.party_name}</p>
                   </div>
-                  <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${statusColors[project.status]}`}>
-                    {statusLabels[project.status]}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${statusColors[project.status]}`}>
+                      {statusLabels[project.status]}
+                    </span>
+                    {isProjectIncomplete(project) && (
+                      <span
+                        className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-amber-100 text-amber-800"
+                        title={`Eksik: ${getIncompleteMissingFields(project).join(', ')}`}
+                      >
+                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        Eksik
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-3">
@@ -278,8 +306,17 @@ export function Projects() {
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="px-6 py-4 border-b border-gray-200">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
               <h3 className="text-lg font-semibold text-gray-900">{editingProject ? 'Proje Duzenle' : 'Yeni Proje'}</h3>
+              <button
+                type="button"
+                onClick={closeForm}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>

@@ -1,5 +1,4 @@
-import Database from 'better-sqlite3'
-import { getCurrentTimestamp } from '../database/connection'
+import { DatabaseWrapper, getCurrentTimestamp } from '../database/connection'
 
 interface Category {
   id: number
@@ -12,9 +11,9 @@ interface Category {
 }
 
 export class CategoryService {
-  private db: Database.Database
+  private db: DatabaseWrapper
 
-  constructor(db: Database.Database) {
+  constructor(db: DatabaseWrapper) {
     this.db = db
   }
 

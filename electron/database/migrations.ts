@@ -1,6 +1,6 @@
-import Database from 'better-sqlite3'
+import { DatabaseWrapper } from './connection'
 
-export function runMigrations(db: Database.Database): void {
+export function runMigrations(db: DatabaseWrapper): void {
   console.log('Running database migrations...')
 
   // Create users table

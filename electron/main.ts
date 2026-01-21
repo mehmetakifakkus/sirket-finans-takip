@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron'
 import path from 'path'
-import { initDatabase, closeDatabase } from './database/connection'
+import { initDatabaseAsync, closeDatabase, getDatabaseWrapper, DatabaseWrapper } from './database/connection'
 import { runMigrations } from './database/migrations'
 import { seedDatabase } from './database/seed'
 
@@ -15,6 +15,7 @@ import { PaymentService } from './services/PaymentService'
 import { ExchangeRateService } from './services/ExchangeRateService'
 import { ReportService } from './services/ReportService'
 import { FileService } from './services/FileService'
+import { SetupService } from './services/SetupService'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -60,16 +61,22 @@ let paymentService: PaymentService
 let exchangeRateService: ExchangeRateService
 let reportService: ReportService
 let fileService: FileService
+let setupService: SetupService
 
 app.whenReady().then(async () => {
-  // Initialize database
-  const db = initDatabase()
+  // Initialize database (async for sql.js)
+  await initDatabaseAsync()
+  const db = getDatabaseWrapper()
 
-  // Run migrations
-  runMigrations(db)
+  // Initialize setup service first (it handles migrations/seeding detection)
+  setupService = new SetupService(db)
 
-  // Seed database if empty
-  seedDatabase(db)
+  // Check if setup is needed - if not, run migrations and seed
+  const status = setupService.checkStatus()
+  if (!status.needsSetup) {
+    // Database is already set up, just ensure migrations are run
+    runMigrations(db)
+  }
 
   // Initialize services
   authService = new AuthService(db)
@@ -268,6 +275,10 @@ function registerIpcHandlers() {
     return projectService.delete(id)
   })
 
+  ipcMain.handle('projects:incompleteCount', async () => {
+    return projectService.getIncompleteProjectsCount()
+  })
+
   // Milestone handlers
   ipcMain.handle('milestones:get', async (_, id: number) => {
     return projectService.getMilestone(id)
@@ -419,5 +430,22 @@ function registerIpcHandlers() {
       title: type === 'error' ? 'Hata' : type === 'warning' ? 'Uyarı' : 'Bilgi',
       message: message
     })
+  })
+
+  // Setup handlers
+  ipcMain.handle('setup:checkStatus', async () => {
+    return setupService.checkStatus()
+  })
+
+  ipcMain.handle('setup:initDatabase', async () => {
+    return setupService.initDatabase()
+  })
+
+  ipcMain.handle('setup:createAdmin', async (_, data: { name: string; email: string; password: string }) => {
+    return setupService.createAdmin(data)
+  })
+
+  ipcMain.handle('setup:seedData', async (_, options: { categories: boolean; exchangeRates: boolean; demoData: boolean }) => {
+    return setupService.seedData(options)
   })
 }

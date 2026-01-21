@@ -13,17 +13,17 @@ export function MainLayout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-gray-100">
+      {/* Sidebar - Fixed */}
       <Sidebar />
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Main Content - With left margin for sidebar */}
+      <div className="ml-64 flex flex-col min-h-screen">
         {/* Topbar */}
         <Topbar />
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 p-6">
           {/* Alerts */}
           {alerts.length > 0 && (
             <div className="mb-4 space-y-2">

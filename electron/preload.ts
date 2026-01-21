@@ -52,6 +52,7 @@ contextBridge.exposeInMainWorld('api', {
   createProject: (data: object) => ipcRenderer.invoke('projects:create', data),
   updateProject: (id: number, data: object) => ipcRenderer.invoke('projects:update', id, data),
   deleteProject: (id: number) => ipcRenderer.invoke('projects:delete', id),
+  getIncompleteProjectsCount: () => ipcRenderer.invoke('projects:incompleteCount'),
 
   // Milestones
   getMilestone: (id: number) => ipcRenderer.invoke('milestones:get', id),
@@ -95,6 +96,12 @@ contextBridge.exposeInMainWorld('api', {
   // Dialogs
   confirm: (message: string, title?: string) => ipcRenderer.invoke('dialog:confirm', message, title),
   alert: (message: string, type?: 'info' | 'warning' | 'error') => ipcRenderer.invoke('dialog:alert', message, type),
+
+  // Setup
+  checkSetupStatus: () => ipcRenderer.invoke('setup:checkStatus'),
+  initDatabase: () => ipcRenderer.invoke('setup:initDatabase'),
+  createAdmin: (data: { name: string; email: string; password: string }) => ipcRenderer.invoke('setup:createAdmin', data),
+  seedData: (options: { categories: boolean; exchangeRates: boolean; demoData: boolean }) => ipcRenderer.invoke('setup:seedData', options),
 })
 
 // Type definition for window.api
@@ -147,6 +154,7 @@ export interface IElectronAPI {
   createProject: (data: object) => Promise<{ success: boolean; message: string; id?: number }>;
   updateProject: (id: number, data: object) => Promise<{ success: boolean; message: string }>;
   deleteProject: (id: number) => Promise<{ success: boolean; message: string }>;
+  getIncompleteProjectsCount: () => Promise<number>;
 
   // Milestones
   getMilestone: (id: number) => Promise<object | null>;
@@ -190,6 +198,17 @@ export interface IElectronAPI {
   // Dialogs
   confirm: (message: string, title?: string) => Promise<boolean>;
   alert: (message: string, type?: 'info' | 'warning' | 'error') => Promise<void>;
+
+  // Setup
+  checkSetupStatus: () => Promise<{
+    needsSetup: boolean;
+    hasDatabase: boolean;
+    hasUsers: boolean;
+    hasTables: boolean;
+  }>;
+  initDatabase: () => Promise<{ success: boolean; message: string }>;
+  createAdmin: (data: { name: string; email: string; password: string }) => Promise<{ success: boolean; message: string }>;
+  seedData: (options: { categories: boolean; exchangeRates: boolean; demoData: boolean }) => Promise<{ success: boolean; message: string; details: string[] }>;
 }
 
 declare global {

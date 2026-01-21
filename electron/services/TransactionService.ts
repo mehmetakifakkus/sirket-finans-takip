@@ -1,5 +1,4 @@
-import Database from 'better-sqlite3'
-import { getCurrentTimestamp } from '../database/connection'
+import { DatabaseWrapper, getCurrentTimestamp } from '../database/connection'
 import { CurrencyService } from './CurrencyService'
 
 interface Transaction {
@@ -43,10 +42,10 @@ interface TransactionFilters {
 }
 
 export class TransactionService {
-  private db: Database.Database
+  private db: DatabaseWrapper
   private currencyService: CurrencyService
 
-  constructor(db: Database.Database) {
+  constructor(db: DatabaseWrapper) {
     this.db = db
     this.currencyService = new CurrencyService(db)
   }

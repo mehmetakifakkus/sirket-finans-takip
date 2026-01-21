@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 
@@ -114,20 +115,28 @@ const adminItems = [
 
 interface NavItemProps {
   item: typeof navItems[0]
+  badge?: number
 }
 
-function NavItem({ item }: NavItemProps) {
+function NavItem({ item, badge }: NavItemProps) {
   return (
     <NavLink
       to={item.path}
       className={({ isActive }) =>
-        `flex items-center px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors duration-200 ${
+        `flex items-center justify-between px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors duration-200 ${
           isActive ? 'bg-gray-800' : ''
         }`
       }
     >
-      <span className="mr-3">{item.icon}</span>
-      {item.title}
+      <div className="flex items-center">
+        <span className="mr-3">{item.icon}</span>
+        {item.title}
+      </div>
+      {badge !== undefined && badge > 0 && (
+        <span className="inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium bg-amber-500 text-white rounded-full">
+          {badge}
+        </span>
+      )}
     </NavLink>
   )
 }
@@ -135,16 +144,17 @@ function NavItem({ item }: NavItemProps) {
 interface NavSectionProps {
   title: string
   items: typeof navItems
+  badges?: Record<string, number>
 }
 
-function NavSection({ title, items }: NavSectionProps) {
+function NavSection({ title, items, badges }: NavSectionProps) {
   return (
     <div className="pt-4">
       <p className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
         {title}
       </p>
       {items.map((item) => (
-        <NavItem key={item.path} item={item} />
+        <NavItem key={item.path} item={item} badge={badges?.[item.path]} />
       ))}
     </div>
   )
@@ -153,9 +163,24 @@ function NavSection({ title, items }: NavSectionProps) {
 export function Sidebar() {
   const { user } = useAuthStore()
   const isAdmin = user?.role === 'admin'
+  const [incompleteProjectCount, setIncompleteProjectCount] = useState(0)
+
+  useEffect(() => {
+    const fetchCount = async () => {
+      try {
+        const count = await window.api.getIncompleteProjectsCount()
+        setIncompleteProjectCount(count)
+      } catch {
+        // ignore errors
+      }
+    }
+    fetchCount()
+    const interval = setInterval(fetchCount, 30000) // 30 saniyede bir guncelle
+    return () => clearInterval(interval)
+  }, [])
 
   return (
-    <aside className="w-64 bg-gray-900 text-white flex flex-col h-screen">
+    <aside className="w-64 bg-gray-900 text-white flex flex-col h-screen fixed left-0 top-0 z-30">
       {/* Logo */}
       <div className="p-4 border-b border-gray-800">
         <h1 className="text-xl font-bold">Finans Takip</h1>
@@ -170,7 +195,7 @@ export function Sidebar() {
 
         <NavSection title="Islemler" items={transactionItems} />
         <NavSection title="Borc / Alacak" items={debtItems} />
-        <NavSection title="Projeler" items={projectItems} />
+        <NavSection title="Projeler" items={projectItems} badges={{ '/projects': incompleteProjectCount }} />
         <NavSection title="Kayitlar" items={recordItems} />
         <NavSection title="Raporlar" items={reportItems} />
 

@@ -1,5 +1,4 @@
-import Database from 'better-sqlite3'
-import { getCurrentTimestamp } from '../database/connection'
+import { DatabaseWrapper, getCurrentTimestamp } from '../database/connection'
 import https from 'https'
 
 interface ExchangeRate {
@@ -13,9 +12,9 @@ interface ExchangeRate {
 }
 
 export class ExchangeRateService {
-  private db: Database.Database
+  private db: DatabaseWrapper
 
-  constructor(db: Database.Database) {
+  constructor(db: DatabaseWrapper) {
     this.db = db
   }
 
@@ -135,13 +134,13 @@ export class ExchangeRateService {
     const now = getCurrentTimestamp()
     const rates: Record<string, number> = {}
 
-    // Extract date from XML
+    // Extract date from XML - TCMB format is DD/MM/YYYY
     const dateMatch = xml.match(/Date="(\d{2})\/(\d{2})\/(\d{4})"/)
     if (!dateMatch) {
       return { success: false, message: 'Tarih bilgisi okunamadı.' }
     }
 
-    const [, month, day, year] = dateMatch
+    const [, day, month, year] = dateMatch
     const date = `${year}-${month}-${day}`
 
     // Extract USD rate

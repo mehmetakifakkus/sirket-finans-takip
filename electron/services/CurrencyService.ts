@@ -1,4 +1,4 @@
-import Database from 'better-sqlite3'
+import { DatabaseWrapper } from '../database/connection'
 
 interface ExchangeRate {
   id: number
@@ -11,7 +11,7 @@ interface ExchangeRate {
 }
 
 export class CurrencyService {
-  private db: Database.Database
+  private db: DatabaseWrapper
 
   static readonly CURRENCIES = ['TRY', 'USD', 'EUR']
   static readonly SYMBOLS: Record<string, string> = {
@@ -25,7 +25,7 @@ export class CurrencyService {
     EUR: 'Euro'
   }
 
-  constructor(db: Database.Database) {
+  constructor(db: DatabaseWrapper) {
     this.db = db
   }
 

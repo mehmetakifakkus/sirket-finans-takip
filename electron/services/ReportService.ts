@@ -1,18 +1,17 @@
-import Database from 'better-sqlite3'
-import { formatDate } from '../database/connection'
+import { DatabaseWrapper, formatDate } from '../database/connection'
 import { CurrencyService } from './CurrencyService'
 import { TransactionService } from './TransactionService'
 import { DebtService } from './DebtService'
 import { ProjectService } from './ProjectService'
 
 export class ReportService {
-  private db: Database.Database
+  private db: DatabaseWrapper
   private currencyService: CurrencyService
   private transactionService: TransactionService
   private debtService: DebtService
   private projectService: ProjectService
 
-  constructor(db: Database.Database) {
+  constructor(db: DatabaseWrapper) {
     this.db = db
     this.currencyService = new CurrencyService(db)
     this.transactionService = new TransactionService(db)

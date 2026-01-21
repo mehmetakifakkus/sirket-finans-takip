@@ -1,6 +1,5 @@
-import Database from 'better-sqlite3'
 import bcrypt from 'bcryptjs'
-import { getCurrentTimestamp } from '../database/connection'
+import { DatabaseWrapper, getCurrentTimestamp } from '../database/connection'
 
 interface User {
   id: number
@@ -14,10 +13,10 @@ interface User {
 }
 
 export class AuthService {
-  private db: Database.Database
+  private db: DatabaseWrapper
   private currentUser: User | null = null
 
-  constructor(db: Database.Database) {
+  constructor(db: DatabaseWrapper) {
     this.db = db
   }
 

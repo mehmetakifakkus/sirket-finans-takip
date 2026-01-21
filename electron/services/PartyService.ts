@@ -1,5 +1,4 @@
-import Database from 'better-sqlite3'
-import { getCurrentTimestamp } from '../database/connection'
+import { DatabaseWrapper, getCurrentTimestamp } from '../database/connection'
 
 interface Party {
   id: number
@@ -20,9 +19,9 @@ interface PartyFilters {
 }
 
 export class PartyService {
-  private db: Database.Database
+  private db: DatabaseWrapper
 
-  constructor(db: Database.Database) {
+  constructor(db: DatabaseWrapper) {
     this.db = db
   }
 
