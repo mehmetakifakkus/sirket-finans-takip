@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { useAuthStore } from '../store/authStore'
 import { formatCurrency } from '../utils/currency'
@@ -7,6 +8,7 @@ import { formatDate, getToday, isOverdue } from '../utils/date'
 import type { Debt, Party } from '../types'
 
 export function Debts() {
+  const { t } = useTranslation()
   const [debts, setDebts] = useState<Debt[]>([])
   const [parties, setParties] = useState<Party[]>([])
   const [loading, setLoading] = useState(true)
@@ -42,7 +44,7 @@ export function Debts() {
       const result = await window.api.getParties()
       setParties(result as Party[])
     } catch {
-      addAlert('error', 'Taraflar yuklenemedi')
+      addAlert('error', t('debts.errors.partiesLoadFailed'))
     }
   }
 
@@ -57,7 +59,7 @@ export function Debts() {
       const result = await window.api.getDebts(filterParams)
       setDebts(result as Debt[])
     } catch {
-      addAlert('error', 'Veriler yuklenemedi')
+      addAlert('error', t('common.dataLoadError'))
     } finally {
       setLoading(false)
     }
@@ -98,12 +100,12 @@ export function Debts() {
         }
       }
     } catch {
-      addAlert('error', 'Bir hata olustu')
+      addAlert('error', t('common.error'))
     }
   }
 
   const handleDelete = async (id: number) => {
-    const confirmed = await window.api.confirm('Bu kaydi silmek istediginizden emin misiniz?')
+    const confirmed = await window.api.confirm(t('common.deleteConfirm'))
     if (!confirmed) return
 
     try {
@@ -115,7 +117,7 @@ export function Debts() {
         addAlert('error', result.message)
       }
     } catch {
-      addAlert('error', 'Silme islemi basarisiz')
+      addAlert('error', t('common.deleteFailed'))
     }
   }
 
@@ -123,10 +125,10 @@ export function Debts() {
     try {
       const result = await window.api.exportDebts(filters)
       if (result.success) {
-        addAlert('success', 'CSV dosyasi olusturuldu')
+        addAlert('success', t('common.csvCreated'))
       }
     } catch {
-      addAlert('error', 'Disari aktarma basarisiz')
+      addAlert('error', t('common.exportFailed'))
     }
   }
 
@@ -178,7 +180,7 @@ export function Debts() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Borc / Alacak</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('debts.title')}</h1>
         <div className="flex space-x-3">
           <button onClick={handleExport} className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,13 +192,13 @@ export function Debts() {
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Alacak
+            {t('debts.receivable')}
           </button>
           <button onClick={() => openCreateForm('debt')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700">
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Borc
+            {t('debts.debt')}
           </button>
         </div>
       </div>
@@ -205,26 +207,26 @@ export function Debts() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Tip</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('debts.filters.type')}</label>
             <select value={filters.kind} onChange={(e) => setFilters({ ...filters, kind: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
-              <option value="">Tumu</option>
-              <option value="debt">Borc</option>
-              <option value="receivable">Alacak</option>
+              <option value="">{t('common.all')}</option>
+              <option value="debt">{t('debts.debt')}</option>
+              <option value="receivable">{t('debts.receivable')}</option>
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Taraf</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('debts.filters.party')}</label>
             <select value={filters.party_id} onChange={(e) => setFilters({ ...filters, party_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
-              <option value="">Tumu</option>
+              <option value="">{t('common.all')}</option>
               {parties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Durum</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('debts.filters.status')}</label>
             <select value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
-              <option value="">Tumu</option>
-              <option value="open">Acik</option>
-              <option value="closed">Kapali</option>
+              <option value="">{t('common.all')}</option>
+              <option value="open">{t('debts.status.open')}</option>
+              <option value="closed">{t('debts.status.closed')}</option>
             </select>
           </div>
         </div>
@@ -233,11 +235,11 @@ export function Debts() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-          <p className="text-sm text-blue-600">Toplam Alacak</p>
+          <p className="text-sm text-blue-600">{t('debts.totalReceivable')}</p>
           <p className="text-xl font-bold text-blue-700">{formatCurrency(totals.receivable, 'TRY')}</p>
         </div>
         <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
-          <p className="text-sm text-orange-600">Toplam Borc</p>
+          <p className="text-sm text-orange-600">{t('debts.totalDebt')}</p>
           <p className="text-xl font-bold text-orange-700">{formatCurrency(totals.debt, 'TRY')}</p>
         </div>
       </div>
@@ -252,26 +254,26 @@ export function Debts() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tip</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Taraf</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Anapara</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Kalan</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vade</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durum</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Islemler</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('debts.table.type')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('debts.table.party')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('debts.table.principal')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('debts.table.remaining')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('debts.table.dueDate')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('debts.table.status')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {debts.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">Kayit bulunamadi</td>
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">{t('common.noRecords')}</td>
                 </tr>
               ) : (
                 debts.map((debt) => (
                   <tr key={debt.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${debt.kind === 'receivable' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}`}>
-                        {debt.kind === 'receivable' ? 'Alacak' : 'Borc'}
+                        {debt.kind === 'receivable' ? t('debts.receivable') : t('debts.debt')}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -282,15 +284,15 @@ export function Debts() {
                     <td className={`px-6 py-4 whitespace-nowrap text-sm ${isOverdue(debt.due_date) ? 'text-red-600 font-medium' : 'text-gray-500'}`}>{formatDate(debt.due_date)}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${debt.status === 'open' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
-                        {debt.status === 'open' ? 'Acik' : 'Kapali'}
+                        {debt.status === 'open' ? t('debts.status.open') : t('debts.status.closed')}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                      <Link to={`/debts/${debt.id}`} className="text-blue-600 hover:text-blue-800 mr-3">Detay</Link>
+                      <Link to={`/debts/${debt.id}`} className="text-blue-600 hover:text-blue-800 mr-3">{t('common.detail')}</Link>
                       {isAdmin && (
                         <>
-                          <button onClick={() => openEditForm(debt)} className="text-blue-600 hover:text-blue-800 mr-3">Duzenle</button>
-                          <button onClick={() => handleDelete(debt.id)} className="text-red-600 hover:text-red-800">Sil</button>
+                          <button onClick={() => openEditForm(debt)} className="text-blue-600 hover:text-blue-800 mr-3">{t('common.edit')}</button>
+                          <button onClick={() => handleDelete(debt.id)} className="text-red-600 hover:text-red-800">{t('common.delete')}</button>
                         </>
                       )}
                     </td>
@@ -307,7 +309,7 @@ export function Debts() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">{editingDebt ? 'Kayit Duzenle' : `Yeni ${formData.kind === 'receivable' ? 'Alacak' : 'Borc'}`}</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{editingDebt ? t('debts.form.editTitle') : t('debts.form.newTitle', { type: formData.kind === 'receivable' ? t('debts.receivable') : t('debts.debt') })}</h3>
               <button
                 type="button"
                 onClick={closeForm}
@@ -320,19 +322,19 @@ export function Debts() {
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Taraf *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('debts.form.party')} *</label>
                 <select value={formData.party_id} onChange={(e) => setFormData({ ...formData, party_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" required>
-                  <option value="">Secin</option>
+                  <option value="">{t('common.select')}</option>
                   {parties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Anapara *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('debts.form.principal')} *</label>
                   <input type="number" step="0.01" value={formData.principal_amount} onChange={(e) => setFormData({ ...formData, principal_amount: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" required />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Para Birimi</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('debts.form.currency')}</label>
                   <select value={formData.currency} onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'TRY' | 'USD' | 'EUR' })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
                     <option value="TRY">TRY</option>
                     <option value="USD">USD</option>
@@ -342,21 +344,21 @@ export function Debts() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Baslangic</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('debts.form.startDate')}</label>
                   <input type="date" value={formData.start_date} onChange={(e) => setFormData({ ...formData, start_date: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Vade</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('debts.form.dueDate')}</label>
                   <input type="date" value={formData.due_date} onChange={(e) => setFormData({ ...formData, due_date: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notlar</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('debts.form.notes')}</label>
                 <textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" rows={2} />
               </div>
               <div className="flex justify-end space-x-3 pt-4">
-                <button type="button" onClick={closeForm} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Iptal</button>
-                <button type="submit" className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">{editingDebt ? 'Guncelle' : 'Kaydet'}</button>
+                <button type="button" onClick={closeForm} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">{t('common.cancel')}</button>
+                <button type="submit" className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">{editingDebt ? t('common.update') : t('common.save')}</button>
               </div>
             </form>
           </div>

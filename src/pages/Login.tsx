@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../store/authStore'
 
 export function Login() {
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const { login, isLoading, error, isLoggedIn, clearError } = useAuthStore()
@@ -32,8 +34,8 @@ export function Login() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Sirket Finans Takip</h2>
-          <p className="mt-2 text-sm text-gray-600">Hesabiniza giris yapin</p>
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">{t('auth.loginTitle')}</h2>
+          <p className="mt-2 text-sm text-gray-600">{t('auth.loginSubtitle')}</p>
         </div>
 
         {/* Login Form */}
@@ -49,7 +51,7 @@ export function Login() {
             {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                E-posta Adresi
+                {t('auth.email')}
               </label>
               <input
                 id="email"
@@ -60,14 +62,14 @@ export function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="ornek@sirket.com"
+                placeholder={t('auth.emailPlaceholder')}
               />
             </div>
 
             {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Sifre
+                {t('auth.password')}
               </label>
               <input
                 id="password"
@@ -78,7 +80,7 @@ export function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="********"
+                placeholder={t('auth.passwordPlaceholder')}
               />
             </div>
 
@@ -95,7 +97,7 @@ export function Login() {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                 ) : (
-                  'Giris Yap'
+                  t('auth.login')
                 )}
               </button>
             </div>
@@ -103,15 +105,15 @@ export function Login() {
 
           {/* Demo Credentials */}
           <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-xs text-gray-500 text-center mb-3">Demo giris bilgileri:</p>
+            <p className="text-xs text-gray-500 text-center mb-3">{t('auth.demoCredentials')}</p>
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div className="bg-gray-50 p-3 rounded-md">
-                <p className="font-medium text-gray-700">Yonetici</p>
+                <p className="font-medium text-gray-700">{t('auth.admin')}</p>
                 <p className="text-gray-500">admin@sirket.com</p>
                 <p className="text-gray-500">admin123</p>
               </div>
               <div className="bg-gray-50 p-3 rounded-md">
-                <p className="font-medium text-gray-700">Personel</p>
+                <p className="font-medium text-gray-700">{t('auth.staff')}</p>
                 <p className="text-gray-500">staff@sirket.com</p>
                 <p className="text-gray-500">staff123</p>
               </div>

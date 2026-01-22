@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { formatDate } from '../utils/date'
 import type { User } from '../types'
 
 export function Users() {
+  const { t } = useTranslation()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -28,7 +30,7 @@ export function Users() {
       const result = await window.api.getUsers()
       setUsers(result as User[])
     } catch {
-      addAlert('error', 'Kullanicilar yuklenemedi')
+      addAlert('error', t('common.dataNotLoaded'))
     } finally {
       setLoading(false)
     }
@@ -60,7 +62,7 @@ export function Users() {
         }
       } else {
         if (!formData.password) {
-          addAlert('error', 'Sifre zorunludur')
+          addAlert('error', t('users.passwordRequired'))
           return
         }
         const result = await window.api.createUser(data)
@@ -73,12 +75,12 @@ export function Users() {
         }
       }
     } catch {
-      addAlert('error', 'Bir hata olustu')
+      addAlert('error', t('common.error'))
     }
   }
 
   const handleDelete = async (id: number) => {
-    const confirmed = await window.api.confirm('Bu kullaniciyi silmek istediginizden emin misiniz?')
+    const confirmed = await window.api.confirm(t('users.confirmDelete'))
     if (!confirmed) return
 
     try {
@@ -90,7 +92,7 @@ export function Users() {
         addAlert('error', result.message)
       }
     } catch {
-      addAlert('error', 'Silme islemi basarisiz')
+      addAlert('error', t('common.deleteFailed'))
     }
   }
 
@@ -104,7 +106,7 @@ export function Users() {
         addAlert('error', result.message)
       }
     } catch {
-      addAlert('error', 'Guncelleme basarisiz')
+      addAlert('error', t('users.updateFailed'))
     }
   }
 
@@ -140,7 +142,7 @@ export function Users() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Kullanicilar</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('users.title')}</h1>
         <button
           onClick={openCreateForm}
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
@@ -148,7 +150,7 @@ export function Users() {
           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          Yeni Kullanici
+          {t('users.newUser')}
         </button>
       </div>
 
@@ -157,12 +159,12 @@ export function Users() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kullanici</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">E-posta</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durum</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Son Giris</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Islemler</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.name')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.email')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('users.role')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('users.lastLogin')}</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -177,7 +179,7 @@ export function Users() {
             ) : users.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                  Kullanici bulunamadi
+                  {t('users.noUsers')}
                 </td>
               </tr>
             ) : (
@@ -200,7 +202,7 @@ export function Users() {
                     <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                       user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
                     }`}>
-                      {user.role === 'admin' ? 'Admin' : 'Personel'}
+                      {user.role === 'admin' ? t('users.admin') : t('users.staff')}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -210,7 +212,7 @@ export function Users() {
                         user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}
                     >
-                      {user.is_active ? 'Aktif' : 'Pasif'}
+                      {user.is_active ? t('common.active') : t('common.inactive')}
                     </button>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -221,13 +223,13 @@ export function Users() {
                       onClick={() => openEditForm(user)}
                       className="text-blue-600 hover:text-blue-800 mr-3"
                     >
-                      Duzenle
+                      {t('common.edit')}
                     </button>
                     <button
                       onClick={() => handleDelete(user.id)}
                       className="text-red-600 hover:text-red-800"
                     >
-                      Sil
+                      {t('common.delete')}
                     </button>
                   </td>
                 </tr>
@@ -243,7 +245,7 @@ export function Users() {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
               <h3 className="text-lg font-semibold text-gray-900">
-                {editingUser ? 'Kullanici Duzenle' : 'Yeni Kullanici'}
+                {editingUser ? t('users.editUser') : t('users.newUser')}
               </h3>
               <button
                 type="button"
@@ -257,7 +259,7 @@ export function Users() {
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Ad Soyad *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('users.fullName')} *</label>
                 <input
                   type="text"
                   value={formData.name}
@@ -267,7 +269,7 @@ export function Users() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">E-posta *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.email')} *</label>
                 <input
                   type="email"
                   value={formData.email}
@@ -278,7 +280,7 @@ export function Users() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Sifre {editingUser ? '(Bos birakirsaniz degismez)' : '*'}
+                  {t('auth.password')} {editingUser ? t('users.passwordNote') : '*'}
                 </label>
                 <input
                   type="password"
@@ -289,14 +291,14 @@ export function Users() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Rol</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('users.role')}</label>
                 <select
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'staff' })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 >
-                  <option value="staff">Personel</option>
-                  <option value="admin">Admin</option>
+                  <option value="staff">{t('users.staff')}</option>
+                  <option value="admin">{t('users.admin')}</option>
                 </select>
               </div>
               <div className="flex items-center">
@@ -308,7 +310,7 @@ export function Users() {
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700">
-                  Aktif Kullanici
+                  {t('users.activeUser')}
                 </label>
               </div>
               <div className="flex justify-end space-x-3 pt-4">
@@ -317,13 +319,13 @@ export function Users() {
                   onClick={closeForm}
                   className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
-                  Iptal
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
                 >
-                  {editingUser ? 'Guncelle' : 'Kaydet'}
+                  {editingUser ? t('common.update') : t('common.save')}
                 </button>
               </div>
             </form>

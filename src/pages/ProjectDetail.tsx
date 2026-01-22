@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { useAuthStore } from '../store/authStore'
 import { formatCurrency } from '../utils/currency'
@@ -7,6 +8,7 @@ import { formatDate } from '../utils/date'
 import type { Project, ProjectMilestone } from '../types'
 
 export function ProjectDetail() {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [project, setProject] = useState<Project & { milestones?: ProjectMilestone[] } | null>(null)
@@ -37,7 +39,7 @@ export function ProjectDetail() {
       const result = await window.api.getProject(parseInt(id))
       setProject(result as Project & { milestones?: ProjectMilestone[] })
     } catch {
-      addAlert('error', 'Veri yuklenemedi')
+      addAlert('error', t('common.dataLoadError'))
     } finally {
       setLoading(false)
     }
@@ -78,12 +80,12 @@ export function ProjectDetail() {
         }
       }
     } catch {
-      addAlert('error', 'Bir hata olustu')
+      addAlert('error', t('common.error'))
     }
   }
 
   const handleDeleteMilestone = async (milestoneId: number) => {
-    const confirmed = await window.api.confirm('Bu asamayi silmek istediginizden emin misiniz?')
+    const confirmed = await window.api.confirm(t('projectDetail.confirmDeleteMilestone'))
     if (!confirmed) return
 
     try {
@@ -95,7 +97,7 @@ export function ProjectDetail() {
         addAlert('error', result.message)
       }
     } catch {
-      addAlert('error', 'Silme islemi basarisiz')
+      addAlert('error', t('common.deleteFailed'))
     }
   }
 
@@ -141,8 +143,8 @@ export function ProjectDetail() {
   if (!project) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Proje bulunamadi</p>
-        <button onClick={() => navigate('/projects')} className="mt-4 text-blue-600 hover:text-blue-800">Geri don</button>
+        <p className="text-gray-500">{t('projectDetail.notFound')}</p>
+        <button onClick={() => navigate('/projects')} className="mt-4 text-blue-600 hover:text-blue-800">{t('common.goBack')}</button>
       </div>
     )
   }
@@ -158,7 +160,7 @@ export function ProjectDetail() {
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Geri
+            {t('common.back')}
           </button>
           <h1 className="text-2xl font-bold text-gray-900">{project.title}</h1>
           <p className="text-gray-500">{project.party_name}</p>
@@ -169,25 +171,25 @@ export function ProjectDetail() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div>
-            <p className="text-sm text-gray-500">Sozlesme Tutari</p>
+            <p className="text-sm text-gray-500">{t('projectDetail.contractAmount')}</p>
             <p className="text-2xl font-bold text-gray-900">{formatCurrency(project.contract_amount, project.currency as 'TRY' | 'USD' | 'EUR')}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Tahsilat</p>
+            <p className="text-sm text-gray-500">{t('projectDetail.collection')}</p>
             <p className="text-2xl font-bold text-green-600">{formatCurrency(project.collected_amount || 0, project.currency as 'TRY' | 'USD' | 'EUR')}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Kalan</p>
+            <p className="text-sm text-gray-500">{t('projectDetail.remaining')}</p>
             <p className="text-2xl font-bold text-orange-600">{formatCurrency(project.remaining_amount || 0, project.currency as 'TRY' | 'USD' | 'EUR')}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Bitis Tarihi</p>
+            <p className="text-sm text-gray-500">{t('projectDetail.endDate')}</p>
             <p className="text-2xl font-bold text-gray-900">{formatDate(project.end_date)}</p>
           </div>
         </div>
         <div className="mt-6">
           <div className="flex justify-between text-sm mb-1">
-            <span className="text-gray-500">Ilerleme</span>
+            <span className="text-gray-500">{t('projectDetail.progress')}</span>
             <span className="font-medium">{progress.toFixed(1)}%</span>
           </div>
           <div className="h-3 bg-gray-200 rounded-full">
@@ -199,12 +201,12 @@ export function ProjectDetail() {
       {/* Milestones */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">Proje Asamalari</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('projectDetail.milestones')}</h3>
           <button onClick={openCreateMilestoneForm} className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Asama Ekle
+            {t('projectDetail.addMilestone')}
           </button>
         </div>
         <div className="p-6">
@@ -215,7 +217,7 @@ export function ProjectDetail() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium text-gray-900">{milestone.title}</p>
-                      <p className="text-sm text-gray-500">Beklenen: {formatDate(milestone.expected_date)}</p>
+                      <p className="text-sm text-gray-500">{t('projectDetail.expected')}: {formatDate(milestone.expected_date)}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-gray-900">{formatCurrency(milestone.expected_amount, milestone.currency as 'TRY' | 'USD' | 'EUR')}</p>
@@ -224,13 +226,13 @@ export function ProjectDetail() {
                         milestone.status === 'cancelled' ? 'bg-red-100 text-red-800' :
                         'bg-yellow-100 text-yellow-800'
                       }`}>
-                        {milestone.status === 'completed' ? 'Tamamlandi' : milestone.status === 'cancelled' ? 'Iptal' : 'Bekliyor'}
+                        {milestone.status === 'completed' ? t('projectDetail.status.completed') : milestone.status === 'cancelled' ? t('projectDetail.status.cancelled') : t('projectDetail.status.pending')}
                       </span>
                     </div>
                     {isAdmin && (
                       <div className="flex items-center space-x-2 ml-4">
-                        <button onClick={() => openEditMilestoneForm(milestone)} className="text-blue-600 hover:text-blue-800 text-sm">Duzenle</button>
-                        <button onClick={() => handleDeleteMilestone(milestone.id)} className="text-red-600 hover:text-red-800 text-sm">Sil</button>
+                        <button onClick={() => openEditMilestoneForm(milestone)} className="text-blue-600 hover:text-blue-800 text-sm">{t('common.edit')}</button>
+                        <button onClick={() => handleDeleteMilestone(milestone.id)} className="text-red-600 hover:text-red-800 text-sm">{t('common.delete')}</button>
                       </div>
                     )}
                   </div>
@@ -239,7 +241,7 @@ export function ProjectDetail() {
               ))}
             </div>
           ) : (
-            <p className="text-center text-gray-500 py-4">Henuz asama eklenmemis</p>
+            <p className="text-center text-gray-500 py-4">{t('projectDetail.noMilestones')}</p>
           )}
         </div>
       </div>
@@ -249,7 +251,7 @@ export function ProjectDetail() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">{editingMilestone ? 'Asama Duzenle' : 'Yeni Asama'}</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{editingMilestone ? t('projectDetail.form.editTitle') : t('projectDetail.form.newTitle')}</h3>
               <button
                 type="button"
                 onClick={closeMilestoneForm}
@@ -262,16 +264,16 @@ export function ProjectDetail() {
             </div>
             <form onSubmit={handleMilestoneSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Baslik *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectDetail.form.title')} *</label>
                 <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" required />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Beklenen Tutar</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectDetail.form.expectedAmount')}</label>
                   <input type="number" step="0.01" value={formData.expected_amount} onChange={(e) => setFormData({ ...formData, expected_amount: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Para Birimi</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectDetail.form.currency')}</label>
                   <select value={formData.currency} onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'TRY' | 'USD' | 'EUR' })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
                     <option value="TRY">TRY</option>
                     <option value="USD">USD</option>
@@ -281,25 +283,25 @@ export function ProjectDetail() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Beklenen Tarih</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectDetail.form.expectedDate')}</label>
                   <input type="date" value={formData.expected_date} onChange={(e) => setFormData({ ...formData, expected_date: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Durum</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectDetail.form.status')}</label>
                   <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value as 'pending' | 'completed' | 'cancelled' })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                    <option value="pending">Bekliyor</option>
-                    <option value="completed">Tamamlandi</option>
-                    <option value="cancelled">Iptal</option>
+                    <option value="pending">{t('projectDetail.status.pending')}</option>
+                    <option value="completed">{t('projectDetail.status.completed')}</option>
+                    <option value="cancelled">{t('projectDetail.status.cancelled')}</option>
                   </select>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notlar</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectDetail.form.notes')}</label>
                 <textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" rows={2} />
               </div>
               <div className="flex justify-end space-x-3 pt-4">
-                <button type="button" onClick={closeMilestoneForm} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Iptal</button>
-                <button type="submit" className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">{editingMilestone ? 'Guncelle' : 'Kaydet'}</button>
+                <button type="button" onClick={closeMilestoneForm} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">{t('common.cancel')}</button>
+                <button type="submit" className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">{editingMilestone ? t('common.update') : t('common.save')}</button>
               </div>
             </form>
           </div>

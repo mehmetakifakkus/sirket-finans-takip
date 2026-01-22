@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import type { Category } from '../types'
 
 export function Categories() {
+  const { t } = useTranslation()
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -26,7 +28,7 @@ export function Categories() {
       const result = await window.api.getCategories(filterType || undefined)
       setCategories(result as Category[])
     } catch {
-      addAlert('error', 'Kategoriler yuklenemedi')
+      addAlert('error', t('categories.errors.loadFailed'))
     } finally {
       setLoading(false)
     }
@@ -56,12 +58,12 @@ export function Categories() {
         }
       }
     } catch {
-      addAlert('error', 'Bir hata olustu')
+      addAlert('error', t('common.error'))
     }
   }
 
   const handleDelete = async (id: number) => {
-    const confirmed = await window.api.confirm('Bu kategoriyi silmek istediginizden emin misiniz?')
+    const confirmed = await window.api.confirm(t('categories.confirmDelete'))
     if (!confirmed) return
 
     try {
@@ -73,7 +75,7 @@ export function Categories() {
         addAlert('error', result.message)
       }
     } catch {
-      addAlert('error', 'Silme islemi basarisiz')
+      addAlert('error', t('common.deleteFailed'))
     }
   }
 
@@ -113,12 +115,12 @@ export function Categories() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Kategoriler</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('categories.title')}</h1>
         <button onClick={openCreateForm} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          Yeni Kategori
+          {t('categories.newCategory')}
         </button>
       </div>
 
@@ -126,11 +128,11 @@ export function Categories() {
         {/* Income Categories */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-200 bg-green-50">
-            <h3 className="text-lg font-semibold text-green-800">Gelir Kategorileri</h3>
+            <h3 className="text-lg font-semibold text-green-800">{t('categories.incomeCategories')}</h3>
           </div>
           <div className="p-4">
             {incomeCategories.length === 0 ? (
-              <p className="text-center text-gray-500 py-4">Kategori yok</p>
+              <p className="text-center text-gray-500 py-4">{t('categories.noCategories')}</p>
             ) : (
               <div className="space-y-2">
                 {incomeCategories.map(c => (
@@ -140,8 +142,8 @@ export function Categories() {
                       <span className="font-medium text-gray-900">{c.name}</span>
                     </div>
                     <div>
-                      <button onClick={() => openEditForm(c)} className="text-blue-600 hover:text-blue-800 mr-2 text-sm">Duzenle</button>
-                      <button onClick={() => handleDelete(c.id)} className="text-red-600 hover:text-red-800 text-sm">Sil</button>
+                      <button onClick={() => openEditForm(c)} className="text-blue-600 hover:text-blue-800 mr-2 text-sm">{t('common.edit')}</button>
+                      <button onClick={() => handleDelete(c.id)} className="text-red-600 hover:text-red-800 text-sm">{t('common.delete')}</button>
                     </div>
                   </div>
                 ))}
@@ -153,11 +155,11 @@ export function Categories() {
         {/* Expense Categories */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-200 bg-red-50">
-            <h3 className="text-lg font-semibold text-red-800">Gider Kategorileri</h3>
+            <h3 className="text-lg font-semibold text-red-800">{t('categories.expenseCategories')}</h3>
           </div>
           <div className="p-4">
             {expenseCategories.length === 0 ? (
-              <p className="text-center text-gray-500 py-4">Kategori yok</p>
+              <p className="text-center text-gray-500 py-4">{t('categories.noCategories')}</p>
             ) : (
               <div className="space-y-2">
                 {expenseCategories.map(c => (
@@ -167,8 +169,8 @@ export function Categories() {
                       <span className="font-medium text-gray-900">{c.name}</span>
                     </div>
                     <div>
-                      <button onClick={() => openEditForm(c)} className="text-blue-600 hover:text-blue-800 mr-2 text-sm">Duzenle</button>
-                      <button onClick={() => handleDelete(c.id)} className="text-red-600 hover:text-red-800 text-sm">Sil</button>
+                      <button onClick={() => openEditForm(c)} className="text-blue-600 hover:text-blue-800 mr-2 text-sm">{t('common.edit')}</button>
+                      <button onClick={() => handleDelete(c.id)} className="text-red-600 hover:text-red-800 text-sm">{t('common.delete')}</button>
                     </div>
                   </div>
                 ))}
@@ -183,7 +185,7 @@ export function Categories() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">{editingCategory ? 'Kategori Duzenle' : 'Yeni Kategori'}</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{editingCategory ? t('categories.form.editTitle') : t('categories.form.newTitle')}</h3>
               <button
                 type="button"
                 onClick={closeForm}
@@ -196,23 +198,23 @@ export function Categories() {
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Ad *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('categories.form.name')} *</label>
                 <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" required />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tip</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('categories.form.type')}</label>
                 <select value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value as 'income' | 'expense' })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                  <option value="income">Gelir</option>
-                  <option value="expense">Gider</option>
+                  <option value="income">{t('categories.types.income')}</option>
+                  <option value="expense">{t('categories.types.expense')}</option>
                 </select>
               </div>
               <div className="flex items-center">
                 <input type="checkbox" id="is_active" checked={formData.is_active} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} className="h-4 w-4 text-blue-600 border-gray-300 rounded" />
-                <label htmlFor="is_active" className="ml-2 text-sm text-gray-700">Aktif</label>
+                <label htmlFor="is_active" className="ml-2 text-sm text-gray-700">{t('categories.form.active')}</label>
               </div>
               <div className="flex justify-end space-x-3 pt-4">
-                <button type="button" onClick={closeForm} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Iptal</button>
-                <button type="submit" className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">{editingCategory ? 'Guncelle' : 'Kaydet'}</button>
+                <button type="button" onClick={closeForm} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">{t('common.cancel')}</button>
+                <button type="submit" className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">{editingCategory ? t('common.update') : t('common.save')}</button>
               </div>
             </form>
           </div>

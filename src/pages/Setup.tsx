@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useSetupStore, SetupStep } from '../store/setupStore'
 
-const STEPS: { key: SetupStep; title: string }[] = [
-  { key: 'welcome', title: 'Hosgeldiniz' },
-  { key: 'database', title: 'Veritabani' },
-  { key: 'admin', title: 'Yonetici' },
-  { key: 'seed', title: 'Veriler' },
-  { key: 'complete', title: 'Tamamlandi' }
-]
-
 function StepIndicator({ currentStep }: { currentStep: SetupStep }) {
+  const { t } = useTranslation()
+
+  const STEPS: { key: SetupStep; title: string }[] = [
+    { key: 'welcome', title: t('setup.steps.welcome') },
+    { key: 'database', title: t('setup.steps.database') },
+    { key: 'admin', title: t('setup.steps.admin') },
+    { key: 'seed', title: t('setup.steps.seed') },
+    { key: 'complete', title: t('setup.steps.complete') }
+  ]
+
   const currentIndex = STEPS.findIndex(s => s.key === currentStep)
 
   return (
@@ -44,6 +47,8 @@ function StepIndicator({ currentStep }: { currentStep: SetupStep }) {
 }
 
 function WelcomeStep({ onNext }: { onNext: () => void }) {
+  const { t } = useTranslation()
+
   return (
     <div className="text-center">
       <div className="mx-auto h-20 w-20 bg-blue-600 rounded-lg flex items-center justify-center mb-6">
@@ -51,22 +56,22 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       </div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-4">Sirket Finans Takip</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('setup.welcome.title')}</h2>
       <p className="text-gray-600 mb-8">
-        Sirketinizin finansal islemlerini kolayca yonetmenizi saglayan bu uygulamaya hosgeldiniz.
-        Kurulum sihirbazi size veritabani olusturma ve ilk ayarlari yapma konusunda yardimci olacak.
+        {t('setup.welcome.description')}
       </p>
       <button
         onClick={onNext}
         className="w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
       >
-        Kuruluma Basla
+        {t('setup.welcome.startSetup')}
       </button>
     </div>
   )
 }
 
 function DatabaseStep() {
+  const { t } = useTranslation()
   const { initDatabase, isProcessing, error, statusMessage } = useSetupStore()
 
   useEffect(() => {
@@ -75,7 +80,7 @@ function DatabaseStep() {
 
   return (
     <div className="text-center">
-      <h3 className="text-xl font-semibold text-gray-900 mb-4">Veritabani Olusturuluyor</h3>
+      <h3 className="text-xl font-semibold text-gray-900 mb-4">{t('setup.database.title')}</h3>
 
       {isProcessing ? (
         <div className="flex flex-col items-center">
@@ -83,7 +88,7 @@ function DatabaseStep() {
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <p className="text-gray-600">{statusMessage || 'Islem devam ediyor...'}</p>
+          <p className="text-gray-600">{statusMessage || t('setup.database.processing')}</p>
         </div>
       ) : error ? (
         <div className="text-center">
@@ -97,7 +102,7 @@ function DatabaseStep() {
             onClick={() => initDatabase()}
             className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
           >
-            Tekrar Dene
+            {t('setup.database.retry')}
           </button>
         </div>
       ) : (
@@ -115,6 +120,7 @@ function DatabaseStep() {
 }
 
 function AdminStep() {
+  const { t } = useTranslation()
   const { createAdmin, isProcessing, error, adminData, clearError } = useSetupStore()
   const [useDefaults, setUseDefaults] = useState(true)
   const [customData, setCustomData] = useState({
@@ -132,15 +138,15 @@ function AdminStep() {
 
     if (!useDefaults) {
       if (!customData.name || !customData.email || !customData.password) {
-        setValidationError('Tum alanlari doldurunuz')
+        setValidationError(t('setup.admin.fillAllFields'))
         return
       }
       if (customData.password !== customData.confirmPassword) {
-        setValidationError('Sifreler eslesmiyor')
+        setValidationError(t('setup.admin.passwordMismatch'))
         return
       }
       if (customData.password.length < 6) {
-        setValidationError('Sifre en az 6 karakter olmalidir')
+        setValidationError(t('setup.admin.passwordMinLength'))
         return
       }
       await createAdmin(false, {
@@ -155,7 +161,7 @@ function AdminStep() {
 
   return (
     <div>
-      <h3 className="text-xl font-semibold text-gray-900 mb-4 text-center">Yonetici Hesabi</h3>
+      <h3 className="text-xl font-semibold text-gray-900 mb-4 text-center">{t('setup.admin.title')}</h3>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {(error || validationError) && (
@@ -173,22 +179,22 @@ function AdminStep() {
             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
           />
           <label htmlFor="useDefaults" className="text-sm text-gray-700">
-            Varsayilan bilgileri kullan
+            {t('setup.admin.useDefaults')}
           </label>
         </div>
 
         {useDefaults ? (
           <div className="bg-blue-50 p-4 rounded-lg">
-            <p className="text-sm text-blue-800 font-medium mb-2">Varsayilan Yonetici Bilgileri:</p>
-            <p className="text-sm text-blue-700">Ad: {adminData.name}</p>
-            <p className="text-sm text-blue-700">E-posta: {adminData.email}</p>
-            <p className="text-sm text-blue-700">Sifre: {adminData.password}</p>
+            <p className="text-sm text-blue-800 font-medium mb-2">{t('setup.admin.defaultInfo')}</p>
+            <p className="text-sm text-blue-700">{t('common.name')}: {adminData.name}</p>
+            <p className="text-sm text-blue-700">{t('common.email')}: {adminData.email}</p>
+            <p className="text-sm text-blue-700">{t('auth.password')}: {adminData.password}</p>
           </div>
         ) : (
           <div className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Ad Soyad
+                {t('setup.admin.fullName')}
               </label>
               <input
                 type="text"
@@ -196,12 +202,12 @@ function AdminStep() {
                 value={customData.name}
                 onChange={(e) => setCustomData({ ...customData, name: e.target.value })}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Yonetici Adi"
+                placeholder={t('setup.admin.namePlaceholder')}
               />
             </div>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                E-posta
+                {t('setup.admin.email')}
               </label>
               <input
                 type="email"
@@ -209,12 +215,12 @@ function AdminStep() {
                 value={customData.email}
                 onChange={(e) => setCustomData({ ...customData, email: e.target.value })}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="admin@sirket.com"
+                placeholder={t('setup.admin.emailPlaceholder')}
               />
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Sifre
+                {t('setup.admin.password')}
               </label>
               <input
                 type="password"
@@ -227,7 +233,7 @@ function AdminStep() {
             </div>
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Sifre Tekrar
+                {t('setup.admin.confirmPassword')}
               </label>
               <input
                 type="password"
@@ -252,10 +258,10 @@ function AdminStep() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Olusturuluyor...
+              {t('setup.admin.creating')}
             </span>
           ) : (
-            'Yonetici Olustur'
+            t('setup.admin.createAdmin')
           )}
         </button>
       </form>
@@ -264,6 +270,7 @@ function AdminStep() {
 }
 
 function SeedStep() {
+  const { t } = useTranslation()
   const { seedData, seedOptions, setSeedOptions, isProcessing, error } = useSetupStore()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -273,9 +280,9 @@ function SeedStep() {
 
   return (
     <div>
-      <h3 className="text-xl font-semibold text-gray-900 mb-4 text-center">Baslangic Verileri</h3>
+      <h3 className="text-xl font-semibold text-gray-900 mb-4 text-center">{t('setup.seed.title')}</h3>
       <p className="text-sm text-gray-600 mb-6 text-center">
-        Uygulamayi hizli baslangic icin hangi verilerin eklenmesini istediginizi secin.
+        {t('setup.seed.description')}
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -294,8 +301,8 @@ function SeedStep() {
               className="h-4 w-4 mt-0.5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
             <div>
-              <p className="text-sm font-medium text-gray-900">Kategoriler</p>
-              <p className="text-xs text-gray-500">Gelir ve gider kategorileri (Satis, Kira, Personel vb.)</p>
+              <p className="text-sm font-medium text-gray-900">{t('setup.seed.categories')}</p>
+              <p className="text-xs text-gray-500">{t('setup.seed.categoriesDesc')}</p>
             </div>
           </label>
 
@@ -307,8 +314,8 @@ function SeedStep() {
               className="h-4 w-4 mt-0.5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
             <div>
-              <p className="text-sm font-medium text-gray-900">Doviz Kurlari</p>
-              <p className="text-xs text-gray-500">Son 7 gunun USD ve EUR kurlari</p>
+              <p className="text-sm font-medium text-gray-900">{t('setup.seed.exchangeRates')}</p>
+              <p className="text-xs text-gray-500">{t('setup.seed.exchangeRatesDesc')}</p>
             </div>
           </label>
 
@@ -320,8 +327,8 @@ function SeedStep() {
               className="h-4 w-4 mt-0.5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
             <div>
-              <p className="text-sm font-medium text-gray-900">Demo Veriler</p>
-              <p className="text-xs text-gray-500">Ornek cariler, projeler, islemler ve borc/alacaklar</p>
+              <p className="text-sm font-medium text-gray-900">{t('setup.seed.demoData')}</p>
+              <p className="text-xs text-gray-500">{t('setup.seed.demoDataDesc')}</p>
             </div>
           </label>
         </div>
@@ -337,10 +344,10 @@ function SeedStep() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Ekleniyor...
+              {t('setup.seed.adding')}
             </span>
           ) : (
-            'Verileri Ekle ve Bitir'
+            t('setup.seed.addAndFinish')
           )}
         </button>
       </form>
@@ -349,6 +356,7 @@ function SeedStep() {
 }
 
 function CompleteStep() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { seedDetails, adminData } = useSetupStore()
 
@@ -364,20 +372,20 @@ function CompleteStep() {
         </svg>
       </div>
 
-      <h3 className="text-xl font-semibold text-gray-900 mb-4">Kurulum Tamamlandi!</h3>
+      <h3 className="text-xl font-semibold text-gray-900 mb-4">{t('setup.complete.title')}</h3>
       <p className="text-gray-600 mb-6">
-        Uygulama kullanima hazir. Asagidaki bilgilerle giris yapabilirsiniz.
+        {t('setup.complete.description')}
       </p>
 
       <div className="bg-blue-50 p-4 rounded-lg mb-6 text-left">
-        <p className="text-sm text-blue-800 font-medium mb-2">Giris Bilgileri:</p>
-        <p className="text-sm text-blue-700">E-posta: {adminData.email}</p>
-        <p className="text-sm text-blue-700">Sifre: {adminData.password}</p>
+        <p className="text-sm text-blue-800 font-medium mb-2">{t('setup.complete.loginInfo')}</p>
+        <p className="text-sm text-blue-700">{t('common.email')}: {adminData.email}</p>
+        <p className="text-sm text-blue-700">{t('auth.password')}: {adminData.password}</p>
       </div>
 
       {seedDetails.length > 0 && (
         <div className="bg-gray-50 p-4 rounded-lg mb-6 text-left">
-          <p className="text-sm text-gray-700 font-medium mb-2">Eklenen Veriler:</p>
+          <p className="text-sm text-gray-700 font-medium mb-2">{t('setup.complete.addedData')}</p>
           <ul className="text-sm text-gray-600 list-disc list-inside">
             {seedDetails.map((detail, index) => (
               <li key={index}>{detail}</li>
@@ -390,7 +398,7 @@ function CompleteStep() {
         onClick={handleFinish}
         className="w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
       >
-        Giris Sayfasina Git
+        {t('setup.complete.goToLogin')}
       </button>
     </div>
   )

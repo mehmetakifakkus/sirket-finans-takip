@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { useAuthStore } from '../store/authStore'
 import { formatCurrency } from '../utils/currency'
@@ -7,6 +8,7 @@ import { formatDate, getToday, getFirstDayOfMonth, getLastDayOfMonth } from '../
 import type { Transaction, Party, Category, Project } from '../types'
 
 export function Transactions() {
+  const { t } = useTranslation()
   const [searchParams] = useSearchParams()
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [parties, setParties] = useState<Party[]>([])
@@ -71,7 +73,7 @@ export function Transactions() {
       setCategories(categoriesRes as Category[])
       setProjects(projectsRes as Project[])
     } catch {
-      addAlert('error', 'Veriler yuklenemedi')
+      addAlert('error', t('common.dataNotLoaded'))
     }
   }
 
@@ -89,7 +91,7 @@ export function Transactions() {
       const result = await window.api.getTransactions(filterParams)
       setTransactions(result as Transaction[])
     } catch {
-      addAlert('error', 'Islemler yuklenemedi')
+      addAlert('error', t('common.dataNotLoaded'))
     } finally {
       setLoading(false)
     }
@@ -135,12 +137,12 @@ export function Transactions() {
         }
       }
     } catch {
-      addAlert('error', 'Bir hata olustu')
+      addAlert('error', t('common.error'))
     }
   }
 
   const handleDelete = async (id: number) => {
-    const confirmed = await window.api.confirm('Bu islemi silmek istediginizden emin misiniz?')
+    const confirmed = await window.api.confirm(t('common.confirmDelete'))
     if (!confirmed) return
 
     try {
@@ -152,7 +154,7 @@ export function Transactions() {
         addAlert('error', result.message)
       }
     } catch {
-      addAlert('error', 'Silme islemi basarisiz')
+      addAlert('error', t('common.deleteFailed'))
     }
   }
 
@@ -160,10 +162,10 @@ export function Transactions() {
     try {
       const result = await window.api.exportTransactions(filters)
       if (result.success) {
-        addAlert('success', 'CSV dosyasi olusturuldu: ' + result.path)
+        addAlert('success', t('common.csvCreated') + ': ' + result.path)
       }
     } catch {
-      addAlert('error', 'Disari aktarma basarisiz')
+      addAlert('error', t('common.exportFailed'))
     }
   }
 
@@ -212,7 +214,7 @@ export function Transactions() {
 
   const handleCreateCategory = async () => {
     if (!newCategoryName.trim()) {
-      addAlert('error', 'Kategori adi gerekli')
+      addAlert('error', t('categories.categoryRequired'))
       return
     }
 
@@ -225,7 +227,7 @@ export function Transactions() {
       })
 
       if (result.success) {
-        addAlert('success', 'Kategori olusturuldu')
+        addAlert('success', t('categories.categoryCreated'))
         const categoriesRes = await window.api.getCategories()
         setCategories(categoriesRes as Category[])
         setFormData({ ...formData, category_id: result.id.toString() })
@@ -235,13 +237,13 @@ export function Transactions() {
         addAlert('error', result.message)
       }
     } catch {
-      addAlert('error', 'Kategori olusturulamadi')
+      addAlert('error', t('common.error'))
     }
   }
 
   const handleCreateParty = async () => {
     if (!newPartyData.name.trim()) {
-      addAlert('error', 'Taraf adi gerekli')
+      addAlert('error', t('parties.partyRequired'))
       return
     }
     try {
@@ -251,7 +253,7 @@ export function Transactions() {
         tax_no: null, phone: null, email: null, address: null, notes: null
       })
       if (result.success) {
-        addAlert('success', 'Taraf olusturuldu')
+        addAlert('success', t('parties.partyCreated'))
         const partiesRes = await window.api.getParties()
         setParties(partiesRes as Party[])
         setFormData({ ...formData, party_id: result.id!.toString() })
@@ -261,17 +263,17 @@ export function Transactions() {
         addAlert('error', result.message)
       }
     } catch {
-      addAlert('error', 'Taraf olusturulamadi')
+      addAlert('error', t('common.error'))
     }
   }
 
   const handleCreateProject = async () => {
     if (!newProjectTitle.trim()) {
-      addAlert('error', 'Proje adi gerekli')
+      addAlert('error', t('common.required'))
       return
     }
     if (!formData.party_id) {
-      addAlert('error', 'Proje olusturmak icin once bir taraf secin')
+      addAlert('error', t('transactions.partySelectFirst'))
       setShowProjectForm(false)
       return
     }
@@ -284,10 +286,10 @@ export function Transactions() {
         start_date: null,
         end_date: null,
         status: 'active',
-        notes: 'Hizli olusturuldu - detaylar eksik'
+        notes: t('transactions.quickCreatedNote')
       })
       if (result.success) {
-        addAlert('success', 'Proje olusturuldu (Detaylar eksik)')
+        addAlert('success', t('transactions.projectCreatedMissingInfo'))
         const projectsRes = await window.api.getProjects()
         setProjects(projectsRes as Project[])
         setFormData({ ...formData, project_id: result.id!.toString() })
@@ -297,7 +299,7 @@ export function Transactions() {
         addAlert('error', result.message)
       }
     } catch {
-      addAlert('error', 'Proje olusturulamadi')
+      addAlert('error', t('common.error'))
     }
   }
 
@@ -317,7 +319,7 @@ export function Transactions() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Gelir / Gider Islemleri</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('transactions.title')}</h1>
         <div className="flex space-x-3">
           <button
             onClick={handleExport}
@@ -335,7 +337,7 @@ export function Transactions() {
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Gelir
+            {t('transactions.income')}
           </button>
           <button
             onClick={() => openCreateForm('expense')}
@@ -344,7 +346,7 @@ export function Transactions() {
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
             </svg>
-            Gider
+            {t('transactions.expense')}
           </button>
         </div>
       </div>
@@ -353,52 +355,52 @@ export function Transactions() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Tip</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('common.type')}</label>
             <select
               value={filters.type}
               onChange={(e) => setFilters({ ...filters, type: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
             >
-              <option value="">Tumu</option>
-              <option value="income">Gelir</option>
-              <option value="expense">Gider</option>
+              <option value="">{t('common.all')}</option>
+              <option value="income">{t('transactions.income')}</option>
+              <option value="expense">{t('transactions.expense')}</option>
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Taraf</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('transactions.party')}</label>
             <select
               value={filters.party_id}
               onChange={(e) => setFilters({ ...filters, party_id: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
             >
-              <option value="">Tumu</option>
+              <option value="">{t('common.all')}</option>
               {parties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Kategori</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('transactions.category')}</label>
             <select
               value={filters.category_id}
               onChange={(e) => setFilters({ ...filters, category_id: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
             >
-              <option value="">Tumu</option>
+              <option value="">{t('common.all')}</option>
               {categories.filter(c => c.is_active).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Proje</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('transactions.project')}</label>
             <select
               value={filters.project_id}
               onChange={(e) => setFilters({ ...filters, project_id: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
             >
-              <option value="">Tumu</option>
+              <option value="">{t('common.all')}</option>
               {projects.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Baslangic</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('transactions.startDate')}</label>
             <input
               type="date"
               value={filters.date_from}
@@ -407,7 +409,7 @@ export function Transactions() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Bitis</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('transactions.endDate')}</label>
             <input
               type="date"
               value={filters.date_to}
@@ -421,15 +423,15 @@ export function Transactions() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-          <p className="text-sm text-green-600">Toplam Gelir</p>
+          <p className="text-sm text-green-600">{t('transactions.totalIncome')}</p>
           <p className="text-xl font-bold text-green-700">{formatCurrency(totals.income, 'TRY')}</p>
         </div>
         <div className="bg-red-50 rounded-lg p-4 border border-red-200">
-          <p className="text-sm text-red-600">Toplam Gider</p>
+          <p className="text-sm text-red-600">{t('transactions.totalExpense')}</p>
           <p className="text-xl font-bold text-red-700">{formatCurrency(totals.expense, 'TRY')}</p>
         </div>
         <div className={`rounded-lg p-4 border ${totals.income - totals.expense >= 0 ? 'bg-blue-50 border-blue-200' : 'bg-orange-50 border-orange-200'}`}>
-          <p className={`text-sm ${totals.income - totals.expense >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>Bakiye</p>
+          <p className={`text-sm ${totals.income - totals.expense >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>{t('transactions.balance')}</p>
           <p className={`text-xl font-bold ${totals.income - totals.expense >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>
             {formatCurrency(totals.income - totals.expense, 'TRY')}
           </p>
@@ -446,42 +448,42 @@ export function Transactions() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tarih</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tip</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Taraf</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Tutar</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Net Tutar</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Islemler</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.date')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.type')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('transactions.category')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('transactions.party')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('common.amount')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('transactions.netAmount')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {transactions.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                    Islem bulunamadi
+                    {t('transactions.noTransactions')}
                   </td>
                 </tr>
               ) : (
-                transactions.map((t) => (
-                  <tr key={t.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(t.date)}</td>
+                transactions.map((tr) => (
+                  <tr key={tr.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(tr.date)}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                        t.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        tr.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}>
-                        {t.type === 'income' ? 'Gelir' : 'Gider'}
+                        {tr.type === 'income' ? t('transactions.income') : t('transactions.expense')}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{t.category_name || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{t.party_name || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right">{formatCurrency(t.amount, t.currency as 'TRY' | 'USD' | 'EUR')}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">{formatCurrency(t.net_amount, t.currency as 'TRY' | 'USD' | 'EUR')}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{tr.category_name || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{tr.party_name || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right">{formatCurrency(tr.amount, tr.currency as 'TRY' | 'USD' | 'EUR')}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">{formatCurrency(tr.net_amount, tr.currency as 'TRY' | 'USD' | 'EUR')}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                       {isAdmin && (
                         <>
-                          <button onClick={() => openEditForm(t)} className="text-blue-600 hover:text-blue-800 mr-3">Duzenle</button>
-                          <button onClick={() => handleDelete(t.id)} className="text-red-600 hover:text-red-800">Sil</button>
+                          <button onClick={() => openEditForm(tr)} className="text-blue-600 hover:text-blue-800 mr-3">{t('common.edit')}</button>
+                          <button onClick={() => handleDelete(tr.id)} className="text-red-600 hover:text-red-800">{t('common.delete')}</button>
                         </>
                       )}
                     </td>
@@ -499,7 +501,7 @@ export function Transactions() {
           <div className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
               <h3 className="text-lg font-semibold text-gray-900">
-                {editingTransaction ? 'Islem Duzenle' : `Yeni ${formData.type === 'income' ? 'Gelir' : 'Gider'}`}
+                {editingTransaction ? t('transactions.editTransaction') : (formData.type === 'income' ? t('transactions.newIncome') : t('transactions.newExpense'))}
               </h3>
               <button
                 type="button"
@@ -514,11 +516,11 @@ export function Transactions() {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tarih *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.date')} *</label>
                   <input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" required />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Para Birimi</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.currency')}</label>
                   <select value={formData.currency} onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'TRY' | 'USD' | 'EUR' })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
                     <option value="TRY">TRY</option>
                     <option value="USD">USD</option>
@@ -527,23 +529,23 @@ export function Transactions() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tutar *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.amount')} *</label>
                 <input type="number" step="0.01" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" required />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">KDV Orani (%)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('transactions.vatRate')}</label>
                   <input type="number" step="0.01" value={formData.vat_rate} onChange={(e) => setFormData({ ...formData, vat_rate: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
                 </div>
                 {formData.type === 'income' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Stopaj Orani (%)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('transactions.withholdingRate')}</label>
                     <input type="number" step="0.01" value={formData.withholding_rate} onChange={(e) => setFormData({ ...formData, withholding_rate: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
                   </div>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('transactions.category')}</label>
                 <select
                   value={formData.category_id}
                   onChange={(e) => {
@@ -555,13 +557,13 @@ export function Transactions() {
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 >
-                  <option value="">Secin</option>
+                  <option value="">{t('common.select')}</option>
                   {filteredCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  <option value="new">➕ Yeni Kategori Ekle</option>
+                  <option value="new">+ {t('transactions.addNewCategory')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Taraf</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('transactions.party')}</label>
                 <select
                   value={formData.party_id}
                   onChange={(e) => {
@@ -573,19 +575,19 @@ export function Transactions() {
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 >
-                  <option value="">Secin</option>
+                  <option value="">{t('common.select')}</option>
                   {parties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  <option value="new">➕ Yeni Taraf Ekle</option>
+                  <option value="new">+ {t('transactions.addNewParty')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Proje</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('transactions.project')}</label>
                 <select
                   value={formData.project_id}
                   onChange={(e) => {
                     if (e.target.value === 'new') {
                       if (!formData.party_id) {
-                        addAlert('error', 'Proje olusturmak icin once bir taraf secin')
+                        addAlert('error', t('transactions.partySelectFirst'))
                       } else {
                         setShowProjectForm(true)
                       }
@@ -595,22 +597,22 @@ export function Transactions() {
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 >
-                  <option value="">Secin</option>
+                  <option value="">{t('common.select')}</option>
                   {projects.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
-                  <option value="new">➕ Yeni Proje Ekle</option>
+                  <option value="new">+ {t('transactions.addNewProject')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Aciklama</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.description')}</label>
                 <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" rows={2} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Belge No</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('transactions.refNo')}</label>
                 <input type="text" value={formData.ref_no} onChange={(e) => setFormData({ ...formData, ref_no: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
               </div>
               <div className="flex justify-end space-x-3 pt-4">
-                <button type="button" onClick={closeForm} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Iptal</button>
-                <button type="submit" className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">{editingTransaction ? 'Guncelle' : 'Kaydet'}</button>
+                <button type="button" onClick={closeForm} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">{t('common.cancel')}</button>
+                <button type="submit" className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">{editingTransaction ? t('common.update') : t('common.save')}</button>
               </div>
             </form>
           </div>
@@ -622,7 +624,7 @@ export function Transactions() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
           <div className="bg-white rounded-lg shadow-xl max-w-sm w-full mx-4">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">Yeni Kategori</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{t('categories.newCategory')}</h3>
               <button
                 type="button"
                 onClick={() => {
@@ -638,7 +640,7 @@ export function Transactions() {
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Kategori Adi *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('categories.categoryName')} *</label>
                 <input
                   type="text"
                   value={newCategoryName}
@@ -650,12 +652,11 @@ export function Transactions() {
                     }
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Kategori adini girin"
                   autoFocus
                 />
               </div>
               <p className="text-sm text-gray-500">
-                Tip: {formData.type === 'income' ? 'Gelir' : 'Gider'} (otomatik)
+                {t('transactions.typeAuto', { type: formData.type === 'income' ? t('transactions.income') : t('transactions.expense') })}
               </p>
               <div className="flex justify-end space-x-3">
                 <button
@@ -666,14 +667,14 @@ export function Transactions() {
                   }}
                   className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
-                  Iptal
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="button"
                   onClick={handleCreateCategory}
                   className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
                 >
-                  Kaydet
+                  {t('common.save')}
                 </button>
               </div>
             </div>
@@ -686,7 +687,7 @@ export function Transactions() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
           <div className="bg-white rounded-lg shadow-xl max-w-sm w-full mx-4">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">Yeni Taraf</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{t('parties.newParty')}</h3>
               <button
                 type="button"
                 onClick={() => {
@@ -702,19 +703,19 @@ export function Transactions() {
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Taraf Tipi *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.partyType')} *</label>
                 <select
                   value={newPartyData.type}
                   onChange={(e) => setNewPartyData({ ...newPartyData, type: e.target.value as 'customer' | 'vendor' | 'other' })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="customer">Musteri</option>
-                  <option value="vendor">Tedarikci</option>
-                  <option value="other">Diger</option>
+                  <option value="customer">{t('parties.customer')}</option>
+                  <option value="vendor">{t('parties.vendor')}</option>
+                  <option value="other">{t('parties.other')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Taraf Adi *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.partyName')} *</label>
                 <input
                   type="text"
                   value={newPartyData.name}
@@ -726,12 +727,11 @@ export function Transactions() {
                     }
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Taraf adini girin"
                   autoFocus
                 />
               </div>
               <p className="text-sm text-gray-500">
-                Diger bilgileri Taraflar sayfasindan ekleyebilirsiniz.
+                {t('transactions.otherInfoFromParties')}
               </p>
               <div className="flex justify-end space-x-3">
                 <button
@@ -742,14 +742,14 @@ export function Transactions() {
                   }}
                   className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
-                  Iptal
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="button"
                   onClick={handleCreateParty}
                   className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
                 >
-                  Kaydet
+                  {t('common.save')}
                 </button>
               </div>
             </div>
@@ -762,7 +762,7 @@ export function Transactions() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
           <div className="bg-white rounded-lg shadow-xl max-w-sm w-full mx-4">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">Yeni Proje</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{t('projects.newProject')}</h3>
               <button
                 type="button"
                 onClick={() => {
@@ -778,7 +778,7 @@ export function Transactions() {
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Proje Adi *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('projects.projectName')} *</label>
                 <input
                   type="text"
                   value={newProjectTitle}
@@ -790,15 +790,14 @@ export function Transactions() {
                     }
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Proje adini girin"
                   autoFocus
                 />
               </div>
               <p className="text-sm text-gray-500">
-                Taraf: {parties.find(p => p.id.toString() === formData.party_id)?.name || '-'}
+                {t('transactions.party')}: {parties.find(p => p.id.toString() === formData.party_id)?.name || '-'}
               </p>
               <p className="text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-md">
-                Diger bilgileri (sozlesme tutari, tarihler) Projeler sayfasindan ekleyebilirsiniz.
+                {t('transactions.otherInfoFromProjects')}
               </p>
               <div className="flex justify-end space-x-3">
                 <button
@@ -809,14 +808,14 @@ export function Transactions() {
                   }}
                   className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
-                  Iptal
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="button"
                   onClick={handleCreateProject}
                   className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
                 >
-                  Kaydet
+                  {t('common.save')}
                 </button>
               </div>
             </div>

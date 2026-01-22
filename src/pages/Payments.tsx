@@ -1,18 +1,20 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { useAuthStore } from '../store/authStore'
 import { formatCurrency } from '../utils/currency'
 import { formatDate } from '../utils/date'
 import type { Payment } from '../types'
 
-const methodLabels = {
-  cash: 'Nakit',
-  bank: 'Banka Transferi',
-  card: 'Kredi Karti',
-  other: 'Diger'
-}
-
 export function Payments() {
+  const { t } = useTranslation()
+
+  const methodLabels = {
+    cash: t('payments.methods.cash'),
+    bank: t('payments.methods.bank'),
+    card: t('payments.methods.card'),
+    other: t('payments.methods.other')
+  }
   const [payments, setPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(true)
   const { addAlert } = useAppStore()
@@ -40,14 +42,14 @@ export function Payments() {
       const result = await window.api.getPayments(filterParams)
       setPayments(result as Payment[])
     } catch {
-      addAlert('error', 'Odemeler yuklenemedi')
+      addAlert('error', t('payments.errors.loadFailed'))
     } finally {
       setLoading(false)
     }
   }
 
   const handleDelete = async (id: number) => {
-    const confirmed = await window.api.confirm('Bu odemeyi silmek istediginizden emin misiniz?')
+    const confirmed = await window.api.confirm(t('payments.confirmDelete'))
     if (!confirmed) return
 
     try {
@@ -59,7 +61,7 @@ export function Payments() {
         addAlert('error', result.message)
       }
     } catch {
-      addAlert('error', 'Silme islemi basarisiz')
+      addAlert('error', t('common.deleteFailed'))
     }
   }
 
@@ -72,14 +74,14 @@ export function Payments() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Odemeler</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('payments.title')}</h1>
       </div>
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Baslangic Tarihi</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('payments.filters.startDate')}</label>
             <input
               type="date"
               value={filters.start_date}
@@ -88,7 +90,7 @@ export function Payments() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Bitis Tarihi</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('payments.filters.endDate')}</label>
             <input
               type="date"
               value={filters.end_date}
@@ -97,17 +99,17 @@ export function Payments() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Odeme Yontemi</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('payments.filters.method')}</label>
             <select
               value={filters.method}
               onChange={(e) => setFilters({ ...filters, method: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
             >
-              <option value="">Tumu</option>
-              <option value="cash">Nakit</option>
-              <option value="bank">Banka Transferi</option>
-              <option value="card">Kredi Karti</option>
-              <option value="other">Diger</option>
+              <option value="">{t('common.all')}</option>
+              <option value="cash">{t('payments.methods.cash')}</option>
+              <option value="bank">{t('payments.methods.bank')}</option>
+              <option value="card">{t('payments.methods.card')}</option>
+              <option value="other">{t('payments.methods.other')}</option>
             </select>
           </div>
           <div className="flex items-end">
@@ -115,7 +117,7 @@ export function Payments() {
               onClick={clearFilters}
               className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
             >
-              Filtreleri Temizle
+              {t('payments.clearFilters')}
             </button>
           </div>
         </div>
@@ -125,11 +127,11 @@ export function Payments() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-500">Toplam Odeme</p>
+            <p className="text-sm text-gray-500">{t('payments.totalPayment')}</p>
             <p className="text-3xl font-bold text-blue-600">{formatCurrency(totalAmount, 'TRY')}</p>
           </div>
           <div className="text-right">
-            <p className="text-sm text-gray-500">Kayit Sayisi</p>
+            <p className="text-sm text-gray-500">{t('payments.recordCount')}</p>
             <p className="text-3xl font-bold text-gray-900">{payments.length}</p>
           </div>
         </div>
@@ -140,13 +142,13 @@ export function Payments() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tarih</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Iliskili</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Tutar</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Yontem</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notlar</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('payments.table.date')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('payments.table.related')}</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('payments.table.amount')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('payments.table.method')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('payments.table.notes')}</th>
               {isAdmin && (
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Islemler</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
               )}
             </tr>
           </thead>
@@ -162,7 +164,7 @@ export function Payments() {
             ) : payments.length === 0 ? (
               <tr>
                 <td colSpan={isAdmin ? 6 : 5} className="px-6 py-12 text-center text-gray-500">
-                  Odeme kaydi bulunamadi
+                  {t('payments.noPayments')}
                 </td>
               </tr>
             ) : (
@@ -174,7 +176,7 @@ export function Payments() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">{payment.party_name || '-'}</div>
                     {payment.installment_id && (
-                      <div className="text-xs text-gray-500">Taksit #{payment.installment_id}</div>
+                      <div className="text-xs text-gray-500">{t('payments.installment')} #{payment.installment_id}</div>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
@@ -199,7 +201,7 @@ export function Payments() {
                         onClick={() => handleDelete(payment.id)}
                         className="text-red-600 hover:text-red-800"
                       >
-                        Sil
+                        {t('common.delete')}
                       </button>
                     </td>
                   )}
