@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { formatCurrency } from '../utils/currency'
 import { formatDate } from '../utils/date'
@@ -54,6 +55,7 @@ interface ProjectReport {
 }
 
 export function Reports() {
+  const { t } = useTranslation()
   const [activeReport, setActiveReport] = useState<ReportType>('summary')
   const [loading, setLoading] = useState(true)
   const { addAlert } = useAppStore()
@@ -102,7 +104,7 @@ export function Reports() {
           break
       }
     } catch {
-      addAlert('error', 'Rapor yuklenemedi')
+      addAlert('error', t('reports.reportFailed'))
     } finally {
       setLoading(false)
     }
@@ -123,7 +125,7 @@ export function Reports() {
         addAlert('error', result.message)
       }
     } catch {
-      addAlert('error', 'Export basarisiz')
+      addAlert('error', t('reports.exportFailed'))
     }
   }
 
@@ -132,7 +134,7 @@ export function Reports() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Baslangic Tarihi</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('reports.startDate')}</label>
             <input
               type="date"
               value={filters.start_date}
@@ -141,7 +143,7 @@ export function Reports() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Bitis Tarihi</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('reports.endDate')}</label>
             <input
               type="date"
               value={filters.end_date}
@@ -151,29 +153,29 @@ export function Reports() {
           </div>
           {activeReport === 'transactions' && (
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Islem Tipi</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">{t('reports.transactionType')}</label>
               <select
                 value={filters.type}
                 onChange={(e) => setFilters({ ...filters, type: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
               >
-                <option value="">Tumu</option>
-                <option value="income">Gelir</option>
-                <option value="expense">Gider</option>
+                <option value="">{t('common.all')}</option>
+                <option value="income">{t('transactions.income')}</option>
+                <option value="expense">{t('transactions.expense')}</option>
               </select>
             </div>
           )}
           {activeReport === 'debts' && (
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Tur</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">{t('reports.debtType')}</label>
               <select
                 value={filters.kind}
                 onChange={(e) => setFilters({ ...filters, kind: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
               >
-                <option value="">Tumu</option>
-                <option value="receivable">Alacak</option>
-                <option value="payable">Borc</option>
+                <option value="">{t('common.all')}</option>
+                <option value="receivable">{t('debts.receivable')}</option>
+                <option value="payable">{t('debts.debt')}</option>
               </select>
             </div>
           )}
@@ -185,7 +187,7 @@ export function Reports() {
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
-              CSV Indir
+              {t('reports.downloadCSV')}
             </button>
           </div>
         </div>
@@ -201,15 +203,15 @@ export function Reports() {
         {/* Income/Expense Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <p className="text-sm text-gray-500 mb-2">Toplam Gelir</p>
+            <p className="text-sm text-gray-500 mb-2">{t('reports.totalIncome')}</p>
             <p className="text-3xl font-bold text-green-600">{formatCurrency(summaryData.total_income, 'TRY')}</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <p className="text-sm text-gray-500 mb-2">Toplam Gider</p>
+            <p className="text-sm text-gray-500 mb-2">{t('reports.totalExpense')}</p>
             <p className="text-3xl font-bold text-red-600">{formatCurrency(summaryData.total_expense, 'TRY')}</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <p className="text-sm text-gray-500 mb-2">Net Bakiye</p>
+            <p className="text-sm text-gray-500 mb-2">{t('reports.netBalance')}</p>
             <p className={`text-3xl font-bold ${summaryData.net_balance >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
               {formatCurrency(summaryData.net_balance, 'TRY')}
             </p>
@@ -219,27 +221,27 @@ export function Reports() {
         {/* Receivables/Payables */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Alacaklar</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('reports.receivables')}</h3>
             <div className="space-y-4">
               <div className="flex justify-between">
-                <span className="text-gray-500">Toplam Alacak</span>
+                <span className="text-gray-500">{t('reports.totalReceivable')}</span>
                 <span className="font-medium text-blue-600">{formatCurrency(summaryData.total_receivables, 'TRY')}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Vadesi Gecmis</span>
+                <span className="text-gray-500">{t('reports.overdue')}</span>
                 <span className="font-medium text-red-600">{formatCurrency(summaryData.overdue_receivables, 'TRY')}</span>
               </div>
             </div>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Borclar</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('reports.payables')}</h3>
             <div className="space-y-4">
               <div className="flex justify-between">
-                <span className="text-gray-500">Toplam Borc</span>
+                <span className="text-gray-500">{t('reports.totalDebt')}</span>
                 <span className="font-medium text-orange-600">{formatCurrency(summaryData.total_payables, 'TRY')}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Vadesi Gecmis</span>
+                <span className="text-gray-500">{t('reports.overdue')}</span>
                 <span className="font-medium text-red-600">{formatCurrency(summaryData.overdue_payables, 'TRY')}</span>
               </div>
             </div>
@@ -248,22 +250,22 @@ export function Reports() {
 
         {/* Projects Summary */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Proje Ozeti</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('reports.projectSummary')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div>
-              <p className="text-sm text-gray-500">Aktif Proje</p>
+              <p className="text-sm text-gray-500">{t('reports.activeProjectCount')}</p>
               <p className="text-2xl font-bold text-gray-900">{summaryData.active_projects}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Sozlesme Toplami</p>
+              <p className="text-sm text-gray-500">{t('reports.contractTotal')}</p>
               <p className="text-2xl font-bold text-gray-900">{formatCurrency(summaryData.total_contract_value, 'TRY')}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Tahsil Edilen</p>
+              <p className="text-sm text-gray-500">{t('reports.collected')}</p>
               <p className="text-2xl font-bold text-green-600">{formatCurrency(summaryData.total_collected, 'TRY')}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Tahsilat Orani</p>
+              <p className="text-sm text-gray-500">{t('reports.collectionRate')}</p>
               <p className="text-2xl font-bold text-blue-600">
                 {summaryData.total_contract_value > 0
                   ? ((summaryData.total_collected / summaryData.total_contract_value) * 100).toFixed(1)
@@ -277,23 +279,23 @@ export function Reports() {
   }
 
   const renderTransactionReport = () => {
-    const totalIncome = transactionData.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0)
-    const totalExpense = transactionData.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0)
+    const totalIncome = transactionData.filter(tr => tr.type === 'income').reduce((sum, tr) => sum + tr.amount, 0)
+    const totalExpense = transactionData.filter(tr => tr.type === 'expense').reduce((sum, tr) => sum + tr.amount, 0)
 
     return (
       <div className="space-y-6">
         {/* Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">Toplam Gelir</p>
+            <p className="text-sm text-gray-500">{t('reports.totalIncome')}</p>
             <p className="text-2xl font-bold text-green-600">{formatCurrency(totalIncome, 'TRY')}</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">Toplam Gider</p>
+            <p className="text-sm text-gray-500">{t('reports.totalExpense')}</p>
             <p className="text-2xl font-bold text-red-600">{formatCurrency(totalExpense, 'TRY')}</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">Kayit Sayisi</p>
+            <p className="text-sm text-gray-500">{t('reports.recordCount')}</p>
             <p className="text-2xl font-bold text-gray-900">{transactionData.length}</p>
           </div>
         </div>
@@ -303,34 +305,34 @@ export function Reports() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tarih</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tip</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Taraf</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Tutar</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.date')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.type')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('transactions.party')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('transactions.category')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('common.amount')}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {transactionData.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">Kayit bulunamadi</td>
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">{t('common.noRecords')}</td>
                 </tr>
               ) : (
-                transactionData.map((t) => (
-                  <tr key={t.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(t.date)}</td>
+                transactionData.map((tr) => (
+                  <tr key={tr.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(tr.date)}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                        t.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        tr.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}>
-                        {t.type === 'income' ? 'Gelir' : 'Gider'}
+                        {tr.type === 'income' ? t('transactions.income') : t('transactions.expense')}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{t.party_name || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{t.category_name || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{tr.party_name || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{tr.category_name || '-'}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
-                      <span className={t.type === 'income' ? 'text-green-600' : 'text-red-600'}>
-                        {formatCurrency(t.amount, t.currency as 'TRY' | 'USD' | 'EUR')}
+                      <span className={tr.type === 'income' ? 'text-green-600' : 'text-red-600'}>
+                        {formatCurrency(tr.amount, tr.currency as 'TRY' | 'USD' | 'EUR')}
                       </span>
                     </td>
                   </tr>
@@ -352,15 +354,15 @@ export function Reports() {
         {/* Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">Toplam Alacak</p>
+            <p className="text-sm text-gray-500">{t('reports.totalReceivable')}</p>
             <p className="text-2xl font-bold text-blue-600">{formatCurrency(totalReceivables, 'TRY')}</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">Toplam Borc</p>
+            <p className="text-sm text-gray-500">{t('reports.totalDebt')}</p>
             <p className="text-2xl font-bold text-orange-600">{formatCurrency(totalPayables, 'TRY')}</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">Kayit Sayisi</p>
+            <p className="text-sm text-gray-500">{t('reports.recordCount')}</p>
             <p className="text-2xl font-bold text-gray-900">{debtData.length}</p>
           </div>
         </div>
@@ -370,18 +372,18 @@ export function Reports() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Taraf</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tur</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Anapara</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Odenen</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Kalan</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vade</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('transactions.party')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.type')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('debts.principal')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('debts.paid')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('debts.remaining')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('debts.dueDate')}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {debtData.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">Kayit bulunamadi</td>
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">{t('common.noRecords')}</td>
                 </tr>
               ) : (
                 debtData.map((d) => (
@@ -391,7 +393,7 @@ export function Reports() {
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                         d.kind === 'receivable' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'
                       }`}>
-                        {d.kind === 'receivable' ? 'Alacak' : 'Borc'}
+                        {d.kind === 'receivable' ? t('debts.receivable') : t('debts.debt')}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
@@ -423,15 +425,15 @@ export function Reports() {
         {/* Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">Toplam Sozlesme</p>
+            <p className="text-sm text-gray-500">{t('reports.totalContract')}</p>
             <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalContract, 'TRY')}</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">Tahsil Edilen</p>
+            <p className="text-sm text-gray-500">{t('reports.collected')}</p>
             <p className="text-2xl font-bold text-green-600">{formatCurrency(totalCollected, 'TRY')}</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">Proje Sayisi</p>
+            <p className="text-sm text-gray-500">{t('reports.projectCount')}</p>
             <p className="text-2xl font-bold text-gray-900">{projectData.length}</p>
           </div>
         </div>
@@ -441,18 +443,18 @@ export function Reports() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Proje</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Musteri</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Sozlesme</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Tahsilat</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Kalan</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durum</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('projects.projectName')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('projects.customer')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('projects.contractAmount')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('projects.collection')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('projects.remainingAmount')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {projectData.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">Kayit bulunamadi</td>
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">{t('common.noRecords')}</td>
                 </tr>
               ) : (
                 projectData.map((p) => (
@@ -475,9 +477,9 @@ export function Reports() {
                         p.status === 'on_hold' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-red-100 text-red-800'
                       }`}>
-                        {p.status === 'active' ? 'Aktif' :
-                         p.status === 'completed' ? 'Tamamlandi' :
-                         p.status === 'on_hold' ? 'Beklemede' : 'Iptal'}
+                        {p.status === 'active' ? t('projects.active') :
+                         p.status === 'completed' ? t('projects.completed') :
+                         p.status === 'on_hold' ? t('projects.onHold') : t('projects.cancelled')}
                       </span>
                     </td>
                   </tr>
@@ -493,7 +495,7 @@ export function Reports() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Raporlar</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('reports.title')}</h1>
       </div>
 
       {/* Report Tabs */}
@@ -507,7 +509,7 @@ export function Reports() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Ozet Rapor
+            {t('reports.summaryReport')}
           </button>
           <button
             onClick={() => setActiveReport('transactions')}
@@ -517,7 +519,7 @@ export function Reports() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Islem Raporu
+            {t('reports.transactionReport')}
           </button>
           <button
             onClick={() => setActiveReport('debts')}
@@ -527,7 +529,7 @@ export function Reports() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Borc/Alacak Raporu
+            {t('reports.debtReport')}
           </button>
           <button
             onClick={() => setActiveReport('projects')}
@@ -537,7 +539,7 @@ export function Reports() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Proje Raporu
+            {t('reports.projectReport')}
           </button>
         </nav>
       </div>

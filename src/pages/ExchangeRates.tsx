@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { formatDate, getToday } from '../utils/date'
 import type { ExchangeRate } from '../types'
 
 export function ExchangeRates() {
+  const { t } = useTranslation()
   const [rates, setRates] = useState<ExchangeRate[]>([])
   const [latestRates, setLatestRates] = useState<Record<string, { rate: number; date: string }>>({})
   const [loading, setLoading] = useState(true)
@@ -31,7 +33,7 @@ export function ExchangeRates() {
       setRates(ratesRes as ExchangeRate[])
       setLatestRates(latestRes as Record<string, { rate: number; date: string }>)
     } catch {
-      addAlert('error', 'Veriler yuklenemedi')
+      addAlert('error', t('common.dataNotLoaded'))
     } finally {
       setLoading(false)
     }
@@ -48,7 +50,7 @@ export function ExchangeRates() {
         addAlert('error', result.message)
       }
     } catch {
-      addAlert('error', 'TCMB verilerine ulasilamadi')
+      addAlert('error', t('exchangeRates.tcmbFailed'))
     } finally {
       setFetchingTCMB(false)
     }
@@ -84,12 +86,12 @@ export function ExchangeRates() {
         }
       }
     } catch {
-      addAlert('error', 'Bir hata olustu')
+      addAlert('error', t('common.error'))
     }
   }
 
   const handleDelete = async (id: number) => {
-    const confirmed = await window.api.confirm('Bu kuru silmek istediginizden emin misiniz?')
+    const confirmed = await window.api.confirm(t('exchangeRates.confirmDelete'))
     if (!confirmed) return
 
     try {
@@ -101,7 +103,7 @@ export function ExchangeRates() {
         addAlert('error', result.message)
       }
     } catch {
-      addAlert('error', 'Silme islemi basarisiz')
+      addAlert('error', t('common.deleteFailed'))
     }
   }
 
@@ -137,7 +139,7 @@ export function ExchangeRates() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Doviz Kurlari</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('exchangeRates.title')}</h1>
         <div className="flex space-x-3">
           <button
             onClick={handleFetchTCMB}
@@ -154,13 +156,13 @@ export function ExchangeRates() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             )}
-            TCMB'den Cek
+            {t('exchangeRates.fetchFromTCMB')}
           </button>
           <button onClick={openCreateForm} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Manuel Ekle
+            {t('exchangeRates.manualAdd')}
           </button>
         </div>
       </div>
@@ -200,22 +202,22 @@ export function ExchangeRates() {
       {/* Rate History */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Kur Gecmisi</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('exchangeRates.rateHistory')}</h3>
         </div>
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tarih</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Para Birimi</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Kur</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kaynak</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Islemler</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.date')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.currency')}</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('exchangeRates.rate')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('exchangeRates.source')}</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {rates.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-gray-500">Kur kaydi yok</td>
+                <td colSpan={5} className="px-6 py-12 text-center text-gray-500">{t('exchangeRates.noRates')}</td>
               </tr>
             ) : (
               rates.slice(0, 50).map((rate) => (
@@ -227,10 +229,10 @@ export function ExchangeRates() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono">{rate.rate.toFixed(4)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{rate.source === 'tcmb' ? 'TCMB' : 'Manuel'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{rate.source === 'tcmb' ? t('exchangeRates.tcmb') : t('exchangeRates.manual')}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                    <button onClick={() => openEditForm(rate)} className="text-blue-600 hover:text-blue-800 mr-3">Duzenle</button>
-                    <button onClick={() => handleDelete(rate.id)} className="text-red-600 hover:text-red-800">Sil</button>
+                    <button onClick={() => openEditForm(rate)} className="text-blue-600 hover:text-blue-800 mr-3">{t('common.edit')}</button>
+                    <button onClick={() => handleDelete(rate.id)} className="text-red-600 hover:text-red-800">{t('common.delete')}</button>
                   </td>
                 </tr>
               ))
@@ -244,7 +246,7 @@ export function ExchangeRates() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">{editingRate ? 'Kur Duzenle' : 'Yeni Kur'}</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{editingRate ? t('exchangeRates.editRate') : t('exchangeRates.newRate')}</h3>
               <button
                 type="button"
                 onClick={closeForm}
@@ -257,23 +259,23 @@ export function ExchangeRates() {
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tarih *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.date')} *</label>
                 <input type="date" value={formData.rate_date} onChange={(e) => setFormData({ ...formData, rate_date: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" required />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Para Birimi</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.currency')}</label>
                 <select value={formData.quote_currency} onChange={(e) => setFormData({ ...formData, quote_currency: e.target.value as 'USD' | 'EUR' })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
                   <option value="USD">USD</option>
                   <option value="EUR">EUR</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Kur (1 {formData.quote_currency} = ? TRY) *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('exchangeRates.rateLabel', { currency: formData.quote_currency })} *</label>
                 <input type="number" step="0.0001" value={formData.rate} onChange={(e) => setFormData({ ...formData, rate: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" required />
               </div>
               <div className="flex justify-end space-x-3 pt-4">
-                <button type="button" onClick={closeForm} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Iptal</button>
-                <button type="submit" className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">{editingRate ? 'Guncelle' : 'Kaydet'}</button>
+                <button type="button" onClick={closeForm} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">{t('common.cancel')}</button>
+                <button type="submit" className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">{editingRate ? t('common.update') : t('common.save')}</button>
               </div>
             </form>
           </div>

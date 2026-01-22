@@ -1,7 +1,9 @@
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../../store/authStore'
 import { useNavigate } from 'react-router-dom'
 
 export function Topbar() {
+  const { t } = useTranslation()
   const { user, logout } = useAuthStore()
   const navigate = useNavigate()
 
@@ -29,9 +31,9 @@ export function Topbar() {
 
             {/* User details */}
             <div className="hidden md:block">
-              <p className="text-sm font-medium text-gray-700">{user?.name || 'Kullanici'}</p>
+              <p className="text-sm font-medium text-gray-700">{user?.name || t('auth.user')}</p>
               <p className="text-xs text-gray-500">
-                {user?.role === 'admin' ? 'Yonetici' : 'Personel'}
+                {user?.role === 'admin' ? t('roles.admin') : t('roles.staff')}
               </p>
             </div>
           </div>
@@ -54,7 +56,7 @@ export function Topbar() {
                 d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
               />
             </svg>
-            Cikis
+            {t('auth.logout')}
           </button>
         </div>
       </div>

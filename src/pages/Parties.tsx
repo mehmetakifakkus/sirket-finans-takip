@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { useAuthStore } from '../store/authStore'
 import type { Party } from '../types'
 
-const partyTypes = {
-  customer: 'Musteri',
-  vendor: 'Tedarikci',
-  other: 'Diger'
-}
-
 export function Parties() {
+  const { t } = useTranslation()
+
+  const partyTypes = {
+    customer: t('parties.types.customer'),
+    vendor: t('parties.types.vendor'),
+    other: t('parties.types.other')
+  }
   const [parties, setParties] = useState<Party[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -39,7 +41,7 @@ export function Parties() {
       const result = await window.api.getParties(filters)
       setParties(result as Party[])
     } catch {
-      addAlert('error', 'Taraflar yuklenemedi')
+      addAlert('error', t('parties.errors.loadFailed'))
     } finally {
       setLoading(false)
     }
@@ -69,12 +71,12 @@ export function Parties() {
         }
       }
     } catch {
-      addAlert('error', 'Bir hata olustu')
+      addAlert('error', t('common.error'))
     }
   }
 
   const handleDelete = async (id: number) => {
-    const confirmed = await window.api.confirm('Bu tarafi silmek istediginizden emin misiniz?')
+    const confirmed = await window.api.confirm(t('parties.confirmDelete'))
     if (!confirmed) return
 
     try {
@@ -86,7 +88,7 @@ export function Parties() {
         addAlert('error', result.message)
       }
     } catch {
-      addAlert('error', 'Silme islemi basarisiz')
+      addAlert('error', t('common.deleteFailed'))
     }
   }
 
@@ -135,7 +137,7 @@ export function Parties() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Taraflar</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('parties.title')}</h1>
         <button
           onClick={openCreateForm}
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
@@ -143,23 +145,23 @@ export function Parties() {
           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          Yeni Taraf
+          {t('parties.newParty')}
         </button>
       </div>
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div className="flex items-center space-x-4">
-          <label className="text-sm font-medium text-gray-700">Tip:</label>
+          <label className="text-sm font-medium text-gray-700">{t('parties.filters.type')}:</label>
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-md text-sm"
           >
-            <option value="">Tumu</option>
-            <option value="customer">Musteri</option>
-            <option value="vendor">Tedarikci</option>
-            <option value="other">Diger</option>
+            <option value="">{t('common.all')}</option>
+            <option value="customer">{t('parties.types.customer')}</option>
+            <option value="vendor">{t('parties.types.vendor')}</option>
+            <option value="other">{t('parties.types.other')}</option>
           </select>
         </div>
       </div>
@@ -169,19 +171,19 @@ export function Parties() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ad</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tip</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vergi No</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Telefon</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">E-posta</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Islemler</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('parties.table.name')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('parties.table.type')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('parties.table.taxNo')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('parties.table.phone')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('parties.table.email')}</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {parties.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                  Henuz taraf kaydi yok
+                  {t('parties.noParties')}
                 </td>
               </tr>
             ) : (
@@ -209,13 +211,13 @@ export function Parties() {
                           onClick={() => openEditForm(party)}
                           className="text-blue-600 hover:text-blue-800 mr-3"
                         >
-                          Duzenle
+                          {t('common.edit')}
                         </button>
                         <button
                           onClick={() => handleDelete(party.id)}
                           className="text-red-600 hover:text-red-800"
                         >
-                          Sil
+                          {t('common.delete')}
                         </button>
                       </>
                     )}
@@ -233,7 +235,7 @@ export function Parties() {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
               <h3 className="text-lg font-semibold text-gray-900">
-                {editingParty ? 'Taraf Duzenle' : 'Yeni Taraf'}
+                {editingParty ? t('parties.form.editTitle') : t('parties.form.newTitle')}
               </h3>
               <button
                 type="button"
@@ -247,20 +249,20 @@ export function Parties() {
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tip</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.form.type')}</label>
                 <select
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value as 'customer' | 'vendor' | 'other' })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   required
                 >
-                  <option value="customer">Musteri</option>
-                  <option value="vendor">Tedarikci</option>
-                  <option value="other">Diger</option>
+                  <option value="customer">{t('parties.types.customer')}</option>
+                  <option value="vendor">{t('parties.types.vendor')}</option>
+                  <option value="other">{t('parties.types.other')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Ad *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.form.name')} *</label>
                 <input
                   type="text"
                   value={formData.name}
@@ -270,7 +272,7 @@ export function Parties() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Vergi No</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.form.taxNo')}</label>
                 <input
                   type="text"
                   value={formData.tax_no}
@@ -279,7 +281,7 @@ export function Parties() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.form.phone')}</label>
                 <input
                   type="text"
                   value={formData.phone}
@@ -288,7 +290,7 @@ export function Parties() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.form.email')}</label>
                 <input
                   type="email"
                   value={formData.email}
@@ -297,7 +299,7 @@ export function Parties() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Adres</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.form.address')}</label>
                 <textarea
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
@@ -306,7 +308,7 @@ export function Parties() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notlar</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.form.notes')}</label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
@@ -320,13 +322,13 @@ export function Parties() {
                   onClick={closeForm}
                   className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
-                  Iptal
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
                 >
-                  {editingParty ? 'Guncelle' : 'Kaydet'}
+                  {editingParty ? t('common.update') : t('common.save')}
                 </button>
               </div>
             </form>

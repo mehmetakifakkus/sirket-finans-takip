@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { useAuthStore } from '../store/authStore'
 import { formatCurrency } from '../utils/currency'
@@ -7,6 +8,7 @@ import { formatDate, getToday, isOverdue } from '../utils/date'
 import type { Debt, Installment } from '../types'
 
 export function DebtDetail() {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [debt, setDebt] = useState<Debt | null>(null)
@@ -38,7 +40,7 @@ export function DebtDetail() {
       const result = await window.api.getDebt(parseInt(id))
       setDebt(result as Debt)
     } catch {
-      addAlert('error', 'Veri yuklenemedi')
+      addAlert('error', t('common.dataLoadError'))
     } finally {
       setLoading(false)
     }
@@ -57,7 +59,7 @@ export function DebtDetail() {
         addAlert('error', result.message)
       }
     } catch {
-      addAlert('error', 'Taksitler olusturulamadi')
+      addAlert('error', t('debtDetail.errors.installmentsCreateFailed'))
     }
   }
 
@@ -80,12 +82,12 @@ export function DebtDetail() {
         addAlert('error', result.message)
       }
     } catch {
-      addAlert('error', 'Odeme eklenemedi')
+      addAlert('error', t('debtDetail.errors.paymentFailed'))
     }
   }
 
   const handleDeleteInstallment = async (installmentId: number) => {
-    const confirmed = await window.api.confirm('Bu taksiti silmek istediginizden emin misiniz?')
+    const confirmed = await window.api.confirm(t('debtDetail.confirmDeleteInstallment'))
     if (!confirmed) return
 
     try {
@@ -97,7 +99,7 @@ export function DebtDetail() {
         addAlert('error', result.message)
       }
     } catch {
-      addAlert('error', 'Silme islemi basarisiz')
+      addAlert('error', t('common.deleteFailed'))
     }
   }
 
@@ -128,8 +130,8 @@ export function DebtDetail() {
   if (!debt) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Kayit bulunamadi</p>
-        <button onClick={() => navigate('/debts')} className="mt-4 text-blue-600 hover:text-blue-800">Geri don</button>
+        <p className="text-gray-500">{t('common.noRecords')}</p>
+        <button onClick={() => navigate('/debts')} className="mt-4 text-blue-600 hover:text-blue-800">{t('common.goBack')}</button>
       </div>
     )
   }
@@ -145,11 +147,11 @@ export function DebtDetail() {
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Geri
+            {t('common.back')}
           </button>
           <h1 className="text-2xl font-bold text-gray-900">{debt.party_name}</h1>
           <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${debt.kind === 'receivable' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}`}>
-            {debt.kind === 'receivable' ? 'Alacak' : 'Borc'}
+            {debt.kind === 'receivable' ? t('debts.receivable') : t('debts.debt')}
           </span>
         </div>
       </div>
@@ -158,25 +160,25 @@ export function DebtDetail() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div>
-            <p className="text-sm text-gray-500">Anapara</p>
+            <p className="text-sm text-gray-500">{t('debtDetail.principal')}</p>
             <p className="text-2xl font-bold text-gray-900">{formatCurrency(debt.principal_amount, debt.currency as 'TRY' | 'USD' | 'EUR')}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Odenen</p>
+            <p className="text-sm text-gray-500">{t('debtDetail.paid')}</p>
             <p className="text-2xl font-bold text-green-600">{formatCurrency(debt.total_paid || 0, debt.currency as 'TRY' | 'USD' | 'EUR')}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Kalan</p>
+            <p className="text-sm text-gray-500">{t('debtDetail.remaining')}</p>
             <p className="text-2xl font-bold text-orange-600">{formatCurrency(debt.remaining_amount || 0, debt.currency as 'TRY' | 'USD' | 'EUR')}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Vade</p>
+            <p className="text-sm text-gray-500">{t('debtDetail.dueDate')}</p>
             <p className={`text-2xl font-bold ${isOverdue(debt.due_date) ? 'text-red-600' : 'text-gray-900'}`}>{formatDate(debt.due_date)}</p>
           </div>
         </div>
         <div className="mt-6">
           <div className="flex justify-between text-sm mb-1">
-            <span className="text-gray-500">Ilerleme</span>
+            <span className="text-gray-500">{t('debtDetail.progress')}</span>
             <span className="font-medium">{progress.toFixed(1)}%</span>
           </div>
           <div className="h-3 bg-gray-200 rounded-full">
@@ -188,13 +190,13 @@ export function DebtDetail() {
       {/* Installments */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">Taksitler</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('debtDetail.installments')}</h3>
           {debt.installments?.length === 0 && (
             <button onClick={() => setShowInstallmentForm(true)} className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Taksit Olustur
+              {t('debtDetail.createInstallment')}
             </button>
           )}
         </div>
@@ -205,14 +207,14 @@ export function DebtDetail() {
                 <div key={installment.id} className={`p-4 rounded-lg border ${isOverdue(installment.due_date) && installment.status !== 'paid' ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="font-medium text-gray-900">Taksit {index + 1}</span>
+                      <span className="font-medium text-gray-900">{t('debtDetail.installmentNumber', { number: index + 1 })}</span>
                       <p className={`text-sm ${isOverdue(installment.due_date) && installment.status !== 'paid' ? 'text-red-600' : 'text-gray-500'}`}>
-                        Vade: {formatDate(installment.due_date)}
+                        {t('debtDetail.dueDate')}: {formatDate(installment.due_date)}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-gray-900">{formatCurrency(installment.amount, installment.currency as 'TRY' | 'USD' | 'EUR')}</p>
-                      <p className="text-sm text-green-600">Odenen: {formatCurrency(installment.paid_amount, installment.currency as 'TRY' | 'USD' | 'EUR')}</p>
+                      <p className="text-sm text-green-600">{t('debtDetail.paid')}: {formatCurrency(installment.paid_amount, installment.currency as 'TRY' | 'USD' | 'EUR')}</p>
                     </div>
                     <div className="flex items-center space-x-3">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
@@ -220,13 +222,13 @@ export function DebtDetail() {
                         installment.status === 'partial' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-gray-100 text-gray-800'
                       }`}>
-                        {installment.status === 'paid' ? 'Odendi' : installment.status === 'partial' ? 'Kismi' : 'Bekliyor'}
+                        {installment.status === 'paid' ? t('debtDetail.status.paid') : installment.status === 'partial' ? t('debtDetail.status.partial') : t('debtDetail.status.pending')}
                       </span>
                       {installment.status !== 'paid' && (
-                        <button onClick={() => openPaymentForm(installment)} className="text-blue-600 hover:text-blue-800 text-sm">Odeme Yap</button>
+                        <button onClick={() => openPaymentForm(installment)} className="text-blue-600 hover:text-blue-800 text-sm">{t('debtDetail.makePayment')}</button>
                       )}
                       {isAdmin && (
-                        <button onClick={() => handleDeleteInstallment(installment.id)} className="text-red-600 hover:text-red-800 text-sm">Sil</button>
+                        <button onClick={() => handleDeleteInstallment(installment.id)} className="text-red-600 hover:text-red-800 text-sm">{t('common.delete')}</button>
                       )}
                     </div>
                   </div>
@@ -234,7 +236,7 @@ export function DebtDetail() {
               ))}
             </div>
           ) : (
-            <p className="text-center text-gray-500 py-4">Henuz taksit olusturulmamis</p>
+            <p className="text-center text-gray-500 py-4">{t('debtDetail.noInstallments')}</p>
           )}
         </div>
       </div>
@@ -242,7 +244,7 @@ export function DebtDetail() {
       {/* Notes */}
       {debt.notes && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Notlar</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('debtDetail.notes')}</h3>
           <p className="text-gray-600">{debt.notes}</p>
         </div>
       )}
@@ -252,7 +254,7 @@ export function DebtDetail() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">Taksit Olustur</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{t('debtDetail.createInstallment')}</h3>
               <button
                 type="button"
                 onClick={() => setShowInstallmentForm(false)}
@@ -265,13 +267,13 @@ export function DebtDetail() {
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Taksit Sayisi</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('debtDetail.installmentCount')}</label>
                 <input type="number" min="1" value={installmentCount} onChange={(e) => setInstallmentCount(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
               </div>
-              <p className="text-sm text-gray-500">Aylik taksit tutari: {formatCurrency(debt.principal_amount / parseInt(installmentCount || '1'), debt.currency as 'TRY' | 'USD' | 'EUR')}</p>
+              <p className="text-sm text-gray-500">{t('debtDetail.monthlyAmount')}: {formatCurrency(debt.principal_amount / parseInt(installmentCount || '1'), debt.currency as 'TRY' | 'USD' | 'EUR')}</p>
               <div className="flex justify-end space-x-3 pt-4">
-                <button onClick={() => setShowInstallmentForm(false)} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Iptal</button>
-                <button onClick={handleCreateInstallments} className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">Olustur</button>
+                <button onClick={() => setShowInstallmentForm(false)} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">{t('common.cancel')}</button>
+                <button onClick={handleCreateInstallments} className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">{t('common.create')}</button>
               </div>
             </div>
           </div>
@@ -283,7 +285,7 @@ export function DebtDetail() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">Odeme Yap</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{t('debtDetail.makePayment')}</h3>
               <button
                 type="button"
                 onClick={closePaymentForm}
@@ -296,29 +298,29 @@ export function DebtDetail() {
             </div>
             <form onSubmit={handlePayment} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tutar *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('debtDetail.paymentForm.amount')} *</label>
                 <input type="number" step="0.01" value={paymentData.amount} onChange={(e) => setPaymentData({ ...paymentData, amount: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" required />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tarih *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('debtDetail.paymentForm.date')} *</label>
                 <input type="date" value={paymentData.date} onChange={(e) => setPaymentData({ ...paymentData, date: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" required />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Yontem</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('debtDetail.paymentForm.method')}</label>
                 <select value={paymentData.method} onChange={(e) => setPaymentData({ ...paymentData, method: e.target.value as 'cash' | 'bank' | 'card' | 'other' })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                  <option value="bank">Banka Transferi</option>
-                  <option value="cash">Nakit</option>
-                  <option value="card">Kredi Karti</option>
-                  <option value="other">Diger</option>
+                  <option value="bank">{t('debtDetail.paymentForm.methods.bank')}</option>
+                  <option value="cash">{t('debtDetail.paymentForm.methods.cash')}</option>
+                  <option value="card">{t('debtDetail.paymentForm.methods.card')}</option>
+                  <option value="other">{t('debtDetail.paymentForm.methods.other')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notlar</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('debtDetail.paymentForm.notes')}</label>
                 <textarea value={paymentData.notes} onChange={(e) => setPaymentData({ ...paymentData, notes: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" rows={2} />
               </div>
               <div className="flex justify-end space-x-3 pt-4">
-                <button type="button" onClick={closePaymentForm} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Iptal</button>
-                <button type="submit" className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">Odeme Yap</button>
+                <button type="button" onClick={closePaymentForm} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">{t('common.cancel')}</button>
+                <button type="submit" className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">{t('debtDetail.makePayment')}</button>
               </div>
             </form>
           </div>

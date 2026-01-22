@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '../utils/currency'
 import { formatDate, isOverdue } from '../utils/date'
 import type { DashboardData, Transaction, Installment, Project } from '../types'
 
 export function Dashboard() {
+  const { t } = useTranslation()
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -34,7 +36,7 @@ export function Dashboard() {
   if (!data) {
     return (
       <div className="text-center py-12 text-gray-500">
-        Veriler yuklenemedi. Lutfen sayfayi yenileyin.
+        {t('common.dataNotLoaded')}
       </div>
     )
   }
@@ -42,7 +44,7 @@ export function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Page Title */}
-      <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+      <h1 className="text-2xl font-bold text-gray-900">{t('dashboard.title')}</h1>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -55,7 +57,7 @@ export function Dashboard() {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Bu Ay Gelir</p>
+              <p className="text-sm font-medium text-gray-500">{t('dashboard.monthlyIncome')}</p>
               <p className="text-xl font-semibold text-green-600">{formatCurrency(data.monthly_income, 'TRY')}</p>
             </div>
           </div>
@@ -70,7 +72,7 @@ export function Dashboard() {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Bu Ay Gider</p>
+              <p className="text-sm font-medium text-gray-500">{t('dashboard.monthlyExpense')}</p>
               <p className="text-xl font-semibold text-red-600">{formatCurrency(data.monthly_expense, 'TRY')}</p>
             </div>
           </div>
@@ -85,7 +87,7 @@ export function Dashboard() {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Toplam Alacak</p>
+              <p className="text-sm font-medium text-gray-500">{t('dashboard.totalReceivable')}</p>
               <p className="text-xl font-semibold text-blue-600">{formatCurrency(data.total_receivable, 'TRY')}</p>
             </div>
           </div>
@@ -100,7 +102,7 @@ export function Dashboard() {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Toplam Borc</p>
+              <p className="text-sm font-medium text-gray-500">{t('dashboard.totalDebt')}</p>
               <p className="text-xl font-semibold text-orange-600">{formatCurrency(data.total_debt, 'TRY')}</p>
             </div>
           </div>
@@ -111,20 +113,20 @@ export function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Monthly Balance */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Aylik Bakiye</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('dashboard.monthlyBalance')}</h3>
           <div className={`text-3xl font-bold ${data.monthly_balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
             {formatCurrency(data.monthly_balance, 'TRY')}
           </div>
-          <p className="text-sm text-gray-500 mt-2">Gelir - Gider</p>
+          <p className="text-sm text-gray-500 mt-2">{t('dashboard.incomeMinusExpense')}</p>
         </div>
 
         {/* Net Position */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Net Pozisyon</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('dashboard.netPosition')}</h3>
           <div className={`text-3xl font-bold ${data.net_position >= 0 ? 'text-green-600' : 'text-red-600'}`}>
             {formatCurrency(data.net_position, 'TRY')}
           </div>
-          <p className="text-sm text-gray-500 mt-2">Alacak - Borc</p>
+          <p className="text-sm text-gray-500 mt-2">{t('dashboard.receivableMinusDebt')}</p>
         </div>
       </div>
 
@@ -138,7 +140,7 @@ export function Dashboard() {
                 <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
-                Vadesi Gecmis Taksitler ({data.overdue_count})
+                {t('dashboard.overdueInstallments')} ({data.overdue_count})
               </h3>
             </div>
             <div className="p-6">
@@ -147,19 +149,19 @@ export function Dashboard() {
                   <div key={installment.id} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
                     <div>
                       <p className="font-medium text-gray-900">{installment.party_name}</p>
-                      <p className="text-sm text-red-600">Vade: {formatDate(installment.due_date)}</p>
+                      <p className="text-sm text-red-600">{t('dashboard.dueDate')}: {formatDate(installment.due_date)}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-gray-900">{formatCurrency(installment.amount - installment.paid_amount, installment.currency as 'TRY' | 'USD' | 'EUR')}</p>
                       <span className={`text-xs px-2 py-1 rounded-full ${installment.kind === 'debt' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'}`}>
-                        {installment.kind === 'debt' ? 'Borc' : 'Alacak'}
+                        {installment.kind === 'debt' ? t('debts.debt') : t('debts.receivable')}
                       </span>
                     </div>
                   </div>
                 ))}
               </div>
               <Link to="/debts" className="mt-4 block text-center text-sm text-red-600 hover:text-red-700">
-                Tum vadesi gecmis taksitleri gor &rarr;
+                {t('dashboard.viewAllOverdue')} &rarr;
               </Link>
             </div>
           </div>
@@ -168,7 +170,7 @@ export function Dashboard() {
         {/* Upcoming Installments */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Yaklasan Taksitler (30 gun)</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{t('dashboard.upcomingInstallments')}</h3>
           </div>
           <div className="p-6">
             {data.upcoming_installments.length > 0 ? (
@@ -178,23 +180,23 @@ export function Dashboard() {
                     <div>
                       <p className="font-medium text-gray-900">{installment.party_name}</p>
                       <p className={`text-sm ${isOverdue(installment.due_date) ? 'text-red-600' : 'text-gray-500'}`}>
-                        Vade: {formatDate(installment.due_date)}
+                        {t('dashboard.dueDate')}: {formatDate(installment.due_date)}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-gray-900">{formatCurrency(installment.amount - installment.paid_amount, installment.currency as 'TRY' | 'USD' | 'EUR')}</p>
                       <span className={`text-xs px-2 py-1 rounded-full ${installment.kind === 'debt' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'}`}>
-                        {installment.kind === 'debt' ? 'Borc' : 'Alacak'}
+                        {installment.kind === 'debt' ? t('debts.debt') : t('debts.receivable')}
                       </span>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-center text-gray-500 py-4">Yaklasan taksit yok</p>
+              <p className="text-center text-gray-500 py-4">{t('dashboard.noUpcomingInstallments')}</p>
             )}
             <Link to="/debts" className="mt-4 block text-center text-sm text-blue-600 hover:text-blue-700">
-              Tum taksitleri gor &rarr;
+              {t('dashboard.viewAllInstallments')} &rarr;
             </Link>
           </div>
         </div>
@@ -205,7 +207,7 @@ export function Dashboard() {
         {/* Recent Transactions */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Son Islemler</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{t('dashboard.recentTransactions')}</h3>
           </div>
           <div className="p-6">
             {data.recent_transactions.length > 0 ? (
@@ -221,17 +223,17 @@ export function Dashboard() {
                         {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.net_amount, transaction.currency as 'TRY' | 'USD' | 'EUR')}
                       </p>
                       <span className={`text-xs px-2 py-1 rounded-full ${transaction.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {transaction.type === 'income' ? 'Gelir' : 'Gider'}
+                        {transaction.type === 'income' ? t('transactions.income') : t('transactions.expense')}
                       </span>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-center text-gray-500 py-4">Henuz islem yok</p>
+              <p className="text-center text-gray-500 py-4">{t('dashboard.noTransactions')}</p>
             )}
             <Link to="/transactions" className="mt-4 block text-center text-sm text-blue-600 hover:text-blue-700">
-              Tum islemleri gor &rarr;
+              {t('dashboard.viewAllTransactions')} &rarr;
             </Link>
           </div>
         </div>
@@ -239,7 +241,7 @@ export function Dashboard() {
         {/* Active Projects */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Aktif Projeler ({data.active_projects_count})</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{t('dashboard.activeProjects')} ({data.active_projects_count})</h3>
           </div>
           <div className="p-6">
             {data.active_projects.length > 0 ? (
@@ -265,10 +267,10 @@ export function Dashboard() {
                 ))}
               </div>
             ) : (
-              <p className="text-center text-gray-500 py-4">Aktif proje yok</p>
+              <p className="text-center text-gray-500 py-4">{t('dashboard.noActiveProjects')}</p>
             )}
             <Link to="/projects" className="mt-4 block text-center text-sm text-blue-600 hover:text-blue-700">
-              Tum projeleri gor &rarr;
+              {t('dashboard.viewAllProjects')} &rarr;
             </Link>
           </div>
         </div>
