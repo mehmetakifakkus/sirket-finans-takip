@@ -36,7 +36,8 @@ export function getCurrencyClass(currency: Currency): string {
   const classes: Record<Currency, string> = {
     TRY: 'text-gray-800',
     USD: 'text-green-600',
-    EUR: 'text-blue-600'
+    EUR: 'text-blue-600',
+    GR: 'text-yellow-600'
   }
   return classes[currency] || 'text-gray-800'
 }

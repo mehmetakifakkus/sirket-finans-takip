@@ -196,13 +196,38 @@ export function runMigrations(db: DatabaseWrapper): void {
       base_currency TEXT NOT NULL DEFAULT 'TRY',
       quote_currency TEXT NOT NULL,
       rate REAL NOT NULL,
-      source TEXT NOT NULL DEFAULT 'manual' CHECK (source IN ('manual', 'tcmb')),
+      source TEXT NOT NULL DEFAULT 'manual' CHECK (source IN ('manual', 'tcmb', 'kapali-carsi')),
       created_at TEXT,
       UNIQUE(rate_date, quote_currency)
     )
   `)
   db.exec('CREATE INDEX IF NOT EXISTS idx_exchange_rates_date ON exchange_rates(rate_date)')
   db.exec('CREATE INDEX IF NOT EXISTS idx_exchange_rates_currency ON exchange_rates(quote_currency)')
+
+  // Migration: Update exchange_rates table to allow 'kapali-carsi' source
+  // SQLite doesn't support ALTER TABLE to modify CHECK constraints, so we recreate the table
+  const tableInfo = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='exchange_rates'").get() as { sql: string } | undefined
+  if (tableInfo && tableInfo.sql && !tableInfo.sql.includes('kapali-carsi')) {
+    console.log('Migrating exchange_rates table to support kapali-carsi source...')
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS exchange_rates_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        rate_date TEXT NOT NULL,
+        base_currency TEXT NOT NULL DEFAULT 'TRY',
+        quote_currency TEXT NOT NULL,
+        rate REAL NOT NULL,
+        source TEXT NOT NULL DEFAULT 'manual' CHECK (source IN ('manual', 'tcmb', 'kapali-carsi')),
+        created_at TEXT,
+        UNIQUE(rate_date, quote_currency)
+      )
+    `)
+    db.exec(`INSERT INTO exchange_rates_new SELECT * FROM exchange_rates`)
+    db.exec(`DROP TABLE exchange_rates`)
+    db.exec(`ALTER TABLE exchange_rates_new RENAME TO exchange_rates`)
+    db.exec('CREATE INDEX IF NOT EXISTS idx_exchange_rates_date ON exchange_rates(rate_date)')
+    db.exec('CREATE INDEX IF NOT EXISTS idx_exchange_rates_currency ON exchange_rates(quote_currency)')
+    console.log('Migration completed: exchange_rates table now supports kapali-carsi source')
+  }
 
   // Create audit_logs table
   db.exec(`

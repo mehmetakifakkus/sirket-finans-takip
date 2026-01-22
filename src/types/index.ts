@@ -167,7 +167,7 @@ export interface ExchangeRate {
   base_currency: Currency;
   quote_currency: Currency;
   rate: number;
-  source: 'manual' | 'tcmb';
+  source: 'manual' | 'tcmb' | 'kapali-carsi';
   created_at: string;
 }
 
@@ -185,13 +185,14 @@ export interface AuditLog {
 }
 
 // Currency type
-export type Currency = 'TRY' | 'USD' | 'EUR';
+export type Currency = 'TRY' | 'USD' | 'EUR' | 'GR';
 
 // Currency symbols
 export const CURRENCY_SYMBOLS: Record<Currency, string> = {
   TRY: '₺',
   USD: '$',
   EUR: '€',
+  GR: 'gr',
 };
 
 // Currency names
@@ -199,6 +200,7 @@ export const CURRENCY_NAMES: Record<Currency, string> = {
   TRY: 'Türk Lirası',
   USD: 'Amerikan Doları',
   EUR: 'Euro',
+  GR: 'Gram Altın',
 };
 
 // Filter types

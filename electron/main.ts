@@ -330,6 +330,10 @@ function registerIpcHandlers() {
     return exchangeRateService.fetchFromTCMB()
   })
 
+  ipcMain.handle('exchangeRates:fetchGold', async () => {
+    return exchangeRateService.fetchGoldPrice()
+  })
+
   ipcMain.handle('exchangeRates:getLatest', async () => {
     return exchangeRateService.getLatestRates()
   })

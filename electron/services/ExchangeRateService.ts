@@ -33,7 +33,7 @@ export class ExchangeRateService {
   getLatestRates(): Record<string, { rate: number; date: string }> {
     const rates: Record<string, { rate: number; date: string }> = {}
 
-    for (const currency of ['USD', 'EUR']) {
+    for (const currency of ['USD', 'EUR', 'GR']) {
       const rate = this.db.prepare(`
         SELECT rate, rate_date FROM exchange_rates
         WHERE quote_currency = ?
@@ -182,5 +182,95 @@ export class ExchangeRateService {
       INSERT OR REPLACE INTO exchange_rates (rate_date, base_currency, quote_currency, rate, source, created_at)
       VALUES (?, 'TRY', ?, ?, ?, ?)
     `).run(date, currency, rate, source, now)
+  }
+
+  async fetchGoldPrice(): Promise<{ success: boolean; message: string; rate?: number; date?: string }> {
+    return new Promise((resolve) => {
+      const url = 'https://finans.truncgil.com/today.json'
+
+      const req = https.get(url, { timeout: 10000 }, (res) => {
+        // Check for HTTP errors
+        if (res.statusCode !== 200) {
+          resolve({ success: false, message: `HTTP hatası: ${res.statusCode}` })
+          return
+        }
+
+        // Set encoding to UTF-8
+        res.setEncoding('utf8')
+
+        let data = ''
+
+        res.on('data', (chunk) => {
+          data += chunk
+        })
+
+        res.on('end', () => {
+          try {
+            const result = this.parseGoldPriceJSON(data)
+            resolve(result)
+          } catch (err) {
+            const errorMsg = err instanceof Error ? err.message : 'Bilinmeyen hata'
+            resolve({ success: false, message: `Altın fiyatı verisi işlenemedi: ${errorMsg}` })
+          }
+        })
+      })
+
+      req.on('error', (err) => {
+        resolve({ success: false, message: `Bağlantı hatası: ${err.message}` })
+      })
+
+      req.on('timeout', () => {
+        req.destroy()
+        resolve({ success: false, message: 'Bağlantı zaman aşımına uğradı.' })
+      })
+    })
+  }
+
+  private parseGoldPriceJSON(json: string): { success: boolean; message: string; rate?: number; date?: string } {
+    const data = JSON.parse(json)
+
+    // Get gram-altin (Gram Gold) entry
+    const goldEntry = data['gram-altin']
+
+    if (!goldEntry) {
+      return { success: false, message: 'Altın fiyatı bulunamadı.' }
+    }
+
+    // Find the selling price key (might be "Satış" or "Satis" depending on encoding)
+    let satisStr: string | undefined
+    for (const key of Object.keys(goldEntry)) {
+      if (key.toLowerCase().startsWith('sat')) {
+        satisStr = goldEntry[key]
+        break
+      }
+    }
+
+    if (!satisStr) {
+      return { success: false, message: `Satış fiyatı bulunamadı. Keys: ${Object.keys(goldEntry).join(', ')}` }
+    }
+
+    // Convert Turkish format to number: "6.675,89" -> 6675.89
+    const rate = parseFloat(satisStr.replace(/\./g, '').replace(',', '.'))
+    if (!rate || rate <= 0 || isNaN(rate)) {
+      return { success: false, message: `Geçersiz altın fiyatı: ${satisStr}` }
+    }
+
+    // Extract date from Update_Date field or use today
+    let date: string
+    if (data['Update_Date']) {
+      // Format: "2026-01-22 08:30:02"
+      date = data['Update_Date'].split(' ')[0]
+    } else {
+      date = new Date().toISOString().split('T')[0]
+    }
+
+    this.upsertRate(date, 'GR', rate, 'kapali-carsi')
+
+    return {
+      success: true,
+      message: 'Altın fiyatı başarıyla güncellendi.',
+      rate,
+      date
+    }
   }
 }

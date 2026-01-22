@@ -10,18 +10,19 @@ export function ExchangeRates() {
   const [latestRates, setLatestRates] = useState<Record<string, { rate: number; date: string }>>({})
   const [loading, setLoading] = useState(true)
   const [fetchingTCMB, setFetchingTCMB] = useState(false)
+  const [fetchingGold, setFetchingGold] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editingRate, setEditingRate] = useState<ExchangeRate | null>(null)
   const { addAlert } = useAppStore()
 
   const [formData, setFormData] = useState({
     rate_date: getToday(),
-    quote_currency: 'USD' as 'USD' | 'EUR',
+    quote_currency: 'USD' as 'USD' | 'EUR' | 'GR',
     rate: ''
   })
 
   useEffect(() => {
-    loadData()
+    loadDataAndFetchRates()
   }, [])
 
   const loadData = async () => {
@@ -32,10 +33,58 @@ export function ExchangeRates() {
       ])
       setRates(ratesRes as ExchangeRate[])
       setLatestRates(latestRes as Record<string, { rate: number; date: string }>)
+      return latestRes as Record<string, { rate: number; date: string }>
     } catch {
       addAlert('error', t('common.dataNotLoaded'))
+      return {}
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadDataAndFetchRates = async () => {
+    const today = getToday()
+    const latest = await loadData()
+
+    // Check which rates need to be fetched (not updated today)
+    const needsTCMB = !latest.USD?.date || latest.USD.date < today || !latest.EUR?.date || latest.EUR.date < today
+    const needsGold = !latest.GR?.date || latest.GR.date < today
+
+    // Fetch rates in parallel if needed
+    const fetchPromises: Promise<void>[] = []
+
+    if (needsTCMB) {
+      fetchPromises.push(fetchTCMBSilent())
+    }
+    if (needsGold) {
+      fetchPromises.push(fetchGoldSilent())
+    }
+
+    if (fetchPromises.length > 0) {
+      await Promise.all(fetchPromises)
+      loadData() // Reload data after fetching
+    }
+  }
+
+  const fetchTCMBSilent = async () => {
+    setFetchingTCMB(true)
+    try {
+      await window.api.fetchTCMBRates()
+    } catch {
+      // Silent fail on auto-fetch
+    } finally {
+      setFetchingTCMB(false)
+    }
+  }
+
+  const fetchGoldSilent = async () => {
+    setFetchingGold(true)
+    try {
+      await window.api.fetchGoldPrice()
+    } catch {
+      // Silent fail on auto-fetch
+    } finally {
+      setFetchingGold(false)
     }
   }
 
@@ -53,6 +102,23 @@ export function ExchangeRates() {
       addAlert('error', t('exchangeRates.tcmbFailed'))
     } finally {
       setFetchingTCMB(false)
+    }
+  }
+
+  const handleFetchGold = async () => {
+    setFetchingGold(true)
+    try {
+      const result = await window.api.fetchGoldPrice()
+      if (result.success) {
+        addAlert('success', result.message)
+        loadData()
+      } else {
+        addAlert('error', result.message)
+      }
+    } catch {
+      addAlert('error', t('exchangeRates.goldFailed'))
+    } finally {
+      setFetchingGold(false)
     }
   }
 
@@ -117,7 +183,7 @@ export function ExchangeRates() {
     setEditingRate(rate)
     setFormData({
       rate_date: rate.rate_date,
-      quote_currency: rate.quote_currency as 'USD' | 'EUR',
+      quote_currency: rate.quote_currency as 'USD' | 'EUR' | 'GR',
       rate: rate.rate.toString()
     })
     setShowForm(true)
@@ -158,6 +224,23 @@ export function ExchangeRates() {
             )}
             {t('exchangeRates.fetchFromTCMB')}
           </button>
+          <button
+            onClick={handleFetchGold}
+            disabled={fetchingGold}
+            className="inline-flex items-center px-4 py-2 border border-yellow-300 text-sm font-medium rounded-md text-yellow-700 bg-yellow-50 hover:bg-yellow-100 disabled:opacity-50"
+          >
+            {fetchingGold ? (
+              <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : (
+              <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/>
+              </svg>
+            )}
+            {t('exchangeRates.fetchGold')}
+          </button>
           <button onClick={openCreateForm} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -168,7 +251,7 @@ export function ExchangeRates() {
       </div>
 
       {/* Current Rates */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -195,6 +278,24 @@ export function ExchangeRates() {
               )}
             </div>
             <div className="text-4xl text-blue-500">&euro;</div>
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-500">GR / TRY</p>
+              <p className="text-3xl font-bold text-yellow-600">
+                {latestRates.GR ? latestRates.GR.rate.toFixed(2) : '-'}
+              </p>
+              {latestRates.GR && (
+                <p className="text-xs text-gray-400 mt-1">{formatDate(latestRates.GR.date)}</p>
+              )}
+            </div>
+            <div className="text-4xl text-yellow-500">
+              <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/>
+              </svg>
+            </div>
           </div>
         </div>
       </div>
@@ -224,12 +325,16 @@ export function ExchangeRates() {
                 <tr key={rate.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(rate.rate_date)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${rate.quote_currency === 'USD' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
+                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                      rate.quote_currency === 'USD' ? 'bg-green-100 text-green-800' :
+                      rate.quote_currency === 'EUR' ? 'bg-blue-100 text-blue-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
                       {rate.quote_currency}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono">{rate.rate.toFixed(4)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{rate.source === 'tcmb' ? t('exchangeRates.tcmb') : t('exchangeRates.manual')}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{rate.source === 'tcmb' ? t('exchangeRates.tcmb') : rate.source === 'kapali-carsi' ? t('exchangeRates.kapaliCarsi') : t('exchangeRates.manual')}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                     <button onClick={() => openEditForm(rate)} className="text-blue-600 hover:text-blue-800 mr-3">{t('common.edit')}</button>
                     <button onClick={() => handleDelete(rate.id)} className="text-red-600 hover:text-red-800">{t('common.delete')}</button>
@@ -264,9 +369,10 @@ export function ExchangeRates() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.currency')}</label>
-                <select value={formData.quote_currency} onChange={(e) => setFormData({ ...formData, quote_currency: e.target.value as 'USD' | 'EUR' })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                <select value={formData.quote_currency} onChange={(e) => setFormData({ ...formData, quote_currency: e.target.value as 'USD' | 'EUR' | 'GR' })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
                   <option value="USD">USD</option>
                   <option value="EUR">EUR</option>
+                  <option value="GR">GR (Gram Altın)</option>
                 </select>
               </div>
               <div>

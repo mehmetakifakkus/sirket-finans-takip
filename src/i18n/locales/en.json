@@ -452,6 +452,7 @@
   "exchangeRates": {
     "title": "Exchange Rates",
     "fetchFromTCMB": "Fetch from TCMB",
+    "fetchGold": "Fetch Gold Price",
     "manualAdd": "Manual Add",
     "editRate": "Edit Rate",
     "newRate": "New Rate",
@@ -459,11 +460,13 @@
     "rate": "Rate",
     "source": "Source",
     "tcmb": "TCMB",
+    "kapaliCarsi": "Kapalicarsi",
     "manual": "Manual",
     "noRates": "No rate records",
     "rateLabel": "Rate (1 {{currency}} = ? TRY)",
     "confirmDelete": "Are you sure you want to delete this rate?",
-    "tcmbFailed": "Could not fetch TCMB data"
+    "tcmbFailed": "Could not fetch TCMB data",
+    "goldFailed": "Could not fetch gold price"
   },
   "reports": {
     "title": "Reports",

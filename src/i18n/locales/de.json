@@ -452,6 +452,7 @@
   "exchangeRates": {
     "title": "Wechselkurse",
     "fetchFromTCMB": "Von TCMB abrufen",
+    "fetchGold": "Goldpreis abrufen",
     "manualAdd": "Manuell hinzufugen",
     "editRate": "Kurs bearbeiten",
     "newRate": "Neuer Kurs",
@@ -459,11 +460,13 @@
     "rate": "Kurs",
     "source": "Quelle",
     "tcmb": "TCMB",
+    "kapaliCarsi": "Kapalicarsi",
     "manual": "Manuell",
     "noRates": "Keine Kurseintrage",
     "rateLabel": "Kurs (1 {{currency}} = ? TRY)",
     "confirmDelete": "Sind Sie sicher, dass Sie diesen Kurs loschen mochten?",
-    "tcmbFailed": "TCMB-Daten konnten nicht abgerufen werden"
+    "tcmbFailed": "TCMB-Daten konnten nicht abgerufen werden",
+    "goldFailed": "Goldpreis konnte nicht abgerufen werden"
   },
   "reports": {
     "title": "Berichte",

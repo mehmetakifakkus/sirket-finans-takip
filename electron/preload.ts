@@ -71,6 +71,7 @@ contextBridge.exposeInMainWorld('api', {
   updateExchangeRate: (id: number, data: object) => ipcRenderer.invoke('exchangeRates:update', id, data),
   deleteExchangeRate: (id: number) => ipcRenderer.invoke('exchangeRates:delete', id),
   fetchTCMBRates: () => ipcRenderer.invoke('exchangeRates:fetchTCMB'),
+  fetchGoldPrice: () => ipcRenderer.invoke('exchangeRates:fetchGold'),
   getLatestRates: () => ipcRenderer.invoke('exchangeRates:getLatest'),
 
   // Users
@@ -173,6 +174,7 @@ export interface IElectronAPI {
   updateExchangeRate: (id: number, data: object) => Promise<{ success: boolean; message: string }>;
   deleteExchangeRate: (id: number) => Promise<{ success: boolean; message: string }>;
   fetchTCMBRates: () => Promise<{ success: boolean; message: string; rates?: object }>;
+  fetchGoldPrice: () => Promise<{ success: boolean; message: string; rate?: number; date?: string }>;
   getLatestRates: () => Promise<object>;
 
   // Users

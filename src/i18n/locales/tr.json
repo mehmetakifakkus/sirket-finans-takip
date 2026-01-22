@@ -452,6 +452,7 @@
   "exchangeRates": {
     "title": "Doviz Kurlari",
     "fetchFromTCMB": "TCMB'den Cek",
+    "fetchGold": "Altin Fiyati Cek",
     "manualAdd": "Manuel Ekle",
     "editRate": "Kur Duzenle",
     "newRate": "Yeni Kur",
@@ -459,11 +460,13 @@
     "rate": "Kur",
     "source": "Kaynak",
     "tcmb": "TCMB",
+    "kapaliCarsi": "Kapalicarsi",
     "manual": "Manuel",
     "noRates": "Kur kaydi yok",
     "rateLabel": "Kur (1 {{currency}} = ? TRY)",
     "confirmDelete": "Bu kuru silmek istediginizden emin misiniz?",
-    "tcmbFailed": "TCMB verilerine ulasilamadi"
+    "tcmbFailed": "TCMB verilerine ulasilamadi",
+    "goldFailed": "Altin fiyati alinamadi"
   },
   "reports": {
     "title": "Raporlar",
