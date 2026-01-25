@@ -100,6 +100,18 @@ export interface Transaction {
   milestone_title?: string;
   created_by_name?: string;
   amount_try?: number;
+  document_count?: number;
+}
+
+// Transaction Document types
+export interface TransactionDocument {
+  id: number;
+  transaction_id: number;
+  filename: string;
+  original_name: string;
+  mime_type: string;
+  file_size: number;
+  uploaded_at: string;
 }
 
 // Debt types
@@ -344,4 +356,46 @@ export interface ExchangeRateFormData {
   rate_date: string;
   quote_currency: Currency;
   rate: number;
+}
+
+// Import types
+export interface ImportRow {
+  rowNumber: number;
+  expenseType: string;
+  date: string;
+  dateISO: string | null;
+  location: string;
+  itemType: string;
+  quantity: number | null;
+  unitPrice: number | null;
+  total: number;
+  isValid: boolean;
+  errors: string[];
+  selected: boolean;
+  categoryId?: number;
+  partyId?: number;
+  isNewCategory?: boolean;
+  isNewParty?: boolean;
+  originalLocation?: string; // Original location before merge
+}
+
+export interface ImportPreview {
+  fileName: string;
+  totalRows: number;
+  validRows: number;
+  invalidRows: number;
+  skippedRows: number;
+  rows: ImportRow[];
+  categories: { name: string; exists: boolean }[];
+  parties: { name: string; exists: boolean }[];
+}
+
+export interface ImportResult {
+  success: boolean;
+  message: string;
+  imported: number;
+  failed: number;
+  categoriesCreated: number;
+  partiesCreated: number;
+  errors: string[];
 }
