@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
@@ -59,6 +59,9 @@ export function Transactions() {
     date_from: '',
     date_to: ''
   })
+
+  const [sortField, setSortField] = useState<'date' | 'amount' | 'net_amount' | 'category_name' | 'party_name'>('date')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
   const [formData, setFormData] = useState({
     type: (searchParams.get('type') || 'income') as 'income' | 'expense',
@@ -140,6 +143,57 @@ export function Transactions() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const sortedTransactions = useMemo(() => {
+    return [...transactions].sort((a, b) => {
+      const aRaw = a[sortField]
+      const bRaw = b[sortField]
+
+      // null/undefined handling
+      const aVal = aRaw ?? ''
+      const bVal = bRaw ?? ''
+
+      // string comparison for text fields
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        return sortDirection === 'asc'
+          ? aVal.localeCompare(bVal, 'tr')
+          : bVal.localeCompare(aVal, 'tr')
+      }
+
+      // numeric comparison
+      const aNum = Number(aVal)
+      const bNum = Number(bVal)
+      return sortDirection === 'asc' ? aNum - bNum : bNum - aNum
+    })
+  }, [transactions, sortField, sortDirection])
+
+  const handleSort = (field: typeof sortField) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortDirection('desc')
+    }
+  }
+
+  const SortIcon = ({ field }: { field: typeof sortField }) => {
+    if (field !== sortField) {
+      return (
+        <svg className="w-3 h-3 text-gray-300" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M7 10l5-5 5 5H7zM7 14l5 5 5-5H7z" />
+        </svg>
+      )
+    }
+    return sortDirection === 'asc' ? (
+      <svg className="w-3.5 h-3.5 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M7 14l5-5 5 5H7z" />
+      </svg>
+    ) : (
+      <svg className="w-3.5 h-3.5 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M7 10l5 5 5-5H7z" />
+      </svg>
+    )
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -785,7 +839,7 @@ export function Transactions() {
               <option value="expense">{t('transactions.expense')}</option>
             </select>
           </div>
-          <div>
+          <div className="md:col-span-2">
             <label className="block text-xs font-medium text-gray-500 mb-1">{t('transactions.party')}</label>
             <SearchableSelect
               options={parties.map(p => ({ value: p.id.toString(), label: p.name }))}
@@ -812,7 +866,7 @@ export function Transactions() {
               placeholder={t('transactions.searchProject')}
             />
           </div>
-          <div className="col-span-2">
+          <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">{t('dateRange.label')}</label>
             <DateRangePicker
               dateFrom={filters.date_from}
@@ -961,12 +1015,52 @@ export function Transactions() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.date')}</th>
+                <th
+                  className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none"
+                  onClick={() => handleSort('date')}
+                >
+                  <span className="flex items-center gap-1">
+                    {t('common.date')}
+                    <SortIcon field="date" />
+                  </span>
+                </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.type')}</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('transactions.category')}</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('transactions.party')}</th>
-                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('common.amount')}</th>
-                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('transactions.netAmount')}</th>
+                <th
+                  className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none"
+                  onClick={() => handleSort('category_name')}
+                >
+                  <span className="flex items-center gap-1">
+                    {t('transactions.category')}
+                    <SortIcon field="category_name" />
+                  </span>
+                </th>
+                <th
+                  className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none"
+                  onClick={() => handleSort('party_name')}
+                >
+                  <span className="flex items-center gap-1">
+                    {t('transactions.party')}
+                    <SortIcon field="party_name" />
+                  </span>
+                </th>
+                <th
+                  className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none"
+                  onClick={() => handleSort('amount')}
+                >
+                  <span className="flex items-center justify-end gap-1">
+                    {t('common.amount')}
+                    <SortIcon field="amount" />
+                  </span>
+                </th>
+                <th
+                  className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none"
+                  onClick={() => handleSort('net_amount')}
+                >
+                  <span className="flex items-center justify-end gap-1">
+                    {t('transactions.netAmount')}
+                    <SortIcon field="net_amount" />
+                  </span>
+                </th>
                 <th className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase">{t('transactions.documents.title')}</th>
                 <th className="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
               </tr>
@@ -979,7 +1073,7 @@ export function Transactions() {
                   </td>
                 </tr>
               ) : (
-                transactions.map((tr) => (
+                sortedTransactions.map((tr) => (
                   <tr key={tr.id} className="hover:bg-gray-50">
                     <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{formatDate(tr.date)}</td>
                     <td className="px-3 py-3 whitespace-nowrap">
