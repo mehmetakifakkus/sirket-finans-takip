@@ -16,6 +16,9 @@ import { ExchangeRateService } from './services/ExchangeRateService'
 import { ReportService } from './services/ReportService'
 import { FileService } from './services/FileService'
 import { SetupService } from './services/SetupService'
+import { ImportService } from './services/ImportService'
+import { DatabaseService } from './services/DatabaseService'
+import { DocumentService } from './services/DocumentService'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -62,6 +65,9 @@ let exchangeRateService: ExchangeRateService
 let reportService: ReportService
 let fileService: FileService
 let setupService: SetupService
+let importService: ImportService
+let databaseService: DatabaseService
+let documentService: DocumentService
 
 app.whenReady().then(async () => {
   // Initialize database (async for sql.js)
@@ -89,6 +95,9 @@ app.whenReady().then(async () => {
   exchangeRateService = new ExchangeRateService(db)
   reportService = new ReportService(db)
   fileService = new FileService()
+  importService = new ImportService(db)
+  databaseService = new DatabaseService(db)
+  documentService = new DocumentService(db)
 
   // Register IPC handlers
   registerIpcHandlers()
@@ -415,6 +424,65 @@ function registerIpcHandlers() {
     return shell.openPath(fileService.getFullPath(path))
   })
 
+  // Document handlers
+  ipcMain.handle('documents:add', async (_, transactionId: number) => {
+    const result = await dialog.showOpenDialog(mainWindow!, {
+      properties: ['openFile'],
+      filters: [
+        { name: 'Documents', extensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg', 'gif', 'webp'] }
+      ]
+    })
+    if (!result.canceled && result.filePaths.length > 0) {
+      const filePath = result.filePaths[0]
+      const originalName = require('path').basename(filePath)
+      const ext = require('path').extname(filePath).toLowerCase()
+
+      // Determine MIME type
+      const mimeTypes: Record<string, string> = {
+        '.pdf': 'application/pdf',
+        '.doc': 'application/msword',
+        '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        '.xls': 'application/vnd.ms-excel',
+        '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.gif': 'image/gif',
+        '.webp': 'image/webp'
+      }
+      const mimeType = mimeTypes[ext] || 'application/octet-stream'
+
+      return documentService.addDocument({
+        transaction_id: transactionId,
+        source_path: filePath,
+        original_name: originalName,
+        mime_type: mimeType
+      })
+    }
+    return { success: false, message: 'Dosya seçilmedi' }
+  })
+
+  ipcMain.handle('documents:list', async (_, transactionId: number) => {
+    return documentService.getDocuments(transactionId)
+  })
+
+  ipcMain.handle('documents:delete', async (_, documentId: number) => {
+    return documentService.deleteDocument(documentId)
+  })
+
+  ipcMain.handle('documents:open', async (_, filename: string) => {
+    const fullPath = documentService.getDocumentPath(filename)
+    return shell.openPath(fullPath)
+  })
+
+  ipcMain.handle('documents:count', async (_, transactionId: number) => {
+    return documentService.getDocumentCount(transactionId)
+  })
+
+  ipcMain.handle('documents:preview', async (_, documentId: number) => {
+    return documentService.getDocumentPreview(documentId)
+  })
+
   // Dialog handlers
   ipcMain.handle('dialog:confirm', async (_, message: string, title?: string) => {
     const result = await dialog.showMessageBox(mainWindow!, {
@@ -436,6 +504,46 @@ function registerIpcHandlers() {
     })
   })
 
+  // Import handlers
+  ipcMain.handle('import:selectFile', async () => {
+    const result = await dialog.showOpenDialog(mainWindow!, {
+      properties: ['openFile'],
+      filters: [
+        { name: 'Excel & CSV', extensions: ['xlsx', 'xls', 'csv'] }
+      ]
+    })
+    if (!result.canceled && result.filePaths.length > 0) {
+      return { success: true, filePath: result.filePaths[0] }
+    }
+    return { success: false }
+  })
+
+  ipcMain.handle('import:parseFile', async (_, filePath: string) => {
+    try {
+      const preview = importService.parseFile(filePath)
+      return { success: true, preview }
+    } catch (err: any) {
+      return { success: false, message: err.message || 'Dosya okunamadı' }
+    }
+  })
+
+  ipcMain.handle('import:execute', async (_, rows: any[], userId: number) => {
+    try {
+      const result = await importService.importTransactions(rows, userId)
+      return result
+    } catch (err: any) {
+      return {
+        success: false,
+        message: err.message || 'İçe aktarma başarısız',
+        imported: 0,
+        failed: 0,
+        categoriesCreated: 0,
+        partiesCreated: 0,
+        errors: [err.message]
+      }
+    }
+  })
+
   // Setup handlers
   ipcMain.handle('setup:checkStatus', async () => {
     return setupService.checkStatus()
@@ -451,5 +559,53 @@ function registerIpcHandlers() {
 
   ipcMain.handle('setup:seedData', async (_, options: { categories: boolean; exchangeRates: boolean; demoData: boolean }) => {
     return setupService.seedData(options)
+  })
+
+  ipcMain.handle('setup:clearData', async () => {
+    return setupService.clearAllData()
+  })
+
+  // Database handlers
+  ipcMain.handle('database:getStats', async () => {
+    return databaseService.getDatabaseStats()
+  })
+
+  ipcMain.handle('database:exportSQL', async () => {
+    const result = databaseService.exportToSQL()
+    if (!result.success || !result.sql) {
+      return { success: false, message: result.message }
+    }
+
+    const saveResult = await dialog.showSaveDialog(mainWindow!, {
+      defaultPath: `sirket-finans-backup_${new Date().toISOString().split('T')[0]}.sql`,
+      filters: [{ name: 'SQL Files', extensions: ['sql'] }]
+    })
+
+    if (saveResult.canceled || !saveResult.filePath) {
+      return { success: false, message: 'Export cancelled' }
+    }
+
+    await fileService.writeFile(saveResult.filePath, result.sql)
+    return { success: true, path: saveResult.filePath }
+  })
+
+  ipcMain.handle('database:importSQL', async () => {
+    const openResult = await dialog.showOpenDialog(mainWindow!, {
+      properties: ['openFile'],
+      filters: [{ name: 'SQL Files', extensions: ['sql'] }]
+    })
+
+    if (openResult.canceled || !openResult.filePaths.length) {
+      return { success: false, message: 'Import cancelled' }
+    }
+
+    const filePath = openResult.filePaths[0]
+    const sql = await fileService.readFile(filePath)
+
+    if (!sql) {
+      return { success: false, message: 'Could not read file' }
+    }
+
+    return databaseService.importFromSQL(sql)
   })
 }

@@ -94,6 +94,14 @@ contextBridge.exposeInMainWorld('api', {
   deleteFile: (path: string) => ipcRenderer.invoke('file:delete', path),
   openFile: (path: string) => ipcRenderer.invoke('file:open', path),
 
+  // Transaction Documents
+  addDocument: (transactionId: number) => ipcRenderer.invoke('documents:add', transactionId),
+  getDocuments: (transactionId: number) => ipcRenderer.invoke('documents:list', transactionId),
+  deleteDocument: (documentId: number) => ipcRenderer.invoke('documents:delete', documentId),
+  openDocument: (filename: string) => ipcRenderer.invoke('documents:open', filename),
+  getDocumentCount: (transactionId: number) => ipcRenderer.invoke('documents:count', transactionId),
+  getDocumentPreview: (documentId: number) => ipcRenderer.invoke('documents:preview', documentId),
+
   // Dialogs
   confirm: (message: string, title?: string) => ipcRenderer.invoke('dialog:confirm', message, title),
   alert: (message: string, type?: 'info' | 'warning' | 'error') => ipcRenderer.invoke('dialog:alert', message, type),
@@ -103,6 +111,17 @@ contextBridge.exposeInMainWorld('api', {
   initDatabase: () => ipcRenderer.invoke('setup:initDatabase'),
   createAdmin: (data: { name: string; email: string; password: string }) => ipcRenderer.invoke('setup:createAdmin', data),
   seedData: (options: { categories: boolean; exchangeRates: boolean; demoData: boolean }) => ipcRenderer.invoke('setup:seedData', options),
+  clearAllData: () => ipcRenderer.invoke('setup:clearData'),
+
+  // Import
+  selectImportFile: () => ipcRenderer.invoke('import:selectFile'),
+  parseImportFile: (filePath: string) => ipcRenderer.invoke('import:parseFile', filePath),
+  executeImport: (rows: object[], userId: number) => ipcRenderer.invoke('import:execute', rows, userId),
+
+  // Database
+  getDatabaseStats: () => ipcRenderer.invoke('database:getStats'),
+  exportDatabaseSQL: () => ipcRenderer.invoke('database:exportSQL'),
+  importDatabaseSQL: () => ipcRenderer.invoke('database:importSQL'),
 })
 
 // Type definition for window.api
@@ -197,6 +216,34 @@ export interface IElectronAPI {
   deleteFile: (path: string) => Promise<boolean>;
   openFile: (path: string) => Promise<string>;
 
+  // Transaction Documents
+  addDocument: (transactionId: number) => Promise<{
+    success: boolean;
+    message: string;
+    document?: {
+      id: number;
+      transaction_id: number;
+      filename: string;
+      original_name: string;
+      mime_type: string;
+      file_size: number;
+      uploaded_at: string;
+    };
+  }>;
+  getDocuments: (transactionId: number) => Promise<{
+    id: number;
+    transaction_id: number;
+    filename: string;
+    original_name: string;
+    mime_type: string;
+    file_size: number;
+    uploaded_at: string;
+  }[]>;
+  deleteDocument: (documentId: number) => Promise<{ success: boolean; message: string }>;
+  openDocument: (filename: string) => Promise<string>;
+  getDocumentCount: (transactionId: number) => Promise<number>;
+  getDocumentPreview: (documentId: number) => Promise<{ success: boolean; data?: string; mimeType?: string; message?: string }>;
+
   // Dialogs
   confirm: (message: string, title?: string) => Promise<boolean>;
   alert: (message: string, type?: 'info' | 'warning' | 'error') => Promise<void>;
@@ -211,6 +258,42 @@ export interface IElectronAPI {
   initDatabase: () => Promise<{ success: boolean; message: string }>;
   createAdmin: (data: { name: string; email: string; password: string }) => Promise<{ success: boolean; message: string }>;
   seedData: (options: { categories: boolean; exchangeRates: boolean; demoData: boolean }) => Promise<{ success: boolean; message: string; details: string[] }>;
+  clearAllData: () => Promise<{ success: boolean; message: string; details: string[] }>;
+
+  // Import
+  selectImportFile: () => Promise<{ success: boolean; filePath?: string }>;
+  parseImportFile: (filePath: string) => Promise<{
+    success: boolean;
+    message?: string;
+    preview?: {
+      fileName: string;
+      totalRows: number;
+      validRows: number;
+      invalidRows: number;
+      skippedRows: number;
+      rows: object[];
+      categories: { name: string; exists: boolean }[];
+      parties: { name: string; exists: boolean }[];
+    };
+  }>;
+  executeImport: (rows: object[], userId: number) => Promise<{
+    success: boolean;
+    message: string;
+    imported: number;
+    failed: number;
+    categoriesCreated: number;
+    partiesCreated: number;
+    errors: string[];
+  }>;
+
+  // Database
+  getDatabaseStats: () => Promise<{
+    size: string;
+    tables: number;
+    records: Record<string, number>;
+  }>;
+  exportDatabaseSQL: () => Promise<{ success: boolean; path?: string; message?: string }>;
+  importDatabaseSQL: () => Promise<{ success: boolean; message: string; details?: string[] }>;
 }
 
 declare global {
