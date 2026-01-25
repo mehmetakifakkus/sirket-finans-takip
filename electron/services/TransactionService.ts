@@ -29,6 +29,7 @@ interface Transaction {
   milestone_title?: string
   created_by_name?: string
   amount_try?: number
+  document_count?: number
 }
 
 interface TransactionFilters {
@@ -57,7 +58,8 @@ export class TransactionService {
         c.name as category_name,
         pr.title as project_title,
         m.title as milestone_title,
-        u.name as created_by_name
+        u.name as created_by_name,
+        (SELECT COUNT(*) FROM transaction_documents td WHERE td.transaction_id = t.id) as document_count
       FROM transactions t
       LEFT JOIN parties p ON t.party_id = p.id
       LEFT JOIN categories c ON t.category_id = c.id
@@ -121,7 +123,8 @@ export class TransactionService {
         c.name as category_name,
         pr.title as project_title,
         m.title as milestone_title,
-        u.name as created_by_name
+        u.name as created_by_name,
+        (SELECT COUNT(*) FROM transaction_documents td WHERE td.transaction_id = t.id) as document_count
       FROM transactions t
       LEFT JOIN parties p ON t.party_id = p.id
       LEFT JOIN categories c ON t.category_id = c.id

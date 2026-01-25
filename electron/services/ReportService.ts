@@ -192,12 +192,12 @@ export class ReportService {
 
     // Open debts and receivables
     const openDebts = this.db.prepare(`
-      SELECT d.*, (SELECT COALESCE(SUM(p.amount), 0) FROM payments p JOIN installments i ON p.installment_id = i.id WHERE i.debt_id = d.id) as total_paid
-      FROM debts d WHERE d.status = 'open' AND d.kind = 'payable'
+      SELECT d.*, (SELECT COALESCE(SUM(p.amount), 0) FROM payments p JOIN installments i ON p.related_id = i.id AND p.related_type = 'installment' WHERE i.debt_id = d.id) as total_paid
+      FROM debts d WHERE d.status = 'open' AND d.kind = 'debt'
     `).all() as { id: number; principal_amount: number; currency: string; total_paid: number; due_date: string }[]
 
     const openReceivables = this.db.prepare(`
-      SELECT d.*, (SELECT COALESCE(SUM(p.amount), 0) FROM payments p JOIN installments i ON p.installment_id = i.id WHERE i.debt_id = d.id) as total_paid
+      SELECT d.*, (SELECT COALESCE(SUM(p.amount), 0) FROM payments p JOIN installments i ON p.related_id = i.id AND p.related_type = 'installment' WHERE i.debt_id = d.id) as total_paid
       FROM debts d WHERE d.status = 'open' AND d.kind = 'receivable'
     `).all() as { id: number; principal_amount: number; currency: string; total_paid: number; due_date: string }[]
 

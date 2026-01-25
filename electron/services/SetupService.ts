@@ -152,4 +152,64 @@ export class SetupService {
       details
     }
   }
+
+  clearAllData(): { success: boolean; message: string; details: string[] } {
+    const details: string[] = []
+    let hasError = false
+
+    try {
+      // Delete in order to respect foreign key constraints
+      // 1. Payments (references installments)
+      const paymentsDeleted = this.db.prepare('DELETE FROM payments').run()
+      details.push(`Odemeler silindi: ${paymentsDeleted.changes}`)
+
+      // 2. Installments (references debts)
+      const installmentsDeleted = this.db.prepare('DELETE FROM installments').run()
+      details.push(`Taksitler silindi: ${installmentsDeleted.changes}`)
+
+      // 3. Transactions (references parties, categories, projects)
+      const transactionsDeleted = this.db.prepare('DELETE FROM transactions').run()
+      details.push(`Islemler silindi: ${transactionsDeleted.changes}`)
+
+      // 4. Milestones (references projects)
+      const milestonesDeleted = this.db.prepare('DELETE FROM project_milestones').run()
+      details.push(`Proje asamalari silindi: ${milestonesDeleted.changes}`)
+
+      // 5. Projects (references parties)
+      const projectsDeleted = this.db.prepare('DELETE FROM projects').run()
+      details.push(`Projeler silindi: ${projectsDeleted.changes}`)
+
+      // 6. Debts (references parties)
+      const debtsDeleted = this.db.prepare('DELETE FROM debts').run()
+      details.push(`Borc/Alacaklar silindi: ${debtsDeleted.changes}`)
+
+      // 7. Parties
+      const partiesDeleted = this.db.prepare('DELETE FROM parties').run()
+      details.push(`Taraflar silindi: ${partiesDeleted.changes}`)
+
+      // 8. Categories (keep essential ones by checking is_system or a condition)
+      // Since we don't have is_system flag, delete all user-created categories
+      const categoriesDeleted = this.db.prepare('DELETE FROM categories').run()
+      details.push(`Kategoriler silindi: ${categoriesDeleted.changes}`)
+
+      // 9. Exchange rates
+      const ratesDeleted = this.db.prepare('DELETE FROM exchange_rates').run()
+      details.push(`Doviz kurlari silindi: ${ratesDeleted.changes}`)
+
+      saveDatabase()
+
+      return {
+        success: true,
+        message: 'Tum veriler basariyla silindi',
+        details
+      }
+    } catch (error) {
+      console.error('Clear data error:', error)
+      return {
+        success: false,
+        message: `Veriler silinirken hata olustu: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`,
+        details
+      }
+    }
+  }
 }
