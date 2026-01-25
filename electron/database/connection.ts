@@ -119,15 +119,20 @@ export class StatementWrapper {
   run(...params: any[]): { changes: number; lastInsertRowid: number } {
     const bindParams = this.normalizeParams(params)
     this.sqlDb.run(this.sql, bindParams)
-    saveDatabase()
 
+    // Get changes and lastInsertRowid BEFORE saveDatabase() to avoid any state issues
     const changesResult = this.sqlDb.exec('SELECT changes()')
     const lastIdResult = this.sqlDb.exec('SELECT last_insert_rowid()')
 
-    return {
-      changes: changesResult.length > 0 ? (changesResult[0].values[0][0] as number) : 0,
-      lastInsertRowid: lastIdResult.length > 0 ? (lastIdResult[0].values[0][0] as number) : 0
-    }
+    const changes = changesResult.length > 0 && changesResult[0].values.length > 0
+      ? Number(changesResult[0].values[0][0]) : 0
+    const lastInsertRowid = lastIdResult.length > 0 && lastIdResult[0].values.length > 0
+      ? Number(lastIdResult[0].values[0][0]) : 0
+
+    // Save after getting the results
+    saveDatabase()
+
+    return { changes, lastInsertRowid }
   }
 
   get(...params: any[]): any {
@@ -178,13 +183,14 @@ export class StatementWrapper {
     if (params.length === 1 && typeof params[0] === 'object' && params[0] !== null && !Array.isArray(params[0])) {
       // Named parameters - sql.js doesn't support them directly the same way
       // We need to handle this case specially
-      return Object.values(params[0])
+      return Object.values(params[0]).map(v => v === undefined ? null : v)
     }
     // Flatten if nested array
     if (params.length === 1 && Array.isArray(params[0])) {
-      return params[0]
+      return params[0].map(v => v === undefined ? null : v)
     }
-    return params
+    // Convert undefined to null for sql.js compatibility
+    return params.map(v => v === undefined ? null : v)
   }
 }
 
