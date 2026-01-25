@@ -35,6 +35,17 @@ export function Parties() {
     loadParties()
   }, [filterType])
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && showForm) {
+        closeForm()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [showForm])
+
   const loadParties = async () => {
     try {
       const filters = filterType ? { type: filterType } : undefined

@@ -69,6 +69,17 @@ export function Projects() {
     loadProjects()
   }, [filters])
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && showForm) {
+        closeForm()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [showForm])
+
   const loadParties = async () => {
     try {
       const result = await window.api.getParties({ type: 'customer' })

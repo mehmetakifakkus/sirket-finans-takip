@@ -23,6 +23,17 @@ export function Categories() {
     loadCategories()
   }, [filterType])
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && showForm) {
+        closeForm()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [showForm])
+
   const loadCategories = async () => {
     try {
       const result = await window.api.getCategories(filterType || undefined)

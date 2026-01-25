@@ -7,6 +7,7 @@ import { formatCurrency } from '../utils/currency'
 import { formatDate, getToday } from '../utils/date'
 import { DocumentUpload } from '../components/DocumentUpload'
 import { SearchableSelect } from '../components/SearchableSelect'
+import { DateRangePicker } from '../components/DateRangePicker'
 import * as pdfjsLib from 'pdfjs-dist'
 import type { Transaction, Party, Category, Project, ImportRow, ImportPreview, TransactionDocument } from '../types'
 
@@ -81,6 +82,30 @@ export function Transactions() {
   useEffect(() => {
     loadTransactions()
   }, [filters])
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        // Priority: close mini modals first, then main modal
+        if (showCategoryForm) {
+          setShowCategoryForm(false)
+        } else if (showPartyForm) {
+          setShowPartyForm(false)
+        } else if (showProjectForm) {
+          setShowProjectForm(false)
+        } else if (showDocumentPreview) {
+          setShowDocumentPreview(false)
+        } else if (showImportModal) {
+          setShowImportModal(false)
+        } else if (showForm) {
+          closeForm()
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [showForm, showCategoryForm, showPartyForm, showProjectForm, showDocumentPreview, showImportModal])
 
   const loadData = async () => {
     try {
@@ -787,22 +812,12 @@ export function Transactions() {
               placeholder={t('transactions.searchProject')}
             />
           </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">{t('transactions.startDate')}</label>
-            <input
-              type="date"
-              value={filters.date_from}
-              onChange={(e) => setFilters({ ...filters, date_from: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">{t('transactions.endDate')}</label>
-            <input
-              type="date"
-              value={filters.date_to}
-              onChange={(e) => setFilters({ ...filters, date_to: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+          <div className="col-span-2">
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('dateRange.label')}</label>
+            <DateRangePicker
+              dateFrom={filters.date_from}
+              dateTo={filters.date_to}
+              onChange={(from, to) => setFilters({ ...filters, date_from: from, date_to: to })}
             />
           </div>
         </div>
