@@ -42,7 +42,10 @@
     "deleteConfirm": "Are you sure you want to delete?",
     "deleteFailed": "Delete operation failed",
     "exportFailed": "Export failed",
-    "csvCreated": "CSV file created"
+    "csvCreated": "CSV file created",
+    "total": "Total",
+    "close": "Close",
+    "file": "File"
   },
   "app": {
     "title": "Finance Tracking",
@@ -83,7 +86,8 @@
     "languages": "Languages",
     "categories": "Categories",
     "exchangeRates": "Exchange Rates",
-    "users": "Users"
+    "users": "Users",
+    "databaseOperations": "Database"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -128,6 +132,9 @@
     "withholdingRate": "Withholding Rate (%)",
     "refNo": "Reference No",
     "noTransactions": "No transactions found",
+    "transaction": "transaction",
+    "activeFilters": "Active Filters",
+    "clearFilters": "Clear Filters",
     "addNewCategory": "Add New Category",
     "addNewParty": "Add New Party",
     "addNewProject": "Add New Project",
@@ -136,7 +143,71 @@
     "otherInfoFromParties": "You can add other information from the Parties page.",
     "otherInfoFromProjects": "You can add other information (contract amount, dates) from the Projects page.",
     "quickCreatedNote": "Quick created - details missing",
-    "projectCreatedMissingInfo": "Project created (Details missing)"
+    "projectCreatedMissingInfo": "Project created (Details missing)",
+    "filterByParty": "Show transactions with this party",
+    "documents": {
+      "title": "Documents",
+      "addDocument": "Add File",
+      "noDocuments": "No documents",
+      "deleteConfirm": "Are you sure you want to delete this document?",
+      "uploadSuccess": "File uploaded",
+      "uploadFailed": "File upload failed",
+      "deleteSuccess": "File deleted",
+      "deleteFailed": "File delete failed",
+      "openFailed": "Could not open file",
+      "fileCount": "{{count}} file(s)",
+      "viewDocuments": "View Documents",
+      "loadFailed": "Could not load documents"
+    },
+    "import": {
+      "title": "Import CSV/Excel",
+      "selectFile": "Select File",
+      "preview": "Preview",
+      "importing": "Importing...",
+      "execute": "Import Selected",
+      "cancel": "Cancel",
+      "fileName": "File",
+      "totalRows": "Total Rows",
+      "validRows": "Valid",
+      "invalidRows": "Invalid",
+      "skippedRows": "Skipped",
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All",
+      "row": "Row",
+      "expenseType": "Expense Type",
+      "date": "Date",
+      "location": "Location",
+      "itemType": "Item Type",
+      "quantity": "Quantity",
+      "unitPrice": "Unit Price",
+      "total": "Total",
+      "errors": "Errors",
+      "newCategory": "New Category",
+      "newParty": "New Vendor",
+      "existingCategory": "Existing Category",
+      "existingParty": "Existing Vendor",
+      "categoriesWillCreate": "Categories to Create",
+      "partiesWillCreate": "Vendors to Create",
+      "noRowsSelected": "Please select at least one row",
+      "success": "{{count}} transactions imported successfully",
+      "successWithNew": "{{count}} transactions imported. {{categories}} new categories, {{parties}} new vendors created.",
+      "failed": "Import failed",
+      "partialSuccess": "{{imported}} transactions imported, {{failed}} transactions failed",
+      "noValidRows": "No valid rows found",
+      "fileSelectFailed": "File selection failed",
+      "newPartiesApproval": "New Vendors",
+      "newPartiesApprovalDesc": "The following vendors do not exist in the system. Select which ones you want to create.",
+      "approveAll": "Approve All",
+      "rejectAll": "Reject All",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "partiesApproved": "{{count}} vendors approved",
+      "partiesRejected": "{{count}} vendors rejected",
+      "rowsDisabledByRejectedParty": "Rows with rejected vendors are disabled",
+      "mergeWith": "Merge with",
+      "similarVendors": "Similar vendor found",
+      "mergedTo": "{{source}} → merged to {{target}}"
+    }
   },
   "categories": {
     "title": "Categories",
@@ -568,5 +639,50 @@
     "german": "German",
     "english": "English",
     "languageChanged": "Language changed"
+  },
+  "databaseOps": {
+    "title": "Database Operations",
+    "stats": {
+      "title": "Database Information",
+      "size": "Size",
+      "tables": "Tables",
+      "records": "Record Counts"
+    },
+    "tables": {
+      "users": "Users",
+      "categories": "Categories",
+      "parties": "Parties",
+      "exchangeRates": "Exchange Rates",
+      "projects": "Projects",
+      "milestones": "Milestones",
+      "debts": "Debts/Receivables",
+      "installments": "Installments",
+      "payments": "Payments",
+      "transactions": "Transactions",
+      "auditLogs": "Audit Logs"
+    },
+    "export": {
+      "title": "Export",
+      "description": "Export the database in SQL format.",
+      "button": "Export as SQL",
+      "success": "Database exported successfully",
+      "failed": "Export failed"
+    },
+    "import": {
+      "title": "Import",
+      "description": "Import database from an SQL file.",
+      "warning": "Existing data will be deleted!",
+      "button": "Select SQL File and Import",
+      "success": "Database imported successfully",
+      "failed": "Import failed",
+      "confirmTitle": "Confirm Import",
+      "confirmMessage": "All existing data will be deleted and replaced with data from the selected file. Do you want to continue?"
+    },
+    "dangerous": {
+      "title": "Dangerous Operations",
+      "clearData": "Delete All Data",
+      "clearDataDesc": "Delete all data (except users). This action cannot be undone!",
+      "confirmClear": "Are you sure you want to delete all data? This action cannot be undone!"
+    }
   }
 }

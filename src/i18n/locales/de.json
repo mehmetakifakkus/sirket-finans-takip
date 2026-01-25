@@ -42,7 +42,10 @@
     "deleteConfirm": "Sind Sie sicher, dass Sie loschen mochten?",
     "deleteFailed": "Loschen fehlgeschlagen",
     "exportFailed": "Export fehlgeschlagen",
-    "csvCreated": "CSV-Datei erstellt"
+    "csvCreated": "CSV-Datei erstellt",
+    "total": "Gesamt",
+    "close": "Schliessen",
+    "file": "Datei"
   },
   "app": {
     "title": "Finanzverfolgung",
@@ -83,7 +86,8 @@
     "languages": "Sprachen",
     "categories": "Kategorien",
     "exchangeRates": "Wechselkurse",
-    "users": "Benutzer"
+    "users": "Benutzer",
+    "databaseOperations": "Datenbank"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -128,6 +132,9 @@
     "withholdingRate": "Quellensteuer (%)",
     "refNo": "Belegnummer",
     "noTransactions": "Keine Transaktionen gefunden",
+    "transaction": "Transaktion",
+    "activeFilters": "Aktive Filter",
+    "clearFilters": "Filter zurucksetzen",
     "addNewCategory": "Neue Kategorie hinzufugen",
     "addNewParty": "Neue Partei hinzufugen",
     "addNewProject": "Neues Projekt hinzufugen",
@@ -136,7 +143,71 @@
     "otherInfoFromParties": "Weitere Informationen konnen Sie auf der Parteienseite hinzufugen.",
     "otherInfoFromProjects": "Weitere Informationen (Vertragsbetrag, Daten) konnen Sie auf der Projektseite hinzufugen.",
     "quickCreatedNote": "Schnell erstellt - Details fehlen",
-    "projectCreatedMissingInfo": "Projekt erstellt (Details fehlen)"
+    "projectCreatedMissingInfo": "Projekt erstellt (Details fehlen)",
+    "filterByParty": "Transaktionen mit diesem Partner anzeigen",
+    "documents": {
+      "title": "Dokumente",
+      "addDocument": "Datei hinzufugen",
+      "noDocuments": "Keine Dokumente",
+      "deleteConfirm": "Sind Sie sicher, dass Sie dieses Dokument loschen mochten?",
+      "uploadSuccess": "Datei hochgeladen",
+      "uploadFailed": "Datei-Upload fehlgeschlagen",
+      "deleteSuccess": "Datei geloscht",
+      "deleteFailed": "Datei-Loschung fehlgeschlagen",
+      "openFailed": "Datei konnte nicht geoffnet werden",
+      "fileCount": "{{count}} Datei(en)",
+      "viewDocuments": "Dokumente anzeigen",
+      "loadFailed": "Dokumente konnten nicht geladen werden"
+    },
+    "import": {
+      "title": "CSV/Excel importieren",
+      "selectFile": "Datei auswahlen",
+      "preview": "Vorschau",
+      "importing": "Importieren...",
+      "execute": "Ausgewahlte importieren",
+      "cancel": "Abbrechen",
+      "fileName": "Datei",
+      "totalRows": "Gesamtzeilen",
+      "validRows": "Gultig",
+      "invalidRows": "Ungultig",
+      "skippedRows": "Ubersprungen",
+      "selectAll": "Alle auswahlen",
+      "deselectAll": "Auswahl aufheben",
+      "row": "Zeile",
+      "expenseType": "Ausgabentyp",
+      "date": "Datum",
+      "location": "Ort",
+      "itemType": "Artikeltyp",
+      "quantity": "Menge",
+      "unitPrice": "Stuckpreis",
+      "total": "Gesamt",
+      "errors": "Fehler",
+      "newCategory": "Neue Kategorie",
+      "newParty": "Neuer Lieferant",
+      "existingCategory": "Vorhandene Kategorie",
+      "existingParty": "Vorhandener Lieferant",
+      "categoriesWillCreate": "Zu erstellende Kategorien",
+      "partiesWillCreate": "Zu erstellende Lieferanten",
+      "noRowsSelected": "Bitte wahlen Sie mindestens eine Zeile aus",
+      "success": "{{count}} Transaktionen erfolgreich importiert",
+      "successWithNew": "{{count}} Transaktionen importiert. {{categories}} neue Kategorien, {{parties}} neue Lieferanten erstellt.",
+      "failed": "Import fehlgeschlagen",
+      "partialSuccess": "{{imported}} Transaktionen importiert, {{failed}} Transaktionen fehlgeschlagen",
+      "noValidRows": "Keine gultigen Zeilen gefunden",
+      "fileSelectFailed": "Dateiauswahl fehlgeschlagen",
+      "newPartiesApproval": "Neue Lieferanten",
+      "newPartiesApprovalDesc": "Die folgenden Lieferanten existieren nicht im System. Wahlen Sie aus, welche erstellt werden sollen.",
+      "approveAll": "Alle genehmigen",
+      "rejectAll": "Alle ablehnen",
+      "approved": "Genehmigt",
+      "rejected": "Abgelehnt",
+      "partiesApproved": "{{count}} Lieferanten genehmigt",
+      "partiesRejected": "{{count}} Lieferanten abgelehnt",
+      "rowsDisabledByRejectedParty": "Zeilen mit abgelehnten Lieferanten sind deaktiviert",
+      "mergeWith": "Zusammenfuhren mit",
+      "similarVendors": "Ahnlicher Lieferant gefunden",
+      "mergedTo": "{{source}} → zusammengefuhrt zu {{target}}"
+    }
   },
   "categories": {
     "title": "Kategorien",
@@ -568,5 +639,50 @@
     "english": "Englisch",
     "german": "Deutsch",
     "languageChanged": "Sprache geandert"
+  },
+  "databaseOps": {
+    "title": "Datenbankoperationen",
+    "stats": {
+      "title": "Datenbankinformationen",
+      "size": "Grosse",
+      "tables": "Tabellen",
+      "records": "Anzahl der Eintrage"
+    },
+    "tables": {
+      "users": "Benutzer",
+      "categories": "Kategorien",
+      "parties": "Parteien",
+      "exchangeRates": "Wechselkurse",
+      "projects": "Projekte",
+      "milestones": "Meilensteine",
+      "debts": "Schulden/Forderungen",
+      "installments": "Raten",
+      "payments": "Zahlungen",
+      "transactions": "Transaktionen",
+      "auditLogs": "Prufprotokolle"
+    },
+    "export": {
+      "title": "Exportieren",
+      "description": "Exportieren Sie die Datenbank im SQL-Format.",
+      "button": "Als SQL exportieren",
+      "success": "Datenbank erfolgreich exportiert",
+      "failed": "Export fehlgeschlagen"
+    },
+    "import": {
+      "title": "Importieren",
+      "description": "Importieren Sie die Datenbank aus einer SQL-Datei.",
+      "warning": "Vorhandene Daten werden geloscht!",
+      "button": "SQL-Datei auswahlen und importieren",
+      "success": "Datenbank erfolgreich importiert",
+      "failed": "Import fehlgeschlagen",
+      "confirmTitle": "Import bestatigen",
+      "confirmMessage": "Alle vorhandenen Daten werden geloscht und durch die Daten aus der ausgewahlten Datei ersetzt. Mochten Sie fortfahren?"
+    },
+    "dangerous": {
+      "title": "Gefahrliche Operationen",
+      "clearData": "Alle Daten loschen",
+      "clearDataDesc": "Alle Daten loschen (ausser Benutzer). Diese Aktion kann nicht ruckgangig gemacht werden!",
+      "confirmClear": "Sind Sie sicher, dass Sie alle Daten loschen mochten? Diese Aktion kann nicht ruckgangig gemacht werden!"
+    }
   }
 }

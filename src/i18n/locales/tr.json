@@ -42,7 +42,10 @@
     "deleteConfirm": "Silmek istediginizden emin misiniz?",
     "deleteFailed": "Silme islemi basarisiz",
     "exportFailed": "Disari aktarma basarisiz",
-    "csvCreated": "CSV dosyasi olusturuldu"
+    "csvCreated": "CSV dosyasi olusturuldu",
+    "total": "Toplam",
+    "close": "Kapat",
+    "file": "Dosya"
   },
   "app": {
     "title": "Finans Takip",
@@ -83,7 +86,8 @@
     "languages": "Diller",
     "categories": "Kategoriler",
     "exchangeRates": "Doviz Kurlari",
-    "users": "Kullanicilar"
+    "users": "Kullanicilar",
+    "databaseOperations": "Veritabani"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -128,6 +132,9 @@
     "withholdingRate": "Stopaj Orani (%)",
     "refNo": "Belge No",
     "noTransactions": "Islem bulunamadi",
+    "transaction": "islem",
+    "activeFilters": "Aktif Filtreler",
+    "clearFilters": "Filtreleri Temizle",
     "addNewCategory": "Yeni Kategori Ekle",
     "addNewParty": "Yeni Taraf Ekle",
     "addNewProject": "Yeni Proje Ekle",
@@ -136,7 +143,71 @@
     "otherInfoFromParties": "Diger bilgileri Taraflar sayfasindan ekleyebilirsiniz.",
     "otherInfoFromProjects": "Diger bilgileri (sozlesme tutari, tarihler) Projeler sayfasindan ekleyebilirsiniz.",
     "quickCreatedNote": "Hizli olusturuldu - detaylar eksik",
-    "projectCreatedMissingInfo": "Proje olusturuldu (Detaylar eksik)"
+    "projectCreatedMissingInfo": "Proje olusturuldu (Detaylar eksik)",
+    "filterByParty": "Bu cari ile yapilan islemleri goster",
+    "documents": {
+      "title": "Dokumanlar",
+      "addDocument": "Dosya Ekle",
+      "noDocuments": "Dokumanlar yok",
+      "deleteConfirm": "Bu dokumani silmek istediginizden emin misiniz?",
+      "uploadSuccess": "Dosya yuklendi",
+      "uploadFailed": "Dosya yuklenemedi",
+      "deleteSuccess": "Dosya silindi",
+      "deleteFailed": "Dosya silinemedi",
+      "openFailed": "Dosya acilamadi",
+      "fileCount": "{{count}} dosya",
+      "viewDocuments": "Dokumanlari Gor",
+      "loadFailed": "Dokumanlar yuklenemedi"
+    },
+    "import": {
+      "title": "CSV/Excel Ice Aktar",
+      "selectFile": "Dosya Sec",
+      "preview": "Onizleme",
+      "importing": "Ice aktariliyor...",
+      "execute": "Secilenleri Ice Aktar",
+      "cancel": "Iptal",
+      "fileName": "Dosya",
+      "totalRows": "Toplam Satir",
+      "validRows": "Gecerli",
+      "invalidRows": "Hatali",
+      "skippedRows": "Atlanan",
+      "selectAll": "Tumunu Sec",
+      "deselectAll": "Secimi Kaldir",
+      "row": "Satir",
+      "expenseType": "Harcama Turu",
+      "date": "Tarih",
+      "location": "Yer",
+      "itemType": "Cins",
+      "quantity": "Miktar",
+      "unitPrice": "Birim Fiyat",
+      "total": "Toplam",
+      "errors": "Hatalar",
+      "newCategory": "Yeni Kategori",
+      "newParty": "Yeni Tedarikci",
+      "existingCategory": "Mevcut Kategori",
+      "existingParty": "Mevcut Tedarikci",
+      "categoriesWillCreate": "Olusturulacak Kategoriler",
+      "partiesWillCreate": "Olusturulacak Tedarikciler",
+      "noRowsSelected": "Lutfen en az bir satir secin",
+      "success": "{{count}} islem basariyla ice aktarildi",
+      "successWithNew": "{{count}} islem ice aktarildi. {{categories}} yeni kategori, {{parties}} yeni tedarikci olusturuldu.",
+      "failed": "Ice aktarma basarisiz",
+      "partialSuccess": "{{imported}} islem ice aktarildi, {{failed}} islem basarisiz oldu",
+      "noValidRows": "Gecerli satir bulunamadi",
+      "fileSelectFailed": "Dosya secilemedi",
+      "newPartiesApproval": "Yeni Tedarikciler",
+      "newPartiesApprovalDesc": "Asagidaki tedarikciler sistemde mevcut degil. Olusturulmasini istediklerinizi secin.",
+      "approveAll": "Tumunu Onayla",
+      "rejectAll": "Tumunu Reddet",
+      "approved": "Onaylandi",
+      "rejected": "Reddedildi",
+      "partiesApproved": "{{count}} tedarikci onaylandi",
+      "partiesRejected": "{{count}} tedarikci reddedildi",
+      "rowsDisabledByRejectedParty": "Reddedilen tedarikciye ait satırlar devre disi",
+      "mergeWith": "Birlestir",
+      "similarVendors": "Benzer tedarikci bulundu",
+      "mergedTo": "{{source}} → {{target}} olarak birlestirildi"
+    }
   },
   "categories": {
     "title": "Kategoriler",
@@ -568,5 +639,50 @@
     "english": "Ingilizce",
     "german": "Almanca",
     "languageChanged": "Dil degistirildi"
+  },
+  "databaseOps": {
+    "title": "Veritabani Islemleri",
+    "stats": {
+      "title": "Veritabani Bilgileri",
+      "size": "Boyut",
+      "tables": "Tablo Sayisi",
+      "records": "Kayit Sayilari"
+    },
+    "tables": {
+      "users": "Kullanicilar",
+      "categories": "Kategoriler",
+      "parties": "Taraflar",
+      "exchangeRates": "Doviz Kurlari",
+      "projects": "Projeler",
+      "milestones": "Asamalar",
+      "debts": "Borc/Alacak",
+      "installments": "Taksitler",
+      "payments": "Odemeler",
+      "transactions": "Islemler",
+      "auditLogs": "Islem Kayitlari"
+    },
+    "export": {
+      "title": "Disari Aktar",
+      "description": "Veritabanini SQL formatinda disari aktarin.",
+      "button": "SQL Olarak Disari Aktar",
+      "success": "Veritabani basariyla disari aktarildi",
+      "failed": "Disari aktarma basarisiz"
+    },
+    "import": {
+      "title": "Iceri Aktar",
+      "description": "SQL dosyasindan veritabanini iceri aktarin.",
+      "warning": "Mevcut veriler silinecek!",
+      "button": "SQL Dosyasi Sec ve Iceri Aktar",
+      "success": "Veritabani basariyla iceri aktarildi",
+      "failed": "Iceri aktarma basarisiz",
+      "confirmTitle": "Iceri Aktarmayi Onayla",
+      "confirmMessage": "Mevcut tum veriler silinecek ve secilen dosyadaki verilerle degistirilecek. Devam etmek istiyor musunuz?"
+    },
+    "dangerous": {
+      "title": "Tehlikeli Islemler",
+      "clearData": "Tum Verileri Sil",
+      "clearDataDesc": "Tum verileri sil (kullanicilar haric). Bu islem geri alinamaz!",
+      "confirmClear": "Tum verileri silmek istediginizden emin misiniz? Bu islem geri alinamaz!"
+    }
   }
 }
