@@ -145,6 +145,9 @@
     "quickCreatedNote": "Quick created - details missing",
     "projectCreatedMissingInfo": "Project created (Details missing)",
     "filterByParty": "Show transactions with this party",
+    "searchParty": "Search party...",
+    "searchCategory": "Search category...",
+    "searchProject": "Search project...",
     "documents": {
       "title": "Documents",
       "addDocument": "Add File",

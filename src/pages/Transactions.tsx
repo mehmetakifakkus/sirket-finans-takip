@@ -6,6 +6,7 @@ import { useAuthStore } from '../store/authStore'
 import { formatCurrency } from '../utils/currency'
 import { formatDate, getToday } from '../utils/date'
 import { DocumentUpload } from '../components/DocumentUpload'
+import { SearchableSelect } from '../components/SearchableSelect'
 import * as pdfjsLib from 'pdfjs-dist'
 import type { Transaction, Party, Category, Project, ImportRow, ImportPreview, TransactionDocument } from '../types'
 
@@ -761,36 +762,30 @@ export function Transactions() {
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">{t('transactions.party')}</label>
-            <select
+            <SearchableSelect
+              options={parties.map(p => ({ value: p.id.toString(), label: p.name }))}
               value={filters.party_id}
-              onChange={(e) => setFilters({ ...filters, party_id: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-            >
-              <option value="">{t('common.all')}</option>
-              {parties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
+              onChange={(value) => setFilters({ ...filters, party_id: value })}
+              placeholder={t('transactions.searchParty')}
+            />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">{t('transactions.category')}</label>
-            <select
+            <SearchableSelect
+              options={categories.filter(c => c.is_active).map(c => ({ value: c.id.toString(), label: c.name }))}
               value={filters.category_id}
-              onChange={(e) => setFilters({ ...filters, category_id: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-            >
-              <option value="">{t('common.all')}</option>
-              {categories.filter(c => c.is_active).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
+              onChange={(value) => setFilters({ ...filters, category_id: value })}
+              placeholder={t('transactions.searchCategory')}
+            />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">{t('transactions.project')}</label>
-            <select
+            <SearchableSelect
+              options={projects.map(p => ({ value: p.id.toString(), label: p.title }))}
               value={filters.project_id}
-              onChange={(e) => setFilters({ ...filters, project_id: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-            >
-              <option value="">{t('common.all')}</option>
-              {projects.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
-            </select>
+              onChange={(value) => setFilters({ ...filters, project_id: value })}
+              placeholder={t('transactions.searchProject')}
+            />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">{t('transactions.startDate')}</label>

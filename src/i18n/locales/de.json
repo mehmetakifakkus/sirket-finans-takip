@@ -145,6 +145,9 @@
     "quickCreatedNote": "Schnell erstellt - Details fehlen",
     "projectCreatedMissingInfo": "Projekt erstellt (Details fehlen)",
     "filterByParty": "Transaktionen mit diesem Partner anzeigen",
+    "searchParty": "Partner suchen...",
+    "searchCategory": "Kategorie suchen...",
+    "searchProject": "Projekt suchen...",
     "documents": {
       "title": "Dokumente",
       "addDocument": "Datei hinzufugen",

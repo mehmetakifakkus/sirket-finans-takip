@@ -145,6 +145,9 @@
     "quickCreatedNote": "Hizli olusturuldu - detaylar eksik",
     "projectCreatedMissingInfo": "Proje olusturuldu (Detaylar eksik)",
     "filterByParty": "Bu cari ile yapilan islemleri goster",
+    "searchParty": "Taraf ara...",
+    "searchCategory": "Kategori ara...",
+    "searchProject": "Proje ara...",
     "documents": {
       "title": "Dokumanlar",
       "addDocument": "Dosya Ekle",
