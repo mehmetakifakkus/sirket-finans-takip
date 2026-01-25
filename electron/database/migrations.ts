@@ -54,7 +54,7 @@ export function runMigrations(db: DatabaseWrapper): void {
   db.exec(`
     CREATE TABLE IF NOT EXISTS projects (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      party_id INTEGER NOT NULL,
+      party_id INTEGER,
       title TEXT NOT NULL,
       contract_amount REAL NOT NULL DEFAULT 0,
       currency TEXT NOT NULL DEFAULT 'TRY',
@@ -64,7 +64,7 @@ export function runMigrations(db: DatabaseWrapper): void {
       notes TEXT,
       created_at TEXT,
       updated_at TEXT,
-      FOREIGN KEY (party_id) REFERENCES parties(id) ON DELETE CASCADE
+      FOREIGN KEY (party_id) REFERENCES parties(id) ON DELETE SET NULL
     )
   `)
   db.exec('CREATE INDEX IF NOT EXISTS idx_projects_party ON projects(party_id)')
@@ -262,6 +262,57 @@ export function runMigrations(db: DatabaseWrapper): void {
     )
   `)
   db.exec('CREATE INDEX IF NOT EXISTS idx_transaction_documents_transaction ON transaction_documents(transaction_id)')
+
+  // Migration: Fix projects table to allow NULL party_id (for internal projects)
+  const projectsTableInfo = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='projects'").get() as { sql: string } | undefined
+  if (projectsTableInfo && projectsTableInfo.sql && projectsTableInfo.sql.includes('party_id INTEGER NOT NULL')) {
+    console.log('Migrating projects table to allow NULL party_id...')
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS projects_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        party_id INTEGER,
+        title TEXT NOT NULL,
+        contract_amount REAL NOT NULL DEFAULT 0,
+        currency TEXT NOT NULL DEFAULT 'TRY',
+        start_date TEXT,
+        end_date TEXT,
+        status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'completed', 'cancelled', 'on_hold')),
+        notes TEXT,
+        created_at TEXT,
+        updated_at TEXT,
+        FOREIGN KEY (party_id) REFERENCES parties(id) ON DELETE SET NULL
+      )
+    `)
+    db.exec(`INSERT INTO projects_new SELECT * FROM projects`)
+    db.exec(`DROP TABLE projects`)
+    db.exec(`ALTER TABLE projects_new RENAME TO projects`)
+    db.exec('CREATE INDEX IF NOT EXISTS idx_projects_party ON projects(party_id)')
+    db.exec('CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status)')
+    console.log('Migration completed: projects table now allows NULL party_id')
+  }
+
+  // Create project_grants table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS project_grants (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      project_id INTEGER NOT NULL,
+      provider_name TEXT NOT NULL,
+      provider_type TEXT NOT NULL CHECK (provider_type IN ('tubitak', 'kosgeb', 'sponsor', 'other')),
+      funding_rate REAL,
+      funding_amount REAL,
+      vat_excluded INTEGER DEFAULT 1,
+      approved_amount REAL DEFAULT 0,
+      received_amount REAL DEFAULT 0,
+      currency TEXT DEFAULT 'TRY',
+      status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'partial', 'received', 'rejected')),
+      notes TEXT,
+      created_at TEXT,
+      updated_at TEXT,
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+    )
+  `)
+  db.exec('CREATE INDEX IF NOT EXISTS idx_project_grants_project ON project_grants(project_id)')
+  db.exec('CREATE INDEX IF NOT EXISTS idx_project_grants_status ON project_grants(status)')
 
   console.log('Database migrations completed successfully')
 }

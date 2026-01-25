@@ -291,7 +291,18 @@
     "noParties": "Noch keine Parteien erfasst",
     "partyRequired": "Parteiname erforderlich",
     "partyCreated": "Partei erstellt",
-    "confirmDelete": "Sind Sie sicher, dass Sie diese Partei loschen mochten?"
+    "confirmDelete": "Sind Sie sicher, dass Sie diese Partei loschen mochten?",
+    "merge": {
+      "button": "Zusammenfuhren",
+      "title": "Partei zusammenfuhren",
+      "sourceLabel": "Quellpartei",
+      "targetLabel": "Zielpartei",
+      "description": "Alle Transaktionen, Schulden/Forderungen und Projekte von \"{{source}}\" werden zur ausgewahlten Partei verschoben und die Quellpartei wird geloscht.",
+      "selectTarget": "Zielpartei auswahlen",
+      "confirm": "Zusammenfuhren",
+      "success": "Parteien erfolgreich zusammengefuhrt",
+      "failed": "Parteien konnten nicht zusammengefuhrt werden"
+    }
   },
   "debts": {
     "title": "Schulden / Forderungen",
@@ -434,6 +445,7 @@
       "partiesLoadFailed": "Parteien konnten nicht geladen werden"
     },
     "incomplete": "Unvollstandig",
+    "internalProject": "Internes Projekt",
     "noProjects": "Keine Projekte gefunden",
     "confirmDelete": "Sind Sie sicher, dass Sie dieses Projekt loschen mochten?",
     "missingContractAmount": "Vertragsbetrag",
@@ -475,7 +487,74 @@
     "confirmDeleteMilestone": "Sind Sie sicher, dass Sie diesen Meilenstein loschen mochten?",
     "notFound": "Projekt nicht gefunden",
     "goBack": "Zuruck",
-    "progress": "Fortschritt"
+    "progress": "Fortschritt",
+    "transactions": "Projekttransaktionen",
+    "addIncome": "Einnahme hinzufugen",
+    "addExpense": "Ausgabe hinzufugen",
+    "saveAndAddNew": "Speichern und neu hinzufugen",
+    "noTransactions": "Noch keine Transaktionen",
+    "confirmDeleteTransaction": "Sind Sie sicher, dass Sie diese Transaktion loschen mochten?",
+    "transactionForm": {
+      "title": "Transaktion hinzufugen",
+      "date": "Datum",
+      "amount": "Betrag",
+      "currency": "Wahrung",
+      "party": "Partei",
+      "category": "Kategorie",
+      "vatRate": "MwSt.-Satz (%)",
+      "withholdingRate": "Quellensteuer (%)",
+      "description": "Beschreibung"
+    },
+    "addExistingTransactions": "Vorhandene Transaktionen hinzufugen",
+    "selectTransactions": "Transaktionen auswahlen",
+    "unassignedTransactions": "Nicht zugewiesene Transaktionen",
+    "selectAll": "Alle auswahlen",
+    "deselectAll": "Auswahl aufheben",
+    "selectedCount": "{{count}} Transaktion(en) ausgewahlt",
+    "addSelectedToProject": "Ausgewahlte zum Projekt hinzufugen",
+    "noUnassignedTransactions": "Keine nicht zugewiesenen Transaktionen gefunden",
+    "transactionsAssigned": "{{count}} Transaktion(en) zum Projekt hinzugefugt",
+    "assignFailed": "Transaktionen konnten nicht zugewiesen werden",
+    "filterType": "Typ",
+    "filterDateRange": "Zeitraum",
+    "last30Days": "Letzte 30 Tage",
+    "last90Days": "Letzte 90 Tage",
+    "allTime": "Gesamter Zeitraum"
+  },
+  "grants": {
+    "title": "Forderungen und Finanzierungen",
+    "addGrant": "Forderung/Finanzierung hinzufugen",
+    "editGrant": "Forderung/Finanzierung bearbeiten",
+    "providerType": "Anbietertyp",
+    "providerName": "Anbietername",
+    "fundingRate": "Satz (%)",
+    "fundingAmount": "Betrag",
+    "vatExcluded": "MwSt. ausgeschlossen berechnen",
+    "approvedAmount": "Genehmigter Betrag",
+    "receivedAmount": "Erhaltener Betrag",
+    "calculatedAmount": "Berechneter Betrag",
+    "totalApproved": "Gesamt genehmigt",
+    "totalReceived": "Gesamt erhalten",
+    "noGrants": "Noch keine Forderungen/Finanzierungen hinzugefugt",
+    "confirmDelete": "Sind Sie sicher, dass Sie diesen Forderungseintrag loschen mochten?",
+    "fixed": "Fest",
+    "types": {
+      "tubitak": "TUBITAK",
+      "kosgeb": "KOSGEB",
+      "sponsor": "Einzelsponsor",
+      "other": "Sonstige"
+    },
+    "status": {
+      "pending": "Ausstehend",
+      "approved": "Genehmigt",
+      "partial": "Teilzahlung",
+      "received": "Erhalten",
+      "rejected": "Abgelehnt"
+    },
+    "rateType": {
+      "percentage": "Prozentsatz",
+      "fixed": "Festbetrag"
+    }
   },
   "payments": {
     "title": "Zahlungen",
@@ -644,6 +723,10 @@
       "goToLogin": "Zur Anmeldeseite"
     },
     "statusCheckFailed": "Einrichtungsstatus konnte nicht uberpruft werden"
+  },
+  "filters": {
+    "clearAll": "Filter zurucksetzen",
+    "activeFilters": "Aktive Filter"
   },
   "dateRange": {
     "label": "Zeitraum",

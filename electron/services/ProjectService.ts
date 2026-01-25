@@ -3,7 +3,7 @@ import { CurrencyService } from './CurrencyService'
 
 interface Project {
   id: number
-  party_id: number
+  party_id: number | null
   title: string
   contract_amount: number
   currency: string
@@ -110,13 +110,18 @@ export class ProjectService {
   create(data: Partial<Project>): { success: boolean; message: string; id?: number } {
     const now = getCurrentTimestamp()
 
+    // Validate required fields
+    if (!data.title || data.title.trim() === '') {
+      return { success: false, message: 'Proje başlığı zorunludur.' }
+    }
+
     try {
       const result = this.db.prepare(`
         INSERT INTO projects (party_id, title, contract_amount, currency, start_date, end_date, status, notes, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
-        data.party_id,
-        data.title,
+        data.party_id ?? null,
+        data.title.trim(),
         data.contract_amount || 0,
         data.currency || 'TRY',
         data.start_date || null,
@@ -128,8 +133,10 @@ export class ProjectService {
       )
 
       return { success: true, message: 'Proje başarıyla oluşturuldu.', id: Number(result.lastInsertRowid) }
-    } catch {
-      return { success: false, message: 'Proje oluşturulamadı.' }
+    } catch (error: unknown) {
+      console.error('Project create error:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Bilinmeyen hata'
+      return { success: false, message: `Proje oluşturulamadı: ${errorMessage}` }
     }
   }
 

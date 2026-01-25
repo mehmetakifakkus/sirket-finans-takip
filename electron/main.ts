@@ -19,6 +19,7 @@ import { SetupService } from './services/SetupService'
 import { ImportService } from './services/ImportService'
 import { DatabaseService } from './services/DatabaseService'
 import { DocumentService } from './services/DocumentService'
+import { GrantService } from './services/GrantService'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -68,6 +69,7 @@ let setupService: SetupService
 let importService: ImportService
 let databaseService: DatabaseService
 let documentService: DocumentService
+let grantService: GrantService
 
 app.whenReady().then(async () => {
   // Initialize database (async for sql.js)
@@ -98,6 +100,7 @@ app.whenReady().then(async () => {
   importService = new ImportService(db)
   databaseService = new DatabaseService(db)
   documentService = new DocumentService(db)
+  grantService = new GrantService(db)
 
   // Register IPC handlers
   registerIpcHandlers()
@@ -153,6 +156,10 @@ function registerIpcHandlers() {
     return transactionService.delete(id)
   })
 
+  ipcMain.handle('transactions:getByProject', async (_, projectId: number) => {
+    return transactionService.getByProject(projectId)
+  })
+
   ipcMain.handle('transactions:export', async (_, filters) => {
     const csv = transactionService.exportToCSV(filters)
     const result = await dialog.showSaveDialog(mainWindow!, {
@@ -164,6 +171,14 @@ function registerIpcHandlers() {
       return { success: true, path: result.filePath }
     }
     return { success: false }
+  })
+
+  ipcMain.handle('transactions:getUnassigned', async (_, filters) => {
+    return transactionService.getUnassigned(filters)
+  })
+
+  ipcMain.handle('transactions:assignToProject', async (_, transactionIds: number[], projectId: number) => {
+    return transactionService.assignToProject(transactionIds, projectId)
   })
 
   // Debt handlers
@@ -242,6 +257,10 @@ function registerIpcHandlers() {
     return partyService.delete(id)
   })
 
+  ipcMain.handle('parties:merge', async (_, sourceId: number, targetId: number) => {
+    return partyService.merge(sourceId, targetId)
+  })
+
   // Category handlers
   ipcMain.handle('categories:list', async (_, type?: string) => {
     return categoryService.getAll(type)
@@ -307,6 +326,35 @@ function registerIpcHandlers() {
 
   ipcMain.handle('milestones:delete', async (_, id: number) => {
     return projectService.deleteMilestone(id)
+  })
+
+  // Grant handlers
+  ipcMain.handle('grants:list', async (_, projectId: number) => {
+    return grantService.getByProject(projectId)
+  })
+
+  ipcMain.handle('grants:get', async (_, id: number) => {
+    return grantService.getById(id)
+  })
+
+  ipcMain.handle('grants:create', async (_, data) => {
+    return grantService.create(data)
+  })
+
+  ipcMain.handle('grants:update', async (_, id: number, data) => {
+    return grantService.update(id, data)
+  })
+
+  ipcMain.handle('grants:delete', async (_, id: number) => {
+    return grantService.delete(id)
+  })
+
+  ipcMain.handle('grants:calculateAmount', async (_, projectId: number, rate: number, vatExcluded: boolean) => {
+    return grantService.calculateGrantAmount(projectId, rate, vatExcluded)
+  })
+
+  ipcMain.handle('grants:totals', async (_, projectId: number) => {
+    return grantService.getProjectGrantTotals(projectId)
   })
 
   // Payment handlers

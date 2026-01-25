@@ -10,10 +10,14 @@ contextBridge.exposeInMainWorld('api', {
   // Transactions
   getTransactions: (filters?: object) => ipcRenderer.invoke('transactions:list', filters),
   getTransaction: (id: number) => ipcRenderer.invoke('transactions:get', id),
+  getTransactionsByProject: (projectId: number) => ipcRenderer.invoke('transactions:getByProject', projectId),
   createTransaction: (data: object) => ipcRenderer.invoke('transactions:create', data),
   updateTransaction: (id: number, data: object) => ipcRenderer.invoke('transactions:update', id, data),
   deleteTransaction: (id: number) => ipcRenderer.invoke('transactions:delete', id),
   exportTransactions: (filters?: object) => ipcRenderer.invoke('transactions:export', filters),
+  getUnassignedTransactions: (filters?: object) => ipcRenderer.invoke('transactions:getUnassigned', filters),
+  assignTransactionsToProject: (transactionIds: number[], projectId: number) =>
+    ipcRenderer.invoke('transactions:assignToProject', transactionIds, projectId),
 
   // Debts
   getDebts: (filters?: object) => ipcRenderer.invoke('debts:list', filters),
@@ -38,6 +42,7 @@ contextBridge.exposeInMainWorld('api', {
   createParty: (data: object) => ipcRenderer.invoke('parties:create', data),
   updateParty: (id: number, data: object) => ipcRenderer.invoke('parties:update', id, data),
   deleteParty: (id: number) => ipcRenderer.invoke('parties:delete', id),
+  mergeParties: (sourceId: number, targetId: number) => ipcRenderer.invoke('parties:merge', sourceId, targetId),
 
   // Categories
   getCategories: (type?: string) => ipcRenderer.invoke('categories:list', type),
@@ -60,6 +65,16 @@ contextBridge.exposeInMainWorld('api', {
   createMilestone: (data: object) => ipcRenderer.invoke('milestones:create', data),
   updateMilestone: (id: number, data: object) => ipcRenderer.invoke('milestones:update', id, data),
   deleteMilestone: (id: number) => ipcRenderer.invoke('milestones:delete', id),
+
+  // Grants
+  getProjectGrants: (projectId: number) => ipcRenderer.invoke('grants:list', projectId),
+  getGrant: (id: number) => ipcRenderer.invoke('grants:get', id),
+  createGrant: (data: object) => ipcRenderer.invoke('grants:create', data),
+  updateGrant: (id: number, data: object) => ipcRenderer.invoke('grants:update', id, data),
+  deleteGrant: (id: number) => ipcRenderer.invoke('grants:delete', id),
+  calculateGrantAmount: (projectId: number, rate: number, vatExcluded: boolean) =>
+    ipcRenderer.invoke('grants:calculateAmount', projectId, rate, vatExcluded),
+  getGrantTotals: (projectId: number) => ipcRenderer.invoke('grants:totals', projectId),
 
   // Payments
   getPayments: (filters?: object) => ipcRenderer.invoke('payments:list', filters),
@@ -135,10 +150,13 @@ export interface IElectronAPI {
   // Transactions
   getTransactions: (filters?: object) => Promise<object[]>;
   getTransaction: (id: number) => Promise<object | null>;
+  getTransactionsByProject: (projectId: number) => Promise<object[]>;
   createTransaction: (data: object) => Promise<{ success: boolean; message: string; id?: number }>;
   updateTransaction: (id: number, data: object) => Promise<{ success: boolean; message: string }>;
   deleteTransaction: (id: number) => Promise<{ success: boolean; message: string }>;
   exportTransactions: (filters?: object) => Promise<{ success: boolean; path?: string }>;
+  getUnassignedTransactions: (filters?: object) => Promise<object[]>;
+  assignTransactionsToProject: (transactionIds: number[], projectId: number) => Promise<{ success: boolean; message: string; count: number }>;
 
   // Debts
   getDebts: (filters?: object) => Promise<object[]>;
@@ -161,6 +179,7 @@ export interface IElectronAPI {
   createParty: (data: object) => Promise<{ success: boolean; message: string; id?: number }>;
   updateParty: (id: number, data: object) => Promise<{ success: boolean; message: string }>;
   deleteParty: (id: number) => Promise<{ success: boolean; message: string }>;
+  mergeParties: (sourceId: number, targetId: number) => Promise<{ success: boolean; message: string; recordsMoved?: number }>;
 
   // Categories
   getCategories: (type?: string) => Promise<object[]>;
@@ -183,6 +202,15 @@ export interface IElectronAPI {
   createMilestone: (data: object) => Promise<{ success: boolean; message: string; id?: number }>;
   updateMilestone: (id: number, data: object) => Promise<{ success: boolean; message: string }>;
   deleteMilestone: (id: number) => Promise<{ success: boolean; message: string }>;
+
+  // Grants
+  getProjectGrants: (projectId: number) => Promise<object[]>;
+  getGrant: (id: number) => Promise<object | null>;
+  createGrant: (data: object) => Promise<{ success: boolean; message: string; id?: number }>;
+  updateGrant: (id: number, data: object) => Promise<{ success: boolean; message: string }>;
+  deleteGrant: (id: number) => Promise<{ success: boolean; message: string }>;
+  calculateGrantAmount: (projectId: number, rate: number, vatExcluded: boolean) => Promise<number>;
+  getGrantTotals: (projectId: number) => Promise<{ total_approved: number; total_received: number }>;
 
   // Payments
   getPayments: (filters?: object) => Promise<object[]>;

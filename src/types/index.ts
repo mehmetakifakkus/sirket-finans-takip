@@ -40,7 +40,7 @@ export interface Category {
 // Project types
 export interface Project {
   id: number;
-  party_id: number;
+  party_id: number | null;
   title: string;
   contract_amount: number;
   currency: Currency;
@@ -55,6 +55,9 @@ export interface Project {
   collected_amount?: number;
   remaining_amount?: number;
   percentage?: number;
+  // Grant totals
+  total_grants_approved?: number;
+  total_grants_received?: number;
 }
 
 // Project Milestone types
@@ -69,6 +72,37 @@ export interface ProjectMilestone {
   notes: string | null;
   created_at: string;
   updated_at: string;
+}
+
+// Project Grant types
+export interface ProjectGrant {
+  id: number;
+  project_id: number;
+  provider_name: string;
+  provider_type: 'tubitak' | 'kosgeb' | 'sponsor' | 'other';
+  funding_rate: number | null;
+  funding_amount: number | null;
+  vat_excluded: boolean;
+  approved_amount: number;
+  received_amount: number;
+  currency: Currency;
+  status: 'pending' | 'approved' | 'partial' | 'received' | 'rejected';
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProjectGrantFormData {
+  provider_name: string;
+  provider_type: 'tubitak' | 'kosgeb' | 'sponsor' | 'other';
+  funding_rate: number | null;
+  funding_amount: number | null;
+  vat_excluded: boolean;
+  approved_amount: number;
+  received_amount: number;
+  currency: Currency;
+  status: 'pending' | 'approved' | 'partial' | 'received' | 'rejected';
+  notes: string;
 }
 
 // Transaction types
@@ -317,7 +351,7 @@ export interface DebtFormData {
 }
 
 export interface ProjectFormData {
-  party_id: number;
+  party_id: number | null;
   title: string;
   contract_amount: number;
   currency: Currency;

@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { useAuthStore } from '../store/authStore'
 import { formatCurrency } from '../utils/currency'
 import { formatDate } from '../utils/date'
+import { FilterBar, SelectFilter, ActiveFiltersDisplay } from '../components/filters'
+import { SearchableSelect } from '../components/SearchableSelect'
 import type { Project, Party } from '../types'
 
 const statusColors = {
@@ -15,10 +17,13 @@ const statusColors = {
 }
 
 const isProjectIncomplete = (project: Project): boolean => {
+  // Aktif projelerde bitiş tarihi zorunlu değil
+  const needsEndDate = project.status !== 'active'
+
   return !project.contract_amount ||
          project.contract_amount === 0 ||
          !project.start_date ||
-         !project.end_date
+         (needsEndDate && !project.end_date)
 }
 
 export function Projects() {
@@ -26,9 +31,11 @@ export function Projects() {
 
   const getIncompleteMissingFields = (project: Project): string[] => {
     const missing: string[] = []
+    const needsEndDate = project.status !== 'active'
+
     if (!project.contract_amount || project.contract_amount === 0) missing.push(t('projects.form.contractAmount'))
     if (!project.start_date) missing.push(t('projects.form.startDate'))
-    if (!project.end_date) missing.push(t('projects.form.endDate'))
+    if (needsEndDate && !project.end_date) missing.push(t('projects.form.endDate'))
     return missing
   }
 
@@ -82,7 +89,7 @@ export function Projects() {
 
   const loadParties = async () => {
     try {
-      const result = await window.api.getParties({ type: 'customer' })
+      const result = await window.api.getParties()
       setParties(result as Party[])
     } catch {
       addAlert('error', t('projects.errors.partiesLoadFailed'))
@@ -105,11 +112,43 @@ export function Projects() {
     }
   }
 
+  // Build active filters list for display
+  const activeFiltersList = useMemo(() => {
+    const list: { key: string; label: string; value: string; onRemove: () => void }[] = []
+
+    if (filters.party_id) {
+      const party = parties.find(p => p.id.toString() === filters.party_id)
+      if (party) {
+        list.push({
+          key: 'party_id',
+          label: t('transactions.party'),
+          value: party.name,
+          onRemove: () => setFilters(prev => ({ ...prev, party_id: '' }))
+        })
+      }
+    }
+
+    if (filters.status) {
+      list.push({
+        key: 'status',
+        label: t('projects.filters.status'),
+        value: statusLabels[filters.status as keyof typeof statusLabels],
+        onRemove: () => setFilters(prev => ({ ...prev, status: '' }))
+      })
+    }
+
+    return list
+  }, [filters, parties, t, statusLabels])
+
+  const resetFilters = () => {
+    setFilters({ party_id: '', status: '' })
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     const data = {
-      party_id: parseInt(formData.party_id),
+      party_id: formData.party_id ? parseInt(formData.party_id) : null,
       title: formData.title,
       contract_amount: parseFloat(formData.contract_amount) || 0,
       currency: formData.currency,
@@ -179,7 +218,7 @@ export function Projects() {
   const openEditForm = (project: Project) => {
     setEditingProject(project)
     setFormData({
-      party_id: project.party_id.toString(),
+      party_id: project.party_id?.toString() || '',
       title: project.title,
       contract_amount: project.contract_amount.toString(),
       currency: project.currency as 'TRY' | 'USD' | 'EUR',
@@ -209,27 +248,34 @@ export function Projects() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">{t('projects.filters.customer')}</label>
-            <select value={filters.party_id} onChange={(e) => setFilters({ ...filters, party_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
-              <option value="">{t('common.all')}</option>
-              {parties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">{t('projects.filters.status')}</label>
-            <select value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
-              <option value="">{t('common.all')}</option>
-              <option value="active">{t('projects.status.active')}</option>
-              <option value="completed">{t('projects.status.completed')}</option>
-              <option value="on_hold">{t('projects.status.onHold')}</option>
-              <option value="cancelled">{t('projects.status.cancelled')}</option>
-            </select>
-          </div>
+      <FilterBar columns={2}>
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('transactions.party')}</label>
+          <SearchableSelect
+            options={parties.map(p => ({ value: p.id.toString(), label: p.name }))}
+            value={filters.party_id}
+            onChange={(value) => setFilters({ ...filters, party_id: value })}
+            placeholder={t('common.search')}
+          />
         </div>
-      </div>
+        <SelectFilter
+          label={t('projects.filters.status')}
+          value={filters.status}
+          onChange={(value) => setFilters({ ...filters, status: value })}
+          options={[
+            { value: 'active', label: t('projects.status.active') },
+            { value: 'completed', label: t('projects.status.completed') },
+            { value: 'on_hold', label: t('projects.status.onHold') },
+            { value: 'cancelled', label: t('projects.status.cancelled') }
+          ]}
+        />
+      </FilterBar>
+
+      {/* Active Filters Banner */}
+      <ActiveFiltersDisplay
+        filters={activeFiltersList}
+        onClearAll={resetFilters}
+      />
 
       {/* Project Cards */}
       {loading ? (
@@ -248,7 +294,7 @@ export function Projects() {
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <Link to={`/projects/${project.id}`} className="text-lg font-semibold text-gray-900 hover:text-blue-600">{project.title}</Link>
-                    <p className="text-sm text-gray-500">{project.party_name}</p>
+                    <p className="text-sm text-gray-500">{project.party_name || t('projects.internalProject')}</p>
                   </div>
                   <div className="flex items-center space-x-2">
                     <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${statusColors[project.status]}`}>
@@ -337,9 +383,9 @@ export function Projects() {
                 <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" required />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('projects.form.customer')} *</label>
-                <select value={formData.party_id} onChange={(e) => setFormData({ ...formData, party_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" required>
-                  <option value="">{t('common.select')}</option>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('transactions.party')}</label>
+                <select value={formData.party_id} onChange={(e) => setFormData({ ...formData, party_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                  <option value="">{t('projects.internalProject')}</option>
                   {parties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </div>

@@ -31,20 +31,29 @@ export function Parties() {
     notes: ''
   })
 
+  // Merge states
+  const [showMergeModal, setShowMergeModal] = useState(false)
+  const [mergingParty, setMergingParty] = useState<Party | null>(null)
+  const [mergeTargetId, setMergeTargetId] = useState<string>('')
+
   useEffect(() => {
     loadParties()
   }, [filterType])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && showForm) {
-        closeForm()
+      if (event.key === 'Escape') {
+        if (showMergeModal) {
+          closeMergeModal()
+        } else if (showForm) {
+          closeForm()
+        }
       }
     }
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [showForm])
+  }, [showForm, showMergeModal])
 
   const loadParties = async () => {
     try {
@@ -136,6 +145,38 @@ export function Parties() {
     setEditingParty(null)
   }
 
+  const openMergeModal = (party: Party) => {
+    setMergingParty(party)
+    setMergeTargetId('')
+    setShowMergeModal(true)
+  }
+
+  const closeMergeModal = () => {
+    setShowMergeModal(false)
+    setMergingParty(null)
+    setMergeTargetId('')
+  }
+
+  const handleMerge = async () => {
+    if (!mergingParty || !mergeTargetId) return
+
+    try {
+      const result = await window.api.mergeParties(mergingParty.id, parseInt(mergeTargetId))
+      if (result.success) {
+        addAlert('success', t('parties.merge.success'))
+        loadParties()
+        closeMergeModal()
+      } else {
+        addAlert('error', result.message)
+      }
+    } catch {
+      addAlert('error', t('parties.merge.failed'))
+    }
+  }
+
+  // Parties available as merge targets (exclude the source party)
+  const mergeTargetOptions = parties.filter(p => mergingParty && p.id !== mergingParty.id)
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -223,6 +264,12 @@ export function Parties() {
                           className="text-blue-600 hover:text-blue-800 mr-3"
                         >
                           {t('common.edit')}
+                        </button>
+                        <button
+                          onClick={() => openMergeModal(party)}
+                          className="text-amber-600 hover:text-amber-800 mr-3"
+                        >
+                          {t('parties.merge.button')}
                         </button>
                         <button
                           onClick={() => handleDelete(party.id)}
@@ -343,6 +390,78 @@ export function Parties() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Merge Modal */}
+      {showMergeModal && mergingParty && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-900">{t('parties.merge.title')}</h3>
+              <button
+                type="button"
+                onClick={closeMergeModal}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.merge.sourceLabel')}</label>
+                <div className="px-3 py-2 bg-gray-100 rounded-md text-gray-900 font-medium">
+                  {mergingParty.name}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-center">
+                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.merge.targetLabel')}</label>
+                <select
+                  value={mergeTargetId}
+                  onChange={(e) => setMergeTargetId(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                >
+                  <option value="">{t('parties.merge.selectTarget')}</option>
+                  {mergeTargetOptions.map(p => (
+                    <option key={p.id} value={p.id}>{p.name} ({partyTypes[p.type]})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
+                <p className="text-sm text-amber-800">
+                  {t('parties.merge.description', { source: mergingParty.name })}
+                </p>
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-2">
+                <button
+                  type="button"
+                  onClick={closeMergeModal}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleMerge}
+                  disabled={!mergeTargetId}
+                  className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                  {t('parties.merge.confirm')}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

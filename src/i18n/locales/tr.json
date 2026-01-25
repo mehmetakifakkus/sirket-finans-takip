@@ -291,7 +291,18 @@
     "noParties": "Henüz taraf kaydı yok",
     "partyRequired": "Taraf adı gerekli",
     "partyCreated": "Taraf oluşturuldu",
-    "confirmDelete": "Bu tarafı silmek istediğinizden emin misiniz?"
+    "confirmDelete": "Bu tarafı silmek istediğinizden emin misiniz?",
+    "merge": {
+      "button": "Birleştir",
+      "title": "Taraf Birleştir",
+      "sourceLabel": "Kaynak Taraf",
+      "targetLabel": "Hedef Taraf",
+      "description": "\"{{source}}\" tarafına ait tüm işlemler, borç/alacaklar ve projeler seçtiğiniz tarafa taşınacak ve kaynak taraf silinecek.",
+      "selectTarget": "Hedef taraf seçin",
+      "confirm": "Birleştir",
+      "success": "Taraflar başarıyla birleştirildi",
+      "failed": "Taraflar birleştirilemedi"
+    }
   },
   "debts": {
     "title": "Borç / Alacak",
@@ -434,6 +445,7 @@
       "partiesLoadFailed": "Taraflar yüklenemedi"
     },
     "incomplete": "Eksik",
+    "internalProject": "İç Proje (Tarafsız)",
     "noProjects": "Proje bulunamadı",
     "confirmDelete": "Bu projeyi silmek istediğinizden emin misiniz?",
     "missingContractAmount": "Sözleşme tutarı",
@@ -475,7 +487,74 @@
     "confirmDeleteMilestone": "Bu aşamayı silmek istediğinizden emin misiniz?",
     "notFound": "Proje bulunamadı",
     "goBack": "Geri dön",
-    "progress": "İlerleme"
+    "progress": "İlerleme",
+    "transactions": "Proje İşlemleri",
+    "addIncome": "Gelir Ekle",
+    "addExpense": "Gider Ekle",
+    "saveAndAddNew": "Kaydet ve Yeni Ekle",
+    "noTransactions": "Henüz işlem yok",
+    "confirmDeleteTransaction": "Bu işlemi silmek istediğinizden emin misiniz?",
+    "transactionForm": {
+      "title": "İşlem Ekle",
+      "date": "Tarih",
+      "amount": "Tutar",
+      "currency": "Para Birimi",
+      "party": "Taraf",
+      "category": "Kategori",
+      "vatRate": "KDV Oranı (%)",
+      "withholdingRate": "Stopaj Oranı (%)",
+      "description": "Açıklama"
+    },
+    "addExistingTransactions": "Mevcut İşlemleri Ekle",
+    "selectTransactions": "İşlem Seç",
+    "unassignedTransactions": "Atanmamış İşlemler",
+    "selectAll": "Tümünü Seç",
+    "deselectAll": "Seçimi Kaldır",
+    "selectedCount": "{{count}} işlem seçili",
+    "addSelectedToProject": "Seçilenleri Projeye Ekle",
+    "noUnassignedTransactions": "Atanabilecek işlem bulunamadı",
+    "transactionsAssigned": "{{count}} işlem projeye eklendi",
+    "assignFailed": "İşlemler projeye eklenemedi",
+    "filterType": "Tip",
+    "filterDateRange": "Tarih Aralığı",
+    "last30Days": "Son 30 Gün",
+    "last90Days": "Son 90 Gün",
+    "allTime": "Tüm Zamanlar"
+  },
+  "grants": {
+    "title": "Hibe ve Destekler",
+    "addGrant": "Hibe/Destek Ekle",
+    "editGrant": "Hibe/Destek Düzenle",
+    "providerType": "Sağlayıcı Tipi",
+    "providerName": "Sağlayıcı Adı",
+    "fundingRate": "Oran (%)",
+    "fundingAmount": "Tutar",
+    "vatExcluded": "KDV Hariç Hesapla",
+    "approvedAmount": "Onaylanan Tutar",
+    "receivedAmount": "Alınan Tutar",
+    "calculatedAmount": "Hesaplanan Tutar",
+    "totalApproved": "Toplam Onaylanan",
+    "totalReceived": "Toplam Alınan",
+    "noGrants": "Henüz hibe/destek eklenmemiş",
+    "confirmDelete": "Bu hibe kaydını silmek istediğinizden emin misiniz?",
+    "fixed": "Sabit",
+    "types": {
+      "tubitak": "TÜBİTAK",
+      "kosgeb": "KOSGEB",
+      "sponsor": "Bireysel Sponsor",
+      "other": "Diğer"
+    },
+    "status": {
+      "pending": "Bekliyor",
+      "approved": "Onaylandı",
+      "partial": "Kısmi Ödeme",
+      "received": "Alındı",
+      "rejected": "Reddedildi"
+    },
+    "rateType": {
+      "percentage": "Yüzdelik Oran",
+      "fixed": "Sabit Tutar"
+    }
   },
   "payments": {
     "title": "Ödemeler",
@@ -644,6 +723,10 @@
       "goToLogin": "Giriş Sayfasına Git"
     },
     "statusCheckFailed": "Kurulum durumu kontrol edilemedi"
+  },
+  "filters": {
+    "clearAll": "Filtreleri Temizle",
+    "activeFilters": "Aktif Filtreler"
   },
   "dateRange": {
     "label": "Tarih Aralığı",

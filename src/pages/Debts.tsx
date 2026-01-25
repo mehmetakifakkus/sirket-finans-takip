@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { useAuthStore } from '../store/authStore'
 import { formatCurrency } from '../utils/currency'
 import { formatDate, getToday, isOverdue } from '../utils/date'
+import { FilterBar, SelectFilter, ActiveFiltersDisplay } from '../components/filters'
+import { SearchableSelect } from '../components/SearchableSelect'
+import { DateRangePicker } from '../components/DateRangePicker'
 import type { Debt, Party } from '../types'
 
 export function Debts() {
@@ -18,7 +21,13 @@ export function Debts() {
   const { user } = useAuthStore()
   const isAdmin = user?.role === 'admin'
 
-  const [filters, setFilters] = useState({ kind: '', party_id: '', status: 'open' })
+  const [filters, setFilters] = useState({
+    kind: '',
+    party_id: '',
+    status: 'open',
+    date_from: '',
+    date_to: ''
+  })
 
   const [formData, setFormData] = useState({
     kind: 'debt' as 'debt' | 'receivable',
@@ -66,6 +75,8 @@ export function Debts() {
       if (filters.kind) filterParams.kind = filters.kind
       if (filters.party_id) filterParams.party_id = parseInt(filters.party_id)
       if (filters.status) filterParams.status = filters.status
+      if (filters.date_from) filterParams.date_from = filters.date_from
+      if (filters.date_to) filterParams.date_to = filters.date_to
 
       const result = await window.api.getDebts(filterParams)
       setDebts(result as Debt[])
@@ -74,6 +85,64 @@ export function Debts() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Build active filters list for display
+  const activeFiltersList = useMemo(() => {
+    const list: { key: string; label: string; value: string; onRemove: () => void }[] = []
+
+    if (filters.kind) {
+      list.push({
+        key: 'kind',
+        label: t('debts.filters.type'),
+        value: filters.kind === 'receivable' ? t('debts.receivable') : t('debts.debt'),
+        onRemove: () => setFilters(prev => ({ ...prev, kind: '' }))
+      })
+    }
+
+    if (filters.party_id) {
+      const party = parties.find(p => p.id.toString() === filters.party_id)
+      if (party) {
+        list.push({
+          key: 'party_id',
+          label: t('debts.filters.party'),
+          value: party.name,
+          onRemove: () => setFilters(prev => ({ ...prev, party_id: '' }))
+        })
+      }
+    }
+
+    if (filters.status) {
+      list.push({
+        key: 'status',
+        label: t('debts.filters.status'),
+        value: filters.status === 'open' ? t('debts.status.open') : t('debts.status.closed'),
+        onRemove: () => setFilters(prev => ({ ...prev, status: '' }))
+      })
+    }
+
+    if (filters.date_from || filters.date_to) {
+      let dateValue = ''
+      if (filters.date_from && filters.date_to) {
+        dateValue = `${formatDate(filters.date_from)} - ${formatDate(filters.date_to)}`
+      } else if (filters.date_from) {
+        dateValue = `${t('dateRange.from')}: ${formatDate(filters.date_from)}`
+      } else if (filters.date_to) {
+        dateValue = `${t('dateRange.to')}: ${formatDate(filters.date_to)}`
+      }
+      list.push({
+        key: 'date',
+        label: t('dateRange.label'),
+        value: dateValue,
+        onRemove: () => setFilters(prev => ({ ...prev, date_from: '', date_to: '' }))
+      })
+    }
+
+    return list
+  }, [filters, parties, t])
+
+  const resetFilters = () => {
+    setFilters({ kind: '', party_id: '', status: '', date_from: '', date_to: '' })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -215,33 +284,49 @@ export function Debts() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">{t('debts.filters.type')}</label>
-            <select value={filters.kind} onChange={(e) => setFilters({ ...filters, kind: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
-              <option value="">{t('common.all')}</option>
-              <option value="debt">{t('debts.debt')}</option>
-              <option value="receivable">{t('debts.receivable')}</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">{t('debts.filters.party')}</label>
-            <select value={filters.party_id} onChange={(e) => setFilters({ ...filters, party_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
-              <option value="">{t('common.all')}</option>
-              {parties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">{t('debts.filters.status')}</label>
-            <select value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
-              <option value="">{t('common.all')}</option>
-              <option value="open">{t('debts.status.open')}</option>
-              <option value="closed">{t('debts.status.closed')}</option>
-            </select>
-          </div>
+      <FilterBar columns={4}>
+        <SelectFilter
+          label={t('debts.filters.type')}
+          value={filters.kind}
+          onChange={(value) => setFilters({ ...filters, kind: value })}
+          options={[
+            { value: 'debt', label: t('debts.debt') },
+            { value: 'receivable', label: t('debts.receivable') }
+          ]}
+        />
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('debts.filters.party')}</label>
+          <SearchableSelect
+            options={parties.map(p => ({ value: p.id.toString(), label: p.name }))}
+            value={filters.party_id}
+            onChange={(value) => setFilters({ ...filters, party_id: value })}
+            placeholder={t('common.search')}
+          />
         </div>
-      </div>
+        <SelectFilter
+          label={t('debts.filters.status')}
+          value={filters.status}
+          onChange={(value) => setFilters({ ...filters, status: value })}
+          options={[
+            { value: 'open', label: t('debts.status.open') },
+            { value: 'closed', label: t('debts.status.closed') }
+          ]}
+        />
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('dateRange.label')}</label>
+          <DateRangePicker
+            dateFrom={filters.date_from}
+            dateTo={filters.date_to}
+            onChange={(from, to) => setFilters({ ...filters, date_from: from, date_to: to })}
+          />
+        </div>
+      </FilterBar>
+
+      {/* Active Filters Banner */}
+      <ActiveFiltersDisplay
+        filters={activeFiltersList}
+        onClearAll={resetFilters}
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

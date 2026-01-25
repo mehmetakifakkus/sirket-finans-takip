@@ -460,7 +460,7 @@ export function Reports() {
                 projectData.map((p) => (
                   <tr key={p.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{p.title}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{p.party_name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{p.party_name || t('projects.internalProject')}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
                       {formatCurrency(p.contract_amount, p.currency as 'TRY' | 'USD' | 'EUR')}
                     </td>

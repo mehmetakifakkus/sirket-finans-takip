@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { useAuthStore } from '../store/authStore'
 import { formatCurrency } from '../utils/currency'
 import { formatDate } from '../utils/date'
+import { FilterBar, SelectFilter, ActiveFiltersDisplay } from '../components/filters'
+import { DateRangePicker } from '../components/DateRangePicker'
 import type { Payment } from '../types'
 
 export function Payments() {
@@ -69,6 +71,39 @@ export function Payments() {
     setFilters({ start_date: '', end_date: '', method: '' })
   }
 
+  // Build active filters list for display
+  const activeFiltersList = useMemo(() => {
+    const list: { key: string; label: string; value: string; onRemove: () => void }[] = []
+
+    if (filters.start_date || filters.end_date) {
+      let dateValue = ''
+      if (filters.start_date && filters.end_date) {
+        dateValue = `${formatDate(filters.start_date)} - ${formatDate(filters.end_date)}`
+      } else if (filters.start_date) {
+        dateValue = `${t('dateRange.from')}: ${formatDate(filters.start_date)}`
+      } else if (filters.end_date) {
+        dateValue = `${t('dateRange.to')}: ${formatDate(filters.end_date)}`
+      }
+      list.push({
+        key: 'date',
+        label: t('dateRange.label'),
+        value: dateValue,
+        onRemove: () => setFilters(prev => ({ ...prev, start_date: '', end_date: '' }))
+      })
+    }
+
+    if (filters.method) {
+      list.push({
+        key: 'method',
+        label: t('payments.filters.method'),
+        value: methodLabels[filters.method as keyof typeof methodLabels],
+        onRemove: () => setFilters(prev => ({ ...prev, method: '' }))
+      })
+    }
+
+    return list
+  }, [filters, t, methodLabels])
+
   const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0)
 
   return (
@@ -78,50 +113,33 @@ export function Payments() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">{t('payments.filters.startDate')}</label>
-            <input
-              type="date"
-              value={filters.start_date}
-              onChange={(e) => setFilters({ ...filters, start_date: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">{t('payments.filters.endDate')}</label>
-            <input
-              type="date"
-              value={filters.end_date}
-              onChange={(e) => setFilters({ ...filters, end_date: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">{t('payments.filters.method')}</label>
-            <select
-              value={filters.method}
-              onChange={(e) => setFilters({ ...filters, method: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-            >
-              <option value="">{t('common.all')}</option>
-              <option value="cash">{t('payments.methods.cash')}</option>
-              <option value="bank">{t('payments.methods.bank')}</option>
-              <option value="card">{t('payments.methods.card')}</option>
-              <option value="other">{t('payments.methods.other')}</option>
-            </select>
-          </div>
-          <div className="flex items-end">
-            <button
-              onClick={clearFilters}
-              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
-            >
-              {t('payments.clearFilters')}
-            </button>
-          </div>
+      <FilterBar columns={2}>
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('dateRange.label')}</label>
+          <DateRangePicker
+            dateFrom={filters.start_date}
+            dateTo={filters.end_date}
+            onChange={(from, to) => setFilters({ ...filters, start_date: from, end_date: to })}
+          />
         </div>
-      </div>
+        <SelectFilter
+          label={t('payments.filters.method')}
+          value={filters.method}
+          onChange={(value) => setFilters({ ...filters, method: value })}
+          options={[
+            { value: 'cash', label: t('payments.methods.cash') },
+            { value: 'bank', label: t('payments.methods.bank') },
+            { value: 'card', label: t('payments.methods.card') },
+            { value: 'other', label: t('payments.methods.other') }
+          ]}
+        />
+      </FilterBar>
+
+      {/* Active Filters Banner */}
+      <ActiveFiltersDisplay
+        filters={activeFiltersList}
+        onClearAll={clearFilters}
+      />
 
       {/* Summary */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">

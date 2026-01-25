@@ -136,4 +136,45 @@ export class PartyService {
   getVendors(): Party[] {
     return this.getAll({ type: 'vendor' })
   }
+
+  merge(sourceId: number, targetId: number): { success: boolean; message: string; recordsMoved?: number } {
+    const source = this.getById(sourceId)
+    const target = this.getById(targetId)
+
+    if (!source) {
+      return { success: false, message: 'Kaynak taraf bulunamadı.' }
+    }
+
+    if (!target) {
+      return { success: false, message: 'Hedef taraf bulunamadı.' }
+    }
+
+    if (sourceId === targetId) {
+      return { success: false, message: 'Bir taraf kendisiyle birleştirilemez.' }
+    }
+
+    try {
+      // Count records to be moved
+      const transactionCount = this.db.prepare('SELECT COUNT(*) as count FROM transactions WHERE party_id = ?').get(sourceId) as { count: number }
+      const debtCount = this.db.prepare('SELECT COUNT(*) as count FROM debts WHERE party_id = ?').get(sourceId) as { count: number }
+      const projectCount = this.db.prepare('SELECT COUNT(*) as count FROM projects WHERE party_id = ?').get(sourceId) as { count: number }
+      const totalMoved = transactionCount.count + debtCount.count + projectCount.count
+
+      // Move all related records to target
+      this.db.prepare('UPDATE transactions SET party_id = ? WHERE party_id = ?').run(targetId, sourceId)
+      this.db.prepare('UPDATE debts SET party_id = ? WHERE party_id = ?').run(targetId, sourceId)
+      this.db.prepare('UPDATE projects SET party_id = ? WHERE party_id = ?').run(targetId, sourceId)
+
+      // Delete the source party
+      this.db.prepare('DELETE FROM parties WHERE id = ?').run(sourceId)
+
+      return {
+        success: true,
+        message: `"${source.name}" tarafı "${target.name}" ile birleştirildi. ${totalMoved} kayıt taşındı.`,
+        recordsMoved: totalMoved
+      }
+    } catch {
+      return { success: false, message: 'Taraflar birleştirilemedi.' }
+    }
+  }
 }

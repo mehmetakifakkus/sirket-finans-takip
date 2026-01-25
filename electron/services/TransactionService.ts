@@ -258,6 +258,10 @@ export class TransactionService {
     return this.getFiltered().slice(0, limit)
   }
 
+  getByProject(projectId: number): Transaction[] {
+    return this.getFiltered({ project_id: projectId })
+  }
+
   calculateAmounts(amount: number, vatRate: number, withholdingRate: number, type: string): { vat_amount: number; withholding_amount: number; net_amount: number } {
     const vatAmount = (amount * vatRate) / 100
     const withholdingAmount = type === 'income' ? (amount * withholdingRate) / 100 : 0
@@ -287,5 +291,76 @@ export class TransactionService {
     }
 
     return csv
+  }
+
+  getUnassigned(filters?: { type?: 'income' | 'expense'; date_from?: string; date_to?: string; category_id?: number }): Transaction[] {
+    let query = `
+      SELECT t.*,
+        p.name as party_name,
+        c.name as category_name,
+        u.name as created_by_name,
+        (SELECT COUNT(*) FROM transaction_documents td WHERE td.transaction_id = t.id) as document_count
+      FROM transactions t
+      LEFT JOIN parties p ON t.party_id = p.id
+      LEFT JOIN categories c ON t.category_id = c.id
+      LEFT JOIN users u ON t.created_by = u.id
+      WHERE t.project_id IS NULL
+    `
+    const params: (string | number)[] = []
+
+    if (filters?.type) {
+      query += ' AND t.type = ?'
+      params.push(filters.type)
+    }
+
+    if (filters?.date_from) {
+      query += ' AND t.date >= ?'
+      params.push(filters.date_from)
+    }
+
+    if (filters?.date_to) {
+      query += ' AND t.date <= ?'
+      params.push(filters.date_to)
+    }
+
+    if (filters?.category_id) {
+      query += ' AND t.category_id = ?'
+      params.push(filters.category_id)
+    }
+
+    query += ' ORDER BY t.date DESC, t.id DESC'
+
+    const transactions = this.db.prepare(query).all(...params) as Transaction[]
+
+    return transactions.map(t => {
+      const conversion = this.currencyService.convertToTRY(t.net_amount, t.currency, t.date)
+      return { ...t, amount_try: conversion.amount_try }
+    })
+  }
+
+  assignToProject(transactionIds: number[], projectId: number): { success: boolean; message: string; count: number } {
+    if (!transactionIds || transactionIds.length === 0) {
+      return { success: false, message: 'İşlem seçilmedi.', count: 0 }
+    }
+
+    try {
+      const now = getCurrentTimestamp()
+      const placeholders = transactionIds.map(() => '?').join(',')
+
+      const result = this.db.prepare(`
+        UPDATE transactions
+        SET project_id = ?, updated_at = ?
+        WHERE id IN (${placeholders}) AND project_id IS NULL
+      `).run(projectId, now, ...transactionIds)
+
+      const count = result.changes
+      return {
+        success: true,
+        message: `${count} işlem projeye eklendi.`,
+        count
+      }
+    } catch {
+      return { success: false, message: 'İşlemler projeye eklenemedi.', count: 0 }
+    }
   }
 }

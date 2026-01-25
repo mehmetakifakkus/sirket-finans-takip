@@ -291,7 +291,18 @@
     "noParties": "No party records yet",
     "partyRequired": "Party name is required",
     "partyCreated": "Party created",
-    "confirmDelete": "Are you sure you want to delete this party?"
+    "confirmDelete": "Are you sure you want to delete this party?",
+    "merge": {
+      "button": "Merge",
+      "title": "Merge Party",
+      "sourceLabel": "Source Party",
+      "targetLabel": "Target Party",
+      "description": "All transactions, debts/receivables, and projects from \"{{source}}\" will be moved to the selected party and the source party will be deleted.",
+      "selectTarget": "Select target party",
+      "confirm": "Merge",
+      "success": "Parties merged successfully",
+      "failed": "Failed to merge parties"
+    }
   },
   "debts": {
     "title": "Debt / Receivable",
@@ -434,6 +445,7 @@
       "partiesLoadFailed": "Failed to load parties"
     },
     "incomplete": "Incomplete",
+    "internalProject": "Internal Project",
     "noProjects": "No projects found",
     "confirmDelete": "Are you sure you want to delete this project?",
     "missingContractAmount": "Contract amount",
@@ -475,7 +487,74 @@
     "confirmDeleteMilestone": "Are you sure you want to delete this milestone?",
     "notFound": "Project not found",
     "goBack": "Go back",
-    "progress": "Progress"
+    "progress": "Progress",
+    "transactions": "Project Transactions",
+    "addIncome": "Add Income",
+    "addExpense": "Add Expense",
+    "saveAndAddNew": "Save and Add New",
+    "noTransactions": "No transactions yet",
+    "confirmDeleteTransaction": "Are you sure you want to delete this transaction?",
+    "transactionForm": {
+      "title": "Add Transaction",
+      "date": "Date",
+      "amount": "Amount",
+      "currency": "Currency",
+      "party": "Party",
+      "category": "Category",
+      "vatRate": "VAT Rate (%)",
+      "withholdingRate": "Withholding Rate (%)",
+      "description": "Description"
+    },
+    "addExistingTransactions": "Add Existing Transactions",
+    "selectTransactions": "Select Transactions",
+    "unassignedTransactions": "Unassigned Transactions",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "selectedCount": "{{count}} transaction(s) selected",
+    "addSelectedToProject": "Add Selected to Project",
+    "noUnassignedTransactions": "No unassigned transactions found",
+    "transactionsAssigned": "{{count}} transaction(s) added to project",
+    "assignFailed": "Failed to assign transactions to project",
+    "filterType": "Type",
+    "filterDateRange": "Date Range",
+    "last30Days": "Last 30 Days",
+    "last90Days": "Last 90 Days",
+    "allTime": "All Time"
+  },
+  "grants": {
+    "title": "Grants and Funding",
+    "addGrant": "Add Grant/Funding",
+    "editGrant": "Edit Grant/Funding",
+    "providerType": "Provider Type",
+    "providerName": "Provider Name",
+    "fundingRate": "Rate (%)",
+    "fundingAmount": "Amount",
+    "vatExcluded": "Calculate VAT Excluded",
+    "approvedAmount": "Approved Amount",
+    "receivedAmount": "Received Amount",
+    "calculatedAmount": "Calculated Amount",
+    "totalApproved": "Total Approved",
+    "totalReceived": "Total Received",
+    "noGrants": "No grants/funding added yet",
+    "confirmDelete": "Are you sure you want to delete this grant record?",
+    "fixed": "Fixed",
+    "types": {
+      "tubitak": "TUBITAK",
+      "kosgeb": "KOSGEB",
+      "sponsor": "Individual Sponsor",
+      "other": "Other"
+    },
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "partial": "Partial Payment",
+      "received": "Received",
+      "rejected": "Rejected"
+    },
+    "rateType": {
+      "percentage": "Percentage Rate",
+      "fixed": "Fixed Amount"
+    }
   },
   "payments": {
     "title": "Payments",
@@ -644,6 +723,10 @@
       "goToLogin": "Go to Login Page"
     },
     "statusCheckFailed": "Could not check setup status"
+  },
+  "filters": {
+    "clearAll": "Clear Filters",
+    "activeFilters": "Active Filters"
   },
   "dateRange": {
     "label": "Date Range",
