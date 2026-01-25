@@ -4,12 +4,21 @@
   "description": "Şirket Finans Takip - Desktop Application",
   "main": "dist-electron/main.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build && electron-builder",
+    "dev": "vite --config vite.config.electron.ts",
+    "dev:web": "vite --config vite.config.web.ts",
+    "dev:electron": "vite --config vite.config.electron.ts",
+    "dev:server": "cd server && npm run dev",
+    "dev:full": "concurrently \"npm run dev:server\" \"npm run dev:web\"",
+    "build": "vite build --config vite.config.electron.ts && electron-builder",
+    "build:web": "vite build --config vite.config.web.ts",
+    "build:electron": "vite build --config vite.config.electron.ts && electron-builder",
+    "build:server": "cd server && npm run build",
     "preview": "vite preview",
-    "electron:dev": "vite",
-    "electron:build": "npm run build",
-    "lint": "eslint . --ext ts,tsx"
+    "electron:dev": "vite --config vite.config.electron.ts",
+    "electron:build": "npm run build:electron",
+    "lint": "eslint . --ext ts,tsx",
+    "server:install": "cd server && npm install",
+    "postinstall": "npm run server:install || true"
   },
   "keywords": [
     "electron",

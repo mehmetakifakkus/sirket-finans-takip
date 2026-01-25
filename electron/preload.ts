@@ -1,7 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
 // Expose protected methods to renderer process
-contextBridge.exposeInMainWorld('api', {
+// Using 'electronApi' to distinguish from web API client
+contextBridge.exposeInMainWorld('electronApi', {
   // Auth
   login: (email: string, password: string) => ipcRenderer.invoke('auth:login', email, password),
   logout: () => ipcRenderer.invoke('auth:logout'),
@@ -328,6 +329,6 @@ export interface IElectronAPI {
 
 declare global {
   interface Window {
-    api: IElectronAPI;
+    electronApi: IElectronAPI;
   }
 }

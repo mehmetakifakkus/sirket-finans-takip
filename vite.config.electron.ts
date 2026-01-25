@@ -4,8 +4,7 @@ import electron from 'vite-plugin-electron'
 import renderer from 'vite-plugin-electron-renderer'
 import path from 'path'
 
-// Default configuration (Electron)
-// For web-only build, use: npm run dev:web or npm run build:web
+// Electron build configuration
 export default defineConfig({
   plugins: [
     react(),
@@ -36,6 +35,9 @@ export default defineConfig({
     ]),
     renderer()
   ],
+  define: {
+    'import.meta.env.VITE_PLATFORM': '"electron"'
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
