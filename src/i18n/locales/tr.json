@@ -236,6 +236,17 @@
     "types": {
       "income": "Gelir",
       "expense": "Gider"
+    },
+    "merge": {
+      "button": "Birlestir",
+      "title": "Kategori Birlestir",
+      "sourceLabel": "Kaynak Kategori",
+      "targetLabel": "Hedef Kategori",
+      "description": "\"{{source}}\" kategorisindeki tum islemler sectiginiz kategoriye tasinacak ve kaynak kategori silinecek.",
+      "selectTarget": "Hedef kategori secin",
+      "confirm": "Birlestir",
+      "success": "Kategoriler basariyla birlestirildi",
+      "failed": "Kategoriler birlestirilemedi"
     }
   },
   "parties": {
@@ -633,6 +644,19 @@
       "goToLogin": "Giris Sayfasina Git"
     },
     "statusCheckFailed": "Kurulum durumu kontrol edilemedi"
+  },
+  "dateRange": {
+    "label": "Tarih Araligi",
+    "all": "Tum Tarihler",
+    "last7Days": "Son 7 gun",
+    "last1Month": "Son 1 ay",
+    "last1Year": "Son 1 yil",
+    "selectMonth": "Ay Sec",
+    "custom": "Ozel aralik",
+    "from": "Baslangic",
+    "to": "Bitis",
+    "weekdays": ["Pzt", "Sal", "Car", "Per", "Cum", "Cmt", "Paz"],
+    "months": ["Ocak", "Subat", "Mart", "Nisan", "Mayis", "Haziran", "Temmuz", "Agustos", "Eylul", "Ekim", "Kasim", "Aralik"]
   },
   "settings": {
     "title": "Ayarlar",

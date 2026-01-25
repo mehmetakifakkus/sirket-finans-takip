@@ -236,6 +236,17 @@
     "types": {
       "income": "Einnahmen",
       "expense": "Ausgaben"
+    },
+    "merge": {
+      "button": "Zusammenfuhren",
+      "title": "Kategorie zusammenfuhren",
+      "sourceLabel": "Quellkategorie",
+      "targetLabel": "Zielkategorie",
+      "description": "Alle Transaktionen von \"{{source}}\" werden in die ausgewahlte Kategorie verschoben und die Quellkategorie wird geloscht.",
+      "selectTarget": "Zielkategorie auswahlen",
+      "confirm": "Zusammenfuhren",
+      "success": "Kategorien erfolgreich zusammengefuhrt",
+      "failed": "Kategorien konnten nicht zusammengefuhrt werden"
     }
   },
   "parties": {
@@ -633,6 +644,19 @@
       "goToLogin": "Zur Anmeldeseite"
     },
     "statusCheckFailed": "Einrichtungsstatus konnte nicht uberpruft werden"
+  },
+  "dateRange": {
+    "label": "Zeitraum",
+    "all": "Alle Daten",
+    "last7Days": "Letzte 7 Tage",
+    "last1Month": "Letzter Monat",
+    "last1Year": "Letztes Jahr",
+    "selectMonth": "Monat auswahlen",
+    "custom": "Benutzerdefiniert",
+    "from": "Von",
+    "to": "Bis",
+    "weekdays": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
+    "months": ["Januar", "Februar", "Marz", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
   },
   "settings": {
     "title": "Einstellungen",

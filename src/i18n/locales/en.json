@@ -236,6 +236,17 @@
     "types": {
       "income": "Income",
       "expense": "Expense"
+    },
+    "merge": {
+      "button": "Merge",
+      "title": "Merge Category",
+      "sourceLabel": "Source Category",
+      "targetLabel": "Target Category",
+      "description": "All transactions from \"{{source}}\" will be moved to the selected category and the source category will be deleted.",
+      "selectTarget": "Select target category",
+      "confirm": "Merge",
+      "success": "Categories merged successfully",
+      "failed": "Failed to merge categories"
     }
   },
   "parties": {
@@ -633,6 +644,19 @@
       "goToLogin": "Go to Login Page"
     },
     "statusCheckFailed": "Could not check setup status"
+  },
+  "dateRange": {
+    "label": "Date Range",
+    "all": "All Dates",
+    "last7Days": "Last 7 days",
+    "last1Month": "Last 1 month",
+    "last1Year": "Last 1 year",
+    "selectMonth": "Select Month",
+    "custom": "Custom range",
+    "from": "From",
+    "to": "To",
+    "weekdays": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
   },
   "settings": {
     "title": "Settings",

@@ -45,6 +45,7 @@ contextBridge.exposeInMainWorld('api', {
   createCategory: (data: object) => ipcRenderer.invoke('categories:create', data),
   updateCategory: (id: number, data: object) => ipcRenderer.invoke('categories:update', id, data),
   deleteCategory: (id: number) => ipcRenderer.invoke('categories:delete', id),
+  mergeCategories: (sourceId: number, targetId: number) => ipcRenderer.invoke('categories:merge', sourceId, targetId),
 
   // Projects
   getProjects: (filters?: object) => ipcRenderer.invoke('projects:list', filters),
@@ -167,6 +168,7 @@ export interface IElectronAPI {
   createCategory: (data: object) => Promise<{ success: boolean; message: string; id?: number }>;
   updateCategory: (id: number, data: object) => Promise<{ success: boolean; message: string }>;
   deleteCategory: (id: number) => Promise<{ success: boolean; message: string }>;
+  mergeCategories: (sourceId: number, targetId: number) => Promise<{ success: boolean; message: string; transactionsMoved?: number }>;
 
   // Projects
   getProjects: (filters?: object) => Promise<object[]>;

@@ -12,6 +12,11 @@ export function Categories() {
   const [filterType, _setFilterType] = useState<string>('')
   const { addAlert } = useAppStore()
 
+  // Merge state
+  const [showMergeModal, setShowMergeModal] = useState(false)
+  const [mergeSource, setMergeSource] = useState<Category | null>(null)
+  const [mergeTargetId, setMergeTargetId] = useState<number | null>(null)
+
   const [formData, setFormData] = useState({
     name: '',
     type: 'income' as 'income' | 'expense',
@@ -25,14 +30,15 @@ export function Categories() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && showForm) {
-        closeForm()
+      if (event.key === 'Escape') {
+        if (showForm) closeForm()
+        if (showMergeModal) closeMergeModal()
       }
     }
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [showForm])
+  }, [showForm, showMergeModal])
 
   const loadCategories = async () => {
     try {
@@ -112,6 +118,41 @@ export function Categories() {
     setEditingCategory(null)
   }
 
+  // Merge handlers
+  const openMergeModal = (category: Category) => {
+    setMergeSource(category)
+    setMergeTargetId(null)
+    setShowMergeModal(true)
+  }
+
+  const closeMergeModal = () => {
+    setShowMergeModal(false)
+    setMergeSource(null)
+    setMergeTargetId(null)
+  }
+
+  const handleMerge = async () => {
+    if (!mergeSource || !mergeTargetId) return
+
+    try {
+      const result = await window.api.mergeCategories(mergeSource.id, mergeTargetId)
+      if (result.success) {
+        addAlert('success', result.message)
+        loadCategories()
+        closeMergeModal()
+      } else {
+        addAlert('error', result.message)
+      }
+    } catch {
+      addAlert('error', t('categories.merge.failed'))
+    }
+  }
+
+  const getMergeTargetOptions = () => {
+    if (!mergeSource) return []
+    return categories.filter(c => c.type === mergeSource.type && c.id !== mergeSource.id)
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -152,8 +193,9 @@ export function Categories() {
                       <span className={`w-2 h-2 rounded-full mr-3 ${c.is_active ? 'bg-green-500' : 'bg-gray-400'}`}></span>
                       <span className="font-medium text-gray-900">{c.name}</span>
                     </div>
-                    <div>
-                      <button onClick={() => openEditForm(c)} className="text-blue-600 hover:text-blue-800 mr-2 text-sm">{t('common.edit')}</button>
+                    <div className="flex items-center space-x-2">
+                      <button onClick={() => openMergeModal(c)} className="text-purple-600 hover:text-purple-800 text-sm">{t('categories.merge.button')}</button>
+                      <button onClick={() => openEditForm(c)} className="text-blue-600 hover:text-blue-800 text-sm">{t('common.edit')}</button>
                       <button onClick={() => handleDelete(c.id)} className="text-red-600 hover:text-red-800 text-sm">{t('common.delete')}</button>
                     </div>
                   </div>
@@ -179,8 +221,9 @@ export function Categories() {
                       <span className={`w-2 h-2 rounded-full mr-3 ${c.is_active ? 'bg-green-500' : 'bg-gray-400'}`}></span>
                       <span className="font-medium text-gray-900">{c.name}</span>
                     </div>
-                    <div>
-                      <button onClick={() => openEditForm(c)} className="text-blue-600 hover:text-blue-800 mr-2 text-sm">{t('common.edit')}</button>
+                    <div className="flex items-center space-x-2">
+                      <button onClick={() => openMergeModal(c)} className="text-purple-600 hover:text-purple-800 text-sm">{t('categories.merge.button')}</button>
+                      <button onClick={() => openEditForm(c)} className="text-blue-600 hover:text-blue-800 text-sm">{t('common.edit')}</button>
                       <button onClick={() => handleDelete(c.id)} className="text-red-600 hover:text-red-800 text-sm">{t('common.delete')}</button>
                     </div>
                   </div>
@@ -228,6 +271,65 @@ export function Categories() {
                 <button type="submit" className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">{editingCategory ? t('common.update') : t('common.save')}</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Merge Modal */}
+      {showMergeModal && mergeSource && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-900">{t('categories.merge.title')}</h3>
+              <button
+                type="button"
+                onClick={closeMergeModal}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('categories.merge.sourceLabel')}</label>
+                <div className="px-3 py-2 bg-gray-100 rounded-md text-gray-900 font-medium">{mergeSource.name}</div>
+              </div>
+              <p className="text-sm text-gray-600">
+                {t('categories.merge.description', { source: mergeSource.name })}
+              </p>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('categories.merge.targetLabel')}</label>
+                <select
+                  value={mergeTargetId || ''}
+                  onChange={(e) => setMergeTargetId(e.target.value ? Number(e.target.value) : null)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                >
+                  <option value="">{t('categories.merge.selectTarget')}</option>
+                  {getMergeTargetOptions().map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex justify-end space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={closeMergeModal}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleMerge}
+                  disabled={!mergeTargetId}
+                  className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {t('categories.merge.confirm')}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -135,4 +135,50 @@ export class CategoryService {
   getExpenseCategories(): Category[] {
     return this.getActive('expense')
   }
+
+  merge(sourceId: number, targetId: number): { success: boolean; message: string; transactionsMoved?: number } {
+    // 1. Validate both categories exist
+    const source = this.getById(sourceId)
+    const target = this.getById(targetId)
+
+    if (!source) {
+      return { success: false, message: 'Kaynak kategori bulunamadı.' }
+    }
+
+    if (!target) {
+      return { success: false, message: 'Hedef kategori bulunamadı.' }
+    }
+
+    // 2. Validate same type (income/expense)
+    if (source.type !== target.type) {
+      return { success: false, message: 'Kategoriler aynı tipte olmalı (gelir/gider).' }
+    }
+
+    // 3. Cannot merge a category into itself
+    if (sourceId === targetId) {
+      return { success: false, message: 'Bir kategori kendisiyle birleştirilemez.' }
+    }
+
+    try {
+      // 4. Count transactions to be moved
+      const transactionCount = this.db.prepare('SELECT COUNT(*) as count FROM transactions WHERE category_id = ?').get(sourceId) as { count: number }
+
+      // 5. Update all transactions from source to target
+      this.db.prepare('UPDATE transactions SET category_id = ? WHERE category_id = ?').run(targetId, sourceId)
+
+      // 6. Handle child categories - move them to target
+      this.db.prepare('UPDATE categories SET parent_id = ? WHERE parent_id = ?').run(targetId, sourceId)
+
+      // 7. Delete the source category (now safe since no transactions reference it)
+      this.db.prepare('DELETE FROM categories WHERE id = ?').run(sourceId)
+
+      return {
+        success: true,
+        message: `"${source.name}" kategorisi "${target.name}" ile birleştirildi. ${transactionCount.count} işlem taşındı.`,
+        transactionsMoved: transactionCount.count
+      }
+    } catch (error) {
+      return { success: false, message: 'Kategoriler birleştirilemedi.' }
+    }
+  }
 }

@@ -263,6 +263,10 @@ function registerIpcHandlers() {
     return categoryService.delete(id)
   })
 
+  ipcMain.handle('categories:merge', async (_, sourceId: number, targetId: number) => {
+    return categoryService.merge(sourceId, targetId)
+  })
+
   // Project handlers
   ipcMain.handle('projects:list', async (_, filters) => {
     return projectService.getAll(filters)
