@@ -248,5 +248,20 @@ export function runMigrations(db: DatabaseWrapper): void {
   db.exec('CREATE INDEX IF NOT EXISTS idx_audit_logs_entity ON audit_logs(entity, entity_id)')
   db.exec('CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON audit_logs(created_at)')
 
+  // Create transaction_documents table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS transaction_documents (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      transaction_id INTEGER NOT NULL,
+      filename TEXT NOT NULL,
+      original_name TEXT NOT NULL,
+      mime_type TEXT NOT NULL,
+      file_size INTEGER NOT NULL,
+      uploaded_at TEXT NOT NULL,
+      FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE
+    )
+  `)
+  db.exec('CREATE INDEX IF NOT EXISTS idx_transaction_documents_transaction ON transaction_documents(transaction_id)')
+
   console.log('Database migrations completed successfully')
 }

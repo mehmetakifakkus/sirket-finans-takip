@@ -130,6 +130,11 @@ export function Sidebar() {
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
       </svg>
+    ),
+    database: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+      </svg>
     )
   }
 
@@ -171,6 +176,7 @@ export function Sidebar() {
             <NavItem path="/categories" icon={icons.categories} title={t('nav.categories')} />
             <NavItem path="/exchange-rates" icon={icons.exchangeRates} title={t('nav.exchangeRates')} />
             <NavItem path="/users" icon={icons.users} title={t('nav.users')} />
+            <NavItem path="/database-operations" icon={icons.database} title={t('nav.databaseOperations')} />
           </NavSection>
         )}
 
