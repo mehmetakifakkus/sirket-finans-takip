@@ -153,18 +153,12 @@ export function Sidebar() {
 
         <NavSection title={t('nav.transactions')}>
           <NavItem path="/transactions" icon={icons.transactions} title={t('nav.incomeExpense')} />
-        </NavSection>
-
-        <NavSection title={t('nav.debtReceivable')}>
           <NavItem path="/debts" icon={icons.debts} title={t('nav.debts')} />
           <NavItem path="/payments" icon={icons.payments} title={t('nav.payments')} />
         </NavSection>
 
-        <NavSection title={t('nav.projects')}>
+        <NavSection title={t('nav.projectsAndParties')}>
           <NavItem path="/projects" icon={icons.projects} title={t('nav.projects')} badge={incompleteProjectCount} />
-        </NavSection>
-
-        <NavSection title={t('nav.records')}>
           <NavItem path="/parties" icon={icons.parties} title={t('nav.parties')} />
         </NavSection>
 
@@ -174,10 +168,7 @@ export function Sidebar() {
 
         {isAdmin && (
           <NavSection title={t('nav.administration')}>
-            <NavItem path="/categories" icon={icons.categories} title={t('nav.categories')} />
-            <NavItem path="/exchange-rates" icon={icons.exchangeRates} title={t('nav.exchangeRates')} />
-            <NavItem path="/users" icon={icons.users} title={t('nav.users')} />
-            <NavItem path="/database-operations" icon={icons.database} title={t('nav.databaseOperations')} />
+            <NavItem path="/admin" icon={icons.settings} title={t('nav.administration')} />
           </NavSection>
         )}
 

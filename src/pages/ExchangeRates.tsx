@@ -5,7 +5,8 @@ import { useAppStore } from '../store/appStore'
 import { formatDate, getToday } from '../utils/date'
 import type { ExchangeRate } from '../types'
 
-export function ExchangeRates() {
+// Content component for embedding in AdminPanel
+export function ExchangeRatesContent() {
   const { t } = useTranslation()
   const [rates, setRates] = useState<ExchangeRate[]>([])
   const [latestRates, setLatestRates] = useState<Record<string, { rate: number; date: string }>>({})
@@ -216,8 +217,7 @@ export function ExchangeRates() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">{t('exchangeRates.title')}</h1>
+      <div className="flex items-center justify-end">
         <div className="flex space-x-3">
           <button
             onClick={handleFetchTCMB}
@@ -399,6 +399,17 @@ export function ExchangeRates() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+// Wrapper component for standalone page use (backward compatibility)
+export function ExchangeRates() {
+  const { t } = useTranslation()
+  return (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-gray-900">{t('exchangeRates.title')}</h1>
+      <ExchangeRatesContent />
     </div>
   )
 }

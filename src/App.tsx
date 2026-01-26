@@ -9,17 +9,14 @@ import { Setup } from './pages/Setup'
 import { Dashboard } from './pages/Dashboard'
 import { Parties } from './pages/Parties'
 import { Transactions } from './pages/Transactions'
-import { Categories } from './pages/Categories'
-import { ExchangeRates } from './pages/ExchangeRates'
+import { AdminPanel } from './pages/AdminPanel'
 import { Debts } from './pages/Debts'
 import { DebtDetail } from './pages/DebtDetail'
 import { Projects } from './pages/Projects'
 import { ProjectDetail } from './pages/ProjectDetail'
 import { Payments } from './pages/Payments'
 import { Reports } from './pages/Reports'
-import { Users } from './pages/Users'
 import { Settings } from './pages/Settings'
-import { DatabaseOperations } from './pages/DatabaseOperations'
 
 // Import i18n config
 import './i18n/config'
@@ -123,10 +120,7 @@ export default function App() {
 
           {/* Admin only routes */}
           <Route element={<AdminRoute />}>
-            <Route path="/users" element={<Users />} />
-            <Route path="/categories" element={<Categories />} />
-            <Route path="/exchange-rates" element={<ExchangeRates />} />
-            <Route path="/database-operations" element={<DatabaseOperations />} />
+            <Route path="/admin" element={<AdminPanel />} />
           </Route>
         </Route>
 

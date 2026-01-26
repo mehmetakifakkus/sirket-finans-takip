@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import type { Category } from '../types'
 
-export function Categories() {
+// Content component for embedding in AdminPanel
+export function CategoriesContent() {
   const { t } = useTranslation()
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
@@ -167,8 +168,7 @@ export function Categories() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">{t('categories.title')}</h1>
+      <div className="flex items-center justify-end">
         <button onClick={openCreateForm} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -334,6 +334,17 @@ export function Categories() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+// Wrapper component for standalone page use (backward compatibility)
+export function Categories() {
+  const { t } = useTranslation()
+  return (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-gray-900">{t('categories.title')}</h1>
+      <CategoriesContent />
     </div>
   )
 }

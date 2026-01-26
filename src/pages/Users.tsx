@@ -5,7 +5,8 @@ import { useAppStore } from '../store/appStore'
 import { formatDate } from '../utils/date'
 import type { User } from '../types'
 
-export function Users() {
+// Content component for embedding in AdminPanel
+export function UsersContent() {
   const { t } = useTranslation()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
@@ -153,8 +154,7 @@ export function Users() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">{t('users.title')}</h1>
+      <div className="flex items-center justify-end">
         <button
           onClick={openCreateForm}
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
@@ -344,6 +344,17 @@ export function Users() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+// Wrapper component for standalone page use (backward compatibility)
+export function Users() {
+  const { t } = useTranslation()
+  return (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-gray-900">{t('users.title')}</h1>
+      <UsersContent />
     </div>
   )
 }
