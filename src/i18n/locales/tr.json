@@ -78,6 +78,7 @@
     "debtReceivable": "Borç / Alacak",
     "payments": "Ödemeler",
     "projects": "Projeler",
+    "projectsAndParties": "Projeler ve Taraflar",
     "records": "Kayıtlar",
     "parties": "Taraflar",
     "reports": "Raporlar",
@@ -261,8 +262,17 @@
     "types": {
       "customer": "Müşteri",
       "vendor": "Tedarikçi",
+      "tubitak": "TÜBİTAK",
+      "kosgeb": "KOSGEB",
+      "individual": "Şahıs",
       "other": "Diğer"
     },
+    "grantSettings": "Hibe Ayarları",
+    "grantRate": "Hibe Oranı",
+    "grantLimit": "Hibe Limiti",
+    "vatIncluded": "KDV Dahil",
+    "remainingGrant": "Kalan Hibe",
+    "unlimited": "Limitsiz",
     "filters": {
       "type": "Tip"
     },
@@ -793,6 +803,27 @@
       "clearData": "Tüm Verileri Sil",
       "clearDataDesc": "Tüm verileri sil (kullanıcılar hariç). Bu işlem geri alınamaz!",
       "confirmClear": "Tüm verileri silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!"
+    },
+    "clearProgress": {
+      "title": "Veriler Siliniyor...",
+      "deleting": "siliniyor...",
+      "deleted": "silindi",
+      "pending": "Bekliyor",
+      "records": "kayıt",
+      "complete": "Tamamlandı",
+      "error": "Hata oluştu",
+      "tables": {
+        "payments": "Ödemeler",
+        "installments": "Taksitler",
+        "debts": "Borçlar/Alacaklar",
+        "transaction_documents": "Belgeler",
+        "transactions": "İşlemler",
+        "project_grants": "Hibeler",
+        "project_milestones": "Kilometre Taşları",
+        "projects": "Projeler",
+        "exchange_rates": "Döviz Kurları",
+        "files": "Dosyalar"
+      }
     }
   }
 }

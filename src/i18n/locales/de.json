@@ -78,6 +78,7 @@
     "debtReceivable": "Schulden / Forderungen",
     "payments": "Zahlungen",
     "projects": "Projekte",
+    "projectsAndParties": "Projekte und Parteien",
     "records": "Datensatze",
     "parties": "Parteien",
     "reports": "Berichte",
@@ -261,8 +262,17 @@
     "types": {
       "customer": "Kunde",
       "vendor": "Lieferant",
+      "tubitak": "TUBITAK",
+      "kosgeb": "KOSGEB",
+      "individual": "Einzelperson",
       "other": "Sonstige"
     },
+    "grantSettings": "Forderungseinstellungen",
+    "grantRate": "Forderungssatz",
+    "grantLimit": "Forderungslimit",
+    "vatIncluded": "MwSt. inklusive",
+    "remainingGrant": "Verbleibende Forderung",
+    "unlimited": "Unbegrenzt",
     "filters": {
       "type": "Typ"
     },
@@ -793,6 +803,27 @@
       "clearData": "Alle Daten loschen",
       "clearDataDesc": "Alle Daten loschen (ausser Benutzer). Diese Aktion kann nicht ruckgangig gemacht werden!",
       "confirmClear": "Sind Sie sicher, dass Sie alle Daten loschen mochten? Diese Aktion kann nicht ruckgangig gemacht werden!"
+    },
+    "clearProgress": {
+      "title": "Daten werden geloscht...",
+      "deleting": "wird geloscht...",
+      "deleted": "geloscht",
+      "pending": "Ausstehend",
+      "records": "Eintrage",
+      "complete": "Abgeschlossen",
+      "error": "Ein Fehler ist aufgetreten",
+      "tables": {
+        "payments": "Zahlungen",
+        "installments": "Raten",
+        "debts": "Schulden/Forderungen",
+        "transaction_documents": "Dokumente",
+        "transactions": "Transaktionen",
+        "project_grants": "Fordermittel",
+        "project_milestones": "Meilensteine",
+        "projects": "Projekte",
+        "exchange_rates": "Wechselkurse",
+        "files": "Dateien"
+      }
     }
   }
 }

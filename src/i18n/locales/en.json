@@ -78,6 +78,7 @@
     "debtReceivable": "Debt / Receivable",
     "payments": "Payments",
     "projects": "Projects",
+    "projectsAndParties": "Projects and Parties",
     "records": "Records",
     "parties": "Parties",
     "reports": "Reports",
@@ -261,8 +262,17 @@
     "types": {
       "customer": "Customer",
       "vendor": "Vendor",
+      "tubitak": "TUBITAK",
+      "kosgeb": "KOSGEB",
+      "individual": "Individual",
       "other": "Other"
     },
+    "grantSettings": "Grant Settings",
+    "grantRate": "Grant Rate",
+    "grantLimit": "Grant Limit",
+    "vatIncluded": "VAT Included",
+    "remainingGrant": "Remaining Grant",
+    "unlimited": "Unlimited",
     "filters": {
       "type": "Type"
     },
@@ -793,6 +803,27 @@
       "clearData": "Delete All Data",
       "clearDataDesc": "Delete all data (except users). This action cannot be undone!",
       "confirmClear": "Are you sure you want to delete all data? This action cannot be undone!"
+    },
+    "clearProgress": {
+      "title": "Deleting Data...",
+      "deleting": "deleting...",
+      "deleted": "deleted",
+      "pending": "Pending",
+      "records": "records",
+      "complete": "Complete",
+      "error": "An error occurred",
+      "tables": {
+        "payments": "Payments",
+        "installments": "Installments",
+        "debts": "Debts/Receivables",
+        "transaction_documents": "Documents",
+        "transactions": "Transactions",
+        "project_grants": "Grants",
+        "project_milestones": "Milestones",
+        "projects": "Projects",
+        "exchange_rates": "Exchange Rates",
+        "files": "Files"
+      }
     }
   }
 }
