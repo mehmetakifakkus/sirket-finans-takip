@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
+import { api } from '@/api'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
@@ -113,9 +114,9 @@ export function Transactions() {
   const loadData = async () => {
     try {
       const [partiesRes, categoriesRes, projectsRes] = await Promise.all([
-        window.api.getParties(),
-        window.api.getCategories(),
-        window.api.getProjects()
+        api.getParties(),
+        api.getCategories(),
+        api.getProjects()
       ])
       setParties(partiesRes as Party[])
       setCategories(categoriesRes as Category[])
@@ -136,7 +137,7 @@ export function Transactions() {
       if (filters.date_from) filterParams.date_from = filters.date_from
       if (filters.date_to) filterParams.date_to = filters.date_to
 
-      const result = await window.api.getTransactions(filterParams)
+      const result = await api.getTransactions(filterParams)
       setTransactions(result as Transaction[])
     } catch {
       addAlert('error', t('common.dataNotLoaded'))
@@ -217,7 +218,7 @@ export function Transactions() {
 
     try {
       if (editingTransaction) {
-        const result = await window.api.updateTransaction(editingTransaction.id, data)
+        const result = await api.updateTransaction(editingTransaction.id, data)
         if (result.success) {
           addAlert('success', result.message)
           loadTransactions()
@@ -226,13 +227,13 @@ export function Transactions() {
           addAlert('error', result.message)
         }
       } else {
-        const result = await window.api.createTransaction(data)
+        const result = await api.createTransaction(data)
         if (result.success) {
           addAlert('success', result.message)
           loadTransactions()
           // Open edit mode for the newly created transaction so user can add documents
           if (result.id) {
-            const newTransaction = await window.api.getTransaction(result.id)
+            const newTransaction = await api.getTransaction(result.id)
             if (newTransaction) {
               setEditingTransaction(newTransaction as Transaction)
             }
@@ -249,11 +250,11 @@ export function Transactions() {
   }
 
   const handleDelete = async (id: number) => {
-    const confirmed = await window.api.confirm(t('common.confirmDelete'))
+    const confirmed = await api.confirm(t('common.confirmDelete'))
     if (!confirmed) return
 
     try {
-      const result = await window.api.deleteTransaction(id)
+      const result = await api.deleteTransaction(id)
       if (result.success) {
         addAlert('success', result.message)
         loadTransactions()
@@ -310,7 +311,7 @@ export function Transactions() {
     setLoadingDocIds({})
 
     try {
-      const docs = await window.api.getDocuments(transactionId)
+      const docs = await api.getDocuments(transactionId)
       const typedDocs = docs as TransactionDocument[]
 
       // Mark all previewable docs as loading immediately
@@ -330,7 +331,7 @@ export function Transactions() {
         const startTime = Date.now()
 
         if (doc.mime_type.startsWith('image/')) {
-          const result = await window.api.getDocumentPreview(doc.id)
+          const result = await api.getDocumentPreview(doc.id)
           if (result.success && result.data) {
             // Ensure minimum loading time
             const elapsed = Date.now() - startTime
@@ -341,7 +342,7 @@ export function Transactions() {
           }
           setLoadingDocIds(prev => { const next = { ...prev }; delete next[doc.id]; return next })
         } else if (doc.mime_type === 'application/pdf') {
-          const result = await window.api.getDocumentPreview(doc.id)
+          const result = await api.getDocumentPreview(doc.id)
           if (result.success && result.data) {
             const pdfThumbnail = await generatePdfThumbnail(result.data)
             // Ensure minimum loading time
@@ -365,7 +366,7 @@ export function Transactions() {
 
   const handleOpenDocument = async (doc: TransactionDocument) => {
     try {
-      await window.api.openDocument(doc.filename)
+      await api.openDocument(doc.filename)
     } catch {
       addAlert('error', t('transactions.documents.openFailed'))
     }
@@ -373,7 +374,7 @@ export function Transactions() {
 
   const handleExport = async () => {
     try {
-      const result = await window.api.exportTransactions(filters)
+      const result = await api.exportTransactions(filters)
       if (result.success) {
         addAlert('success', t('common.csvCreated') + ': ' + result.path)
       }
@@ -432,7 +433,7 @@ export function Transactions() {
     }
 
     try {
-      const result = await window.api.createCategory({
+      const result = await api.createCategory({
         name: newCategoryName.trim(),
         type: formData.type,
         parent_id: null,
@@ -441,7 +442,7 @@ export function Transactions() {
 
       if (result.success) {
         addAlert('success', t('categories.categoryCreated'))
-        const categoriesRes = await window.api.getCategories()
+        const categoriesRes = await api.getCategories()
         setCategories(categoriesRes as Category[])
         setFormData({ ...formData, category_id: result.id.toString() })
         setShowCategoryForm(false)
@@ -460,14 +461,14 @@ export function Transactions() {
       return
     }
     try {
-      const result = await window.api.createParty({
+      const result = await api.createParty({
         type: newPartyData.type,
         name: newPartyData.name.trim(),
         tax_no: null, phone: null, email: null, address: null, notes: null
       })
       if (result.success) {
         addAlert('success', t('parties.partyCreated'))
-        const partiesRes = await window.api.getParties()
+        const partiesRes = await api.getParties()
         setParties(partiesRes as Party[])
         setFormData({ ...formData, party_id: result.id!.toString() })
         setShowPartyForm(false)
@@ -491,7 +492,7 @@ export function Transactions() {
       return
     }
     try {
-      const result = await window.api.createProject({
+      const result = await api.createProject({
         party_id: parseInt(formData.party_id),
         title: newProjectTitle.trim(),
         contract_amount: 0,
@@ -503,7 +504,7 @@ export function Transactions() {
       })
       if (result.success) {
         addAlert('success', t('transactions.projectCreatedMissingInfo'))
-        const projectsRes = await window.api.getProjects()
+        const projectsRes = await api.getProjects()
         setProjects(projectsRes as Project[])
         setFormData({ ...formData, project_id: result.id!.toString() })
         setShowProjectForm(false)
@@ -518,12 +519,12 @@ export function Transactions() {
 
   const handleImportClick = async () => {
     try {
-      const result = await window.api.selectImportFile()
+      const result = await api.selectImportFile()
       if (!result.success || !result.filePath) {
         return
       }
 
-      const parseResult = await window.api.parseImportFile(result.filePath)
+      const parseResult = await api.parseImportFile(result.filePath)
       if (!parseResult.success || !parseResult.preview) {
         addAlert('error', parseResult.message || t('transactions.import.failed'))
         return
@@ -576,7 +577,7 @@ export function Transactions() {
 
     setIsImporting(true)
     try {
-      const result = await window.api.executeImport(selectedRows, user?.id || 0)
+      const result = await api.executeImport(selectedRows, user?.id || 0)
       if (result.success) {
         if (result.categoriesCreated > 0 || result.partiesCreated > 0) {
           addAlert('success', t('transactions.import.successWithNew', {

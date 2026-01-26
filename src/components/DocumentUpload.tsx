@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { api } from '@/api'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import type { TransactionDocument } from '../types'
@@ -39,7 +40,7 @@ export function DocumentUpload({ transactionId, onDocumentsChange }: DocumentUpl
   const loadDocuments = async () => {
     if (!transactionId) return
     try {
-      const docs = await window.api.getDocuments(transactionId)
+      const docs = await api.getDocuments(transactionId)
       setDocuments(docs as TransactionDocument[])
       onDocumentsChange?.(docs.length)
     } catch (error) {
@@ -52,7 +53,7 @@ export function DocumentUpload({ transactionId, onDocumentsChange }: DocumentUpl
 
     setLoading(true)
     try {
-      const result = await window.api.addDocument(transactionId)
+      const result = await api.addDocument(transactionId)
       if (result.success && result.document) {
         setDocuments(prev => [result.document!, ...prev])
         onDocumentsChange?.(documents.length + 1)
@@ -68,11 +69,11 @@ export function DocumentUpload({ transactionId, onDocumentsChange }: DocumentUpl
   }
 
   const handleDeleteDocument = async (doc: TransactionDocument) => {
-    const confirmed = await window.api.confirm(t('transactions.documents.deleteConfirm'))
+    const confirmed = await api.confirm(t('transactions.documents.deleteConfirm'))
     if (!confirmed) return
 
     try {
-      const result = await window.api.deleteDocument(doc.id)
+      const result = await api.deleteDocument(doc.id)
       if (result.success) {
         setDocuments(prev => prev.filter(d => d.id !== doc.id))
         onDocumentsChange?.(documents.length - 1)
@@ -87,7 +88,7 @@ export function DocumentUpload({ transactionId, onDocumentsChange }: DocumentUpl
 
   const handleOpenDocument = async (doc: TransactionDocument) => {
     try {
-      await window.api.openDocument(doc.filename)
+      await api.openDocument(doc.filename)
     } catch (error) {
       addAlert('error', t('transactions.documents.openFailed'))
     }

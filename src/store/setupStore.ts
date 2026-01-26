@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { api } from '@/api'
 
 export type SetupStep = 'welcome' | 'database' | 'admin' | 'seed' | 'complete'
 
@@ -72,7 +73,7 @@ export const useSetupStore = create<SetupState>()((set, get) => ({
   checkSetupStatus: async () => {
     set({ isChecking: true, error: null })
     try {
-      const status: SetupStatus = await window.api.checkSetupStatus()
+      const status: SetupStatus = await api.checkSetupStatus()
       set({
         needsSetup: status.needsSetup,
         isChecking: false
@@ -94,7 +95,7 @@ export const useSetupStore = create<SetupState>()((set, get) => ({
   initDatabase: async () => {
     set({ isProcessing: true, error: null, statusMessage: 'Veritabani olusturuluyor...' })
     try {
-      const result = await window.api.initDatabase()
+      const result = await api.initDatabase()
       if (result.success) {
         set({
           isProcessing: false,
@@ -123,7 +124,7 @@ export const useSetupStore = create<SetupState>()((set, get) => ({
     const adminData = useDefaults ? get().adminData : customData!
     set({ isProcessing: true, error: null, statusMessage: 'Yonetici hesabi olusturuluyor...' })
     try {
-      const result = await window.api.createAdmin(adminData)
+      const result = await api.createAdmin(adminData)
       if (result.success) {
         set({
           isProcessing: false,
@@ -152,7 +153,7 @@ export const useSetupStore = create<SetupState>()((set, get) => ({
     const options = get().seedOptions
     set({ isProcessing: true, error: null, statusMessage: 'Veriler ekleniyor...' })
     try {
-      const result = await window.api.seedData(options)
+      const result = await api.seedData(options)
       set({
         isProcessing: false,
         statusMessage: result.message,

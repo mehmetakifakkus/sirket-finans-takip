@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
+import { api } from '@/api'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { useAuthStore } from '../store/authStore'
@@ -41,7 +42,7 @@ export function Payments() {
       if (filters.end_date) filterParams.end_date = filters.end_date
       if (filters.method) filterParams.method = filters.method
 
-      const result = await window.api.getPayments(filterParams)
+      const result = await api.getPayments(filterParams)
       setPayments(result as Payment[])
     } catch {
       addAlert('error', t('payments.errors.loadFailed'))
@@ -51,11 +52,11 @@ export function Payments() {
   }
 
   const handleDelete = async (id: number) => {
-    const confirmed = await window.api.confirm(t('payments.confirmDelete'))
+    const confirmed = await api.confirm(t('payments.confirmDelete'))
     if (!confirmed) return
 
     try {
-      const result = await window.api.deletePayment(id)
+      const result = await api.deletePayment(id)
       if (result.success) {
         addAlert('success', result.message)
         loadPayments()

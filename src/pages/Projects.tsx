@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
+import { api } from '@/api'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
@@ -89,7 +90,7 @@ export function Projects() {
 
   const loadParties = async () => {
     try {
-      const result = await window.api.getParties()
+      const result = await api.getParties()
       setParties(result as Party[])
     } catch {
       addAlert('error', t('projects.errors.partiesLoadFailed'))
@@ -103,7 +104,7 @@ export function Projects() {
       if (filters.party_id) filterParams.party_id = parseInt(filters.party_id)
       if (filters.status) filterParams.status = filters.status
 
-      const result = await window.api.getProjects(filterParams)
+      const result = await api.getProjects(filterParams)
       setProjects(result as Project[])
     } catch {
       addAlert('error', t('projects.errors.projectsLoadFailed'))
@@ -160,7 +161,7 @@ export function Projects() {
 
     try {
       if (editingProject) {
-        const result = await window.api.updateProject(editingProject.id, data)
+        const result = await api.updateProject(editingProject.id, data)
         if (result.success) {
           addAlert('success', result.message)
           loadProjects()
@@ -169,7 +170,7 @@ export function Projects() {
           addAlert('error', result.message)
         }
       } else {
-        const result = await window.api.createProject(data)
+        const result = await api.createProject(data)
         if (result.success) {
           addAlert('success', result.message)
           loadProjects()
@@ -184,11 +185,11 @@ export function Projects() {
   }
 
   const handleDelete = async (id: number) => {
-    const confirmed = await window.api.confirm(t('projects.confirmDelete'))
+    const confirmed = await api.confirm(t('projects.confirmDelete'))
     if (!confirmed) return
 
     try {
-      const result = await window.api.deleteProject(id)
+      const result = await api.deleteProject(id)
       if (result.success) {
         addAlert('success', result.message)
         loadProjects()

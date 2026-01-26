@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { api } from '@/api'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import type { Category } from '../types'
@@ -42,7 +43,7 @@ export function Categories() {
 
   const loadCategories = async () => {
     try {
-      const result = await window.api.getCategories(filterType || undefined)
+      const result = await api.getCategories(filterType || undefined)
       setCategories(result as Category[])
     } catch {
       addAlert('error', t('categories.errors.loadFailed'))
@@ -56,7 +57,7 @@ export function Categories() {
 
     try {
       if (editingCategory) {
-        const result = await window.api.updateCategory(editingCategory.id, formData)
+        const result = await api.updateCategory(editingCategory.id, formData)
         if (result.success) {
           addAlert('success', result.message)
           loadCategories()
@@ -65,7 +66,7 @@ export function Categories() {
           addAlert('error', result.message)
         }
       } else {
-        const result = await window.api.createCategory(formData)
+        const result = await api.createCategory(formData)
         if (result.success) {
           addAlert('success', result.message)
           loadCategories()
@@ -80,11 +81,11 @@ export function Categories() {
   }
 
   const handleDelete = async (id: number) => {
-    const confirmed = await window.api.confirm(t('categories.confirmDelete'))
+    const confirmed = await api.confirm(t('categories.confirmDelete'))
     if (!confirmed) return
 
     try {
-      const result = await window.api.deleteCategory(id)
+      const result = await api.deleteCategory(id)
       if (result.success) {
         addAlert('success', result.message)
         loadCategories()
@@ -135,7 +136,7 @@ export function Categories() {
     if (!mergeSource || !mergeTargetId) return
 
     try {
-      const result = await window.api.mergeCategories(mergeSource.id, mergeTargetId)
+      const result = await api.mergeCategories(mergeSource.id, mergeTargetId)
       if (result.success) {
         addAlert('success', result.message)
         loadCategories()

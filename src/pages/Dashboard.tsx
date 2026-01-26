@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { api } from '@/api'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '../utils/currency'
@@ -16,7 +17,7 @@ export function Dashboard() {
 
   const loadDashboardData = async () => {
     try {
-      const result = await window.api.getDashboardData()
+      const result = await api.getDashboardData()
       setData(result as DashboardData)
     } catch (error) {
       console.error('Dashboard data fetch error:', error)

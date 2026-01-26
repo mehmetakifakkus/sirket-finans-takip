@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { api } from '@/api'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { formatCurrency } from '../utils/currency'
@@ -87,19 +88,19 @@ export function Reports() {
 
       switch (activeReport) {
         case 'summary':
-          const summary = await window.api.getReportSummary(filterParams)
+          const summary = await api.getReportSummary(filterParams)
           setSummaryData(summary as SummaryData)
           break
         case 'transactions':
-          const transactionResult = await window.api.getTransactionReport(filterParams) as { transactions: TransactionReport[] }
+          const transactionResult = await api.getTransactionReport(filterParams) as { transactions: TransactionReport[] }
           setTransactionData(transactionResult.transactions || [])
           break
         case 'debts':
-          const debtResult = await window.api.getDebtReport(filterParams) as { debts: DebtReport[] }
+          const debtResult = await api.getDebtReport(filterParams) as { debts: DebtReport[] }
           setDebtData(debtResult.debts || [])
           break
         case 'projects':
-          const projectResult = await window.api.getProjectReport(filterParams) as { projects: ProjectReport[] }
+          const projectResult = await api.getProjectReport(filterParams) as { projects: ProjectReport[] }
           setProjectData(projectResult.projects || [])
           break
       }
@@ -118,7 +119,7 @@ export function Reports() {
       if (filters.type) filterParams.type = filters.type
       if (filters.kind) filterParams.kind = filters.kind
 
-      const result = await window.api.exportReport(activeReport, filterParams)
+      const result = await api.exportReport(activeReport, filterParams)
       if (result.success) {
         addAlert('success', result.message)
       } else {

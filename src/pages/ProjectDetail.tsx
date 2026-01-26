@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { api } from '@/api'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
@@ -86,7 +87,7 @@ export function ProjectDetail() {
   const loadTransactions = async () => {
     if (!id) return
     try {
-      const result = await window.api.getTransactionsByProject(parseInt(id))
+      const result = await api.getTransactionsByProject(parseInt(id))
       setTransactions(result as Transaction[])
     } catch {
       // Silent fail - transactions are optional
@@ -95,7 +96,7 @@ export function ProjectDetail() {
 
   const loadCategories = async () => {
     try {
-      const result = await window.api.getCategories()
+      const result = await api.getCategories()
       setCategories(result as Category[])
     } catch {
       // Silent fail
@@ -104,7 +105,7 @@ export function ProjectDetail() {
 
   const loadParties = async () => {
     try {
-      const result = await window.api.getParties()
+      const result = await api.getParties()
       setParties(result as Party[])
     } catch {
       // Silent fail
@@ -115,7 +116,7 @@ export function ProjectDetail() {
     if (!id) return
     setLoading(true)
     try {
-      const result = await window.api.getProject(parseInt(id))
+      const result = await api.getProject(parseInt(id))
       setProject(result as Project & { milestones?: ProjectMilestone[] })
     } catch {
       addAlert('error', t('common.dataLoadError'))
@@ -127,9 +128,9 @@ export function ProjectDetail() {
   const loadGrants = async () => {
     if (!id) return
     try {
-      const result = await window.api.getProjectGrants(parseInt(id))
+      const result = await api.getProjectGrants(parseInt(id))
       setGrants(result as ProjectGrant[])
-      const totals = await window.api.getGrantTotals(parseInt(id))
+      const totals = await api.getGrantTotals(parseInt(id))
       setGrantTotals(totals)
     } catch {
       // Silent fail
@@ -158,7 +159,7 @@ export function ProjectDetail() {
     // Calculate amount if we have a rate and project
     if (preset.rate > 0 && project) {
       try {
-        const amount = await window.api.calculateGrantAmount(project.id, preset.rate, preset.vatExcluded)
+        const amount = await api.calculateGrantAmount(project.id, preset.rate, preset.vatExcluded)
         setCalculatedGrantAmount(amount)
         setGrantFormData(prev => ({
           ...prev,
@@ -177,7 +178,7 @@ export function ProjectDetail() {
     const rateNum = parseFloat(rate)
     if (rateNum > 0 && project) {
       try {
-        const amount = await window.api.calculateGrantAmount(project.id, rateNum, grantFormData.vat_excluded)
+        const amount = await api.calculateGrantAmount(project.id, rateNum, grantFormData.vat_excluded)
         setCalculatedGrantAmount(amount)
         setGrantFormData(prev => ({
           ...prev,
@@ -196,7 +197,7 @@ export function ProjectDetail() {
     const rate = parseFloat(grantFormData.funding_rate)
     if (rate > 0 && project) {
       try {
-        const amount = await window.api.calculateGrantAmount(project.id, rate, vatExcluded)
+        const amount = await api.calculateGrantAmount(project.id, rate, vatExcluded)
         setCalculatedGrantAmount(amount)
         setGrantFormData(prev => ({
           ...prev,
@@ -227,7 +228,7 @@ export function ProjectDetail() {
     setShowGrantForm(true)
     // Auto-calculate for default TÜBİTAK
     if (project) {
-      window.api.calculateGrantAmount(project.id, 75, true).then((amount: number) => {
+      api.calculateGrantAmount(project.id, 75, true).then((amount: number) => {
         setCalculatedGrantAmount(amount)
         setGrantFormData(prev => ({
           ...prev,
@@ -281,7 +282,7 @@ export function ProjectDetail() {
 
     try {
       if (editingGrant) {
-        const result = await window.api.updateGrant(editingGrant.id, data)
+        const result = await api.updateGrant(editingGrant.id, data)
         if (result.success) {
           addAlert('success', result.message)
           loadGrants()
@@ -290,7 +291,7 @@ export function ProjectDetail() {
           addAlert('error', result.message)
         }
       } else {
-        const result = await window.api.createGrant(data)
+        const result = await api.createGrant(data)
         if (result.success) {
           addAlert('success', result.message)
           loadGrants()
@@ -305,11 +306,11 @@ export function ProjectDetail() {
   }
 
   const handleDeleteGrant = async (grantId: number) => {
-    const confirmed = await window.api.confirm(t('grants.confirmDelete'))
+    const confirmed = await api.confirm(t('grants.confirmDelete'))
     if (!confirmed) return
 
     try {
-      const result = await window.api.deleteGrant(grantId)
+      const result = await api.deleteGrant(grantId)
       if (result.success) {
         addAlert('success', result.message)
         loadGrants()
@@ -347,7 +348,7 @@ export function ProjectDetail() {
 
     try {
       if (editingMilestone) {
-        const result = await window.api.updateMilestone(editingMilestone.id, data)
+        const result = await api.updateMilestone(editingMilestone.id, data)
         if (result.success) {
           addAlert('success', result.message)
           loadProject()
@@ -356,7 +357,7 @@ export function ProjectDetail() {
           addAlert('error', result.message)
         }
       } else {
-        const result = await window.api.createMilestone(data)
+        const result = await api.createMilestone(data)
         if (result.success) {
           addAlert('success', result.message)
           loadProject()
@@ -371,11 +372,11 @@ export function ProjectDetail() {
   }
 
   const handleDeleteMilestone = async (milestoneId: number) => {
-    const confirmed = await window.api.confirm(t('projectDetail.confirmDeleteMilestone'))
+    const confirmed = await api.confirm(t('projectDetail.confirmDeleteMilestone'))
     if (!confirmed) return
 
     try {
-      const result = await window.api.deleteMilestone(milestoneId)
+      const result = await api.deleteMilestone(milestoneId)
       if (result.success) {
         addAlert('success', result.message)
         loadProject()
@@ -457,7 +458,7 @@ export function ProjectDetail() {
     }
 
     try {
-      const result = await window.api.createTransaction(data)
+      const result = await api.createTransaction(data)
       if (result.success) {
         addAlert('success', result.message)
         loadProject()
@@ -481,11 +482,11 @@ export function ProjectDetail() {
   }
 
   const handleDeleteTransaction = async (transactionId: number) => {
-    const confirmed = await window.api.confirm(t('projectDetail.confirmDeleteTransaction'))
+    const confirmed = await api.confirm(t('projectDetail.confirmDeleteTransaction'))
     if (!confirmed) return
 
     try {
-      const result = await window.api.deleteTransaction(transactionId)
+      const result = await api.deleteTransaction(transactionId)
       if (result.success) {
         addAlert('success', result.message)
         loadProject()
@@ -517,7 +518,7 @@ export function ProjectDetail() {
         filters.date_from = dateFrom.toISOString().split('T')[0]
       }
 
-      const result = await window.api.getUnassignedTransactions(filters)
+      const result = await api.getUnassignedTransactions(filters)
       setUnassignedTransactions(result as Transaction[])
     } catch {
       // Silent fail
@@ -562,7 +563,7 @@ export function ProjectDetail() {
     if (!project || selectedTransactionIds.size === 0) return
 
     try {
-      const result = await window.api.assignTransactionsToProject(
+      const result = await api.assignTransactionsToProject(
         Array.from(selectedTransactionIds),
         project.id
       )

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { api } from '@/api'
 import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../../store/authStore'
@@ -58,7 +59,7 @@ export function Sidebar() {
   useEffect(() => {
     const fetchCount = async () => {
       try {
-        const count = await window.api.getIncompleteProjectsCount()
+        const count = await api.getIncompleteProjectsCount()
         setIncompleteProjectCount(count)
       } catch {
         // ignore errors

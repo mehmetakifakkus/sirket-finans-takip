@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { api } from '@/api'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 
@@ -19,7 +20,7 @@ export function DatabaseOperations() {
 
   const loadStats = async () => {
     try {
-      const result = await window.api.getDatabaseStats()
+      const result = await api.getDatabaseStats()
       setStats(result)
     } catch (err) {
       console.error('Failed to load stats:', err)
@@ -35,7 +36,7 @@ export function DatabaseOperations() {
   const handleExport = async () => {
     setExporting(true)
     try {
-      const result = await window.api.exportDatabaseSQL()
+      const result = await api.exportDatabaseSQL()
       if (result.success) {
         addAlert('success', t('databaseOps.export.success'))
       } else if (result.message !== 'Export cancelled') {
@@ -49,7 +50,7 @@ export function DatabaseOperations() {
   }
 
   const handleImport = async () => {
-    const confirmed = await window.api.confirm(
+    const confirmed = await api.confirm(
       t('databaseOps.import.confirmMessage'),
       t('databaseOps.import.confirmTitle')
     )
@@ -58,7 +59,7 @@ export function DatabaseOperations() {
 
     setImporting(true)
     try {
-      const result = await window.api.importDatabaseSQL()
+      const result = await api.importDatabaseSQL()
       if (result.success) {
         addAlert('success', t('databaseOps.import.success'))
         loadStats()
@@ -73,7 +74,7 @@ export function DatabaseOperations() {
   }
 
   const handleClearData = async () => {
-    const confirmed = await window.api.confirm(
+    const confirmed = await api.confirm(
       t('databaseOps.dangerous.confirmClear'),
       t('databaseOps.dangerous.title')
     )
@@ -82,7 +83,7 @@ export function DatabaseOperations() {
 
     setClearing(true)
     try {
-      const result = await window.api.clearAllData()
+      const result = await api.clearAllData()
       if (result.success) {
         addAlert('success', result.message)
         loadStats()

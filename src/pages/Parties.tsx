@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { api } from '@/api'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { useAuthStore } from '../store/authStore'
@@ -58,7 +59,7 @@ export function Parties() {
   const loadParties = async () => {
     try {
       const filters = filterType ? { type: filterType } : undefined
-      const result = await window.api.getParties(filters)
+      const result = await api.getParties(filters)
       setParties(result as Party[])
     } catch {
       addAlert('error', t('parties.errors.loadFailed'))
@@ -72,7 +73,7 @@ export function Parties() {
 
     try {
       if (editingParty) {
-        const result = await window.api.updateParty(editingParty.id, formData)
+        const result = await api.updateParty(editingParty.id, formData)
         if (result.success) {
           addAlert('success', result.message)
           loadParties()
@@ -81,7 +82,7 @@ export function Parties() {
           addAlert('error', result.message)
         }
       } else {
-        const result = await window.api.createParty(formData)
+        const result = await api.createParty(formData)
         if (result.success) {
           addAlert('success', result.message)
           loadParties()
@@ -96,11 +97,11 @@ export function Parties() {
   }
 
   const handleDelete = async (id: number) => {
-    const confirmed = await window.api.confirm(t('parties.confirmDelete'))
+    const confirmed = await api.confirm(t('parties.confirmDelete'))
     if (!confirmed) return
 
     try {
-      const result = await window.api.deleteParty(id)
+      const result = await api.deleteParty(id)
       if (result.success) {
         addAlert('success', result.message)
         loadParties()
@@ -161,7 +162,7 @@ export function Parties() {
     if (!mergingParty || !mergeTargetId) return
 
     try {
-      const result = await window.api.mergeParties(mergingParty.id, parseInt(mergeTargetId))
+      const result = await api.mergeParties(mergingParty.id, parseInt(mergeTargetId))
       if (result.success) {
         addAlert('success', t('parties.merge.success'))
         loadParties()

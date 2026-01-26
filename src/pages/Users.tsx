@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { api } from '@/api'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { formatDate } from '../utils/date'
@@ -38,7 +39,7 @@ export function Users() {
   const loadUsers = async () => {
     setLoading(true)
     try {
-      const result = await window.api.getUsers()
+      const result = await api.getUsers()
       setUsers(result as User[])
     } catch {
       addAlert('error', t('common.dataNotLoaded'))
@@ -63,7 +64,7 @@ export function Users() {
 
     try {
       if (editingUser) {
-        const result = await window.api.updateUser(editingUser.id, data)
+        const result = await api.updateUser(editingUser.id, data)
         if (result.success) {
           addAlert('success', result.message)
           loadUsers()
@@ -76,7 +77,7 @@ export function Users() {
           addAlert('error', t('users.passwordRequired'))
           return
         }
-        const result = await window.api.createUser(data)
+        const result = await api.createUser(data)
         if (result.success) {
           addAlert('success', result.message)
           loadUsers()
@@ -91,11 +92,11 @@ export function Users() {
   }
 
   const handleDelete = async (id: number) => {
-    const confirmed = await window.api.confirm(t('users.confirmDelete'))
+    const confirmed = await api.confirm(t('users.confirmDelete'))
     if (!confirmed) return
 
     try {
-      const result = await window.api.deleteUser(id)
+      const result = await api.deleteUser(id)
       if (result.success) {
         addAlert('success', result.message)
         loadUsers()
@@ -109,7 +110,7 @@ export function Users() {
 
   const handleToggleActive = async (user: User) => {
     try {
-      const result = await window.api.updateUser(user.id, { is_active: !user.is_active })
+      const result = await api.updateUser(user.id, { is_active: !user.is_active })
       if (result.success) {
         addAlert('success', result.message)
         loadUsers()

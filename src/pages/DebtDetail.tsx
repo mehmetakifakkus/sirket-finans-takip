@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { api } from '@/api'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
@@ -37,7 +38,7 @@ export function DebtDetail() {
     if (!id) return
     setLoading(true)
     try {
-      const result = await window.api.getDebt(parseInt(id))
+      const result = await api.getDebt(parseInt(id))
       setDebt(result as Debt)
     } catch {
       addAlert('error', t('common.dataLoadError'))
@@ -50,7 +51,7 @@ export function DebtDetail() {
     if (!debt) return
 
     try {
-      const result = await window.api.createInstallments(debt.id, parseInt(installmentCount))
+      const result = await api.createInstallments(debt.id, parseInt(installmentCount))
       if (result.success) {
         addAlert('success', result.message)
         loadDebt()
@@ -68,7 +69,7 @@ export function DebtDetail() {
     if (!selectedInstallment) return
 
     try {
-      const result = await window.api.addInstallmentPayment(selectedInstallment.id, {
+      const result = await api.addInstallmentPayment(selectedInstallment.id, {
         amount: parseFloat(paymentData.amount),
         date: paymentData.date,
         method: paymentData.method,
@@ -87,11 +88,11 @@ export function DebtDetail() {
   }
 
   const handleDeleteInstallment = async (installmentId: number) => {
-    const confirmed = await window.api.confirm(t('debtDetail.confirmDeleteInstallment'))
+    const confirmed = await api.confirm(t('debtDetail.confirmDeleteInstallment'))
     if (!confirmed) return
 
     try {
-      const result = await window.api.deleteInstallment(installmentId)
+      const result = await api.deleteInstallment(installmentId)
       if (result.success) {
         addAlert('success', result.message)
         loadDebt()

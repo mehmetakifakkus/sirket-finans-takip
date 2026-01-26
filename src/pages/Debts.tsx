@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
+import { api } from '@/api'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
@@ -61,7 +62,7 @@ export function Debts() {
 
   const loadParties = async () => {
     try {
-      const result = await window.api.getParties()
+      const result = await api.getParties()
       setParties(result as Party[])
     } catch {
       addAlert('error', t('debts.errors.partiesLoadFailed'))
@@ -78,7 +79,7 @@ export function Debts() {
       if (filters.date_from) filterParams.date_from = filters.date_from
       if (filters.date_to) filterParams.date_to = filters.date_to
 
-      const result = await window.api.getDebts(filterParams)
+      const result = await api.getDebts(filterParams)
       setDebts(result as Debt[])
     } catch {
       addAlert('error', t('common.dataLoadError'))
@@ -161,7 +162,7 @@ export function Debts() {
 
     try {
       if (editingDebt) {
-        const result = await window.api.updateDebt(editingDebt.id, data)
+        const result = await api.updateDebt(editingDebt.id, data)
         if (result.success) {
           addAlert('success', result.message)
           loadDebts()
@@ -170,7 +171,7 @@ export function Debts() {
           addAlert('error', result.message)
         }
       } else {
-        const result = await window.api.createDebt(data)
+        const result = await api.createDebt(data)
         if (result.success) {
           addAlert('success', result.message)
           loadDebts()
@@ -185,11 +186,11 @@ export function Debts() {
   }
 
   const handleDelete = async (id: number) => {
-    const confirmed = await window.api.confirm(t('common.deleteConfirm'))
+    const confirmed = await api.confirm(t('common.deleteConfirm'))
     if (!confirmed) return
 
     try {
-      const result = await window.api.deleteDebt(id)
+      const result = await api.deleteDebt(id)
       if (result.success) {
         addAlert('success', result.message)
         loadDebts()
@@ -203,7 +204,7 @@ export function Debts() {
 
   const handleExport = async () => {
     try {
-      const result = await window.api.exportDebts(filters)
+      const result = await api.exportDebts(filters)
       if (result.success) {
         addAlert('success', t('common.csvCreated'))
       }

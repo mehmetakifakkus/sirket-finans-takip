@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
+import { api } from '@/api'
 import type { User } from '../types'
 
 interface AuthState {
@@ -25,7 +26,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null })
 
         try {
-          const result = await window.api.login(email, password)
+          const result = await api.login(email, password)
 
           if (result.success && result.user) {
             set({
@@ -57,7 +58,7 @@ export const useAuthStore = create<AuthState>()(
 
       logout: async () => {
         try {
-          await window.api.logout()
+          await api.logout()
         } finally {
           set({
             user: null,
@@ -69,7 +70,7 @@ export const useAuthStore = create<AuthState>()(
 
       checkAuth: async () => {
         try {
-          const user = await window.api.getCurrentUser()
+          const user = await api.getCurrentUser()
           if (user) {
             set({
               user: user as Omit<User, 'password'>,
