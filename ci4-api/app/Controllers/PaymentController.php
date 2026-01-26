@@ -49,16 +49,26 @@ class PaymentController extends BaseController
             return $this->notFound('Ödeme bulunamadı');
         }
 
-        // Unmark installment as paid
-        if ($payment['installment_id']) {
-            $this->installmentModel->markAsUnpaid($payment['installment_id']);
+        // Get the related debt ID for updating paid amount later
+        $debtId = null;
+
+        // Unmark installment as paid if related to an installment
+        if ($payment['related_type'] === 'installment' && $payment['related_id']) {
+            $this->installmentModel->markAsUnpaid($payment['related_id']);
+            // Get debt_id from installment
+            $installment = $this->installmentModel->find($payment['related_id']);
+            if ($installment) {
+                $debtId = $installment['debt_id'];
+            }
+        } elseif ($payment['related_type'] === 'debt' && $payment['related_id']) {
+            $debtId = $payment['related_id'];
         }
 
         $this->paymentModel->delete($id);
 
         // Update debt paid amounts
-        if ($payment['debt_id']) {
-            $this->debtModel->updatePaidAmount($payment['debt_id']);
+        if ($debtId) {
+            $this->debtModel->updatePaidAmount($debtId);
         }
 
         return $this->success('Ödeme silindi');
