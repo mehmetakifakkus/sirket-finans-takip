@@ -1,5 +1,28 @@
 node_modules
 dist
 dist-electron
+dist-web
 release
 *.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# API uploads and backups
+api/uploads/*
+!api/uploads/.gitkeep
+!api/uploads/documents/.gitkeep
+api/backups/*
+!api/backups/.gitkeep
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
