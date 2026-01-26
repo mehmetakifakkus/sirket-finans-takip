@@ -1,16 +1,18 @@
 import { Currency, CURRENCY_SYMBOLS, CURRENCY_NAMES } from '../types'
 
-export function formatCurrency(amount: number, currency: Currency = 'TRY'): string {
+export function formatCurrency(amount: number | undefined | null, currency: Currency = 'TRY'): string {
   const symbol = CURRENCY_SYMBOLS[currency] || currency
-  const formatted = amount.toLocaleString('tr-TR', {
+  const value = amount ?? 0
+  const formatted = value.toLocaleString('tr-TR', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   })
   return `${formatted} ${symbol}`
 }
 
-export function formatNumber(amount: number): string {
-  return amount.toLocaleString('tr-TR', {
+export function formatNumber(amount: number | undefined | null): string {
+  const value = amount ?? 0
+  return value.toLocaleString('tr-TR', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   })
