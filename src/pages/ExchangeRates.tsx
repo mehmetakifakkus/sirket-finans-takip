@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { api } from '@/api'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { formatDate, getToday } from '../utils/date'
@@ -39,8 +40,8 @@ export function ExchangeRates() {
   const loadData = async () => {
     try {
       const [ratesRes, latestRes] = await Promise.all([
-        window.api.getExchangeRates(),
-        window.api.getLatestRates()
+        api.getExchangeRates(),
+        api.getLatestRates()
       ])
       setRates(ratesRes as ExchangeRate[])
       setLatestRates(latestRes as Record<string, { rate: number; date: string }>)
@@ -80,7 +81,7 @@ export function ExchangeRates() {
   const fetchTCMBSilent = async () => {
     setFetchingTCMB(true)
     try {
-      await window.api.fetchTCMBRates()
+      await api.fetchTCMBRates()
     } catch {
       // Silent fail on auto-fetch
     } finally {
@@ -91,7 +92,7 @@ export function ExchangeRates() {
   const fetchGoldSilent = async () => {
     setFetchingGold(true)
     try {
-      await window.api.fetchGoldPrice()
+      await api.fetchGoldPrice()
     } catch {
       // Silent fail on auto-fetch
     } finally {
@@ -102,7 +103,7 @@ export function ExchangeRates() {
   const handleFetchTCMB = async () => {
     setFetchingTCMB(true)
     try {
-      const result = await window.api.fetchTCMBRates()
+      const result = await api.fetchTCMBRates()
       if (result.success) {
         addAlert('success', result.message)
         loadData()
@@ -119,7 +120,7 @@ export function ExchangeRates() {
   const handleFetchGold = async () => {
     setFetchingGold(true)
     try {
-      const result = await window.api.fetchGoldPrice()
+      const result = await api.fetchGoldPrice()
       if (result.success) {
         addAlert('success', result.message)
         loadData()
@@ -144,7 +145,7 @@ export function ExchangeRates() {
 
     try {
       if (editingRate) {
-        const result = await window.api.updateExchangeRate(editingRate.id, data)
+        const result = await api.updateExchangeRate(editingRate.id, data)
         if (result.success) {
           addAlert('success', result.message)
           loadData()
@@ -153,7 +154,7 @@ export function ExchangeRates() {
           addAlert('error', result.message)
         }
       } else {
-        const result = await window.api.createExchangeRate(data)
+        const result = await api.createExchangeRate(data)
         if (result.success) {
           addAlert('success', result.message)
           loadData()
@@ -168,11 +169,11 @@ export function ExchangeRates() {
   }
 
   const handleDelete = async (id: number) => {
-    const confirmed = await window.api.confirm(t('exchangeRates.confirmDelete'))
+    const confirmed = await api.confirm(t('exchangeRates.confirmDelete'))
     if (!confirmed) return
 
     try {
-      const result = await window.api.deleteExchangeRate(id)
+      const result = await api.deleteExchangeRate(id)
       if (result.success) {
         addAlert('success', result.message)
         loadData()
@@ -268,10 +269,10 @@ export function ExchangeRates() {
             <div>
               <p className="text-sm text-gray-500">USD / TRY</p>
               <p className="text-3xl font-bold text-green-600">
-                {latestRates.USD ? latestRates.USD.rate.toFixed(4) : '-'}
+                {latestRates.USD ? Number(latestRates.USD.rate).toFixed(4) : '-'}
               </p>
               {latestRates.USD && (
-                <p className="text-xs text-gray-400 mt-1">{formatDate(latestRates.USD.date)}</p>
+                <p className="text-xs text-gray-400 mt-1">{formatDate(latestRates.USD.rate_date || latestRates.USD.date)}</p>
               )}
             </div>
             <div className="text-4xl text-green-500">$</div>
@@ -282,10 +283,10 @@ export function ExchangeRates() {
             <div>
               <p className="text-sm text-gray-500">EUR / TRY</p>
               <p className="text-3xl font-bold text-blue-600">
-                {latestRates.EUR ? latestRates.EUR.rate.toFixed(4) : '-'}
+                {latestRates.EUR ? Number(latestRates.EUR.rate).toFixed(4) : '-'}
               </p>
               {latestRates.EUR && (
-                <p className="text-xs text-gray-400 mt-1">{formatDate(latestRates.EUR.date)}</p>
+                <p className="text-xs text-gray-400 mt-1">{formatDate(latestRates.EUR.rate_date || latestRates.EUR.date)}</p>
               )}
             </div>
             <div className="text-4xl text-blue-500">&euro;</div>
@@ -296,10 +297,10 @@ export function ExchangeRates() {
             <div>
               <p className="text-sm text-gray-500">GR / TRY</p>
               <p className="text-3xl font-bold text-yellow-600">
-                {latestRates.GR ? latestRates.GR.rate.toFixed(2) : '-'}
+                {latestRates.GR ? Number(latestRates.GR.rate).toFixed(2) : '-'}
               </p>
               {latestRates.GR && (
-                <p className="text-xs text-gray-400 mt-1">{formatDate(latestRates.GR.date)}</p>
+                <p className="text-xs text-gray-400 mt-1">{formatDate(latestRates.GR.rate_date || latestRates.GR.date)}</p>
               )}
             </div>
             <div className="text-4xl text-yellow-500">
@@ -344,7 +345,7 @@ export function ExchangeRates() {
                       {rate.quote_currency}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono">{rate.rate.toFixed(4)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono">{Number(rate.rate).toFixed(4)}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{rate.source === 'tcmb' ? t('exchangeRates.tcmb') : rate.source === 'kapali-carsi' ? t('exchangeRates.kapaliCarsi') : t('exchangeRates.manual')}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                     <button onClick={() => openEditForm(rate)} className="text-blue-600 hover:text-blue-800 mr-3">{t('common.edit')}</button>
