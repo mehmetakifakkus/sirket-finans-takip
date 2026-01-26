@@ -1025,6 +1025,7 @@ export function Transactions() {
                     <SortIcon field="date" />
                   </span>
                 </th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase min-w-[300px]">{t('common.description')}</th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.type')}</th>
                 <th
                   className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none"
@@ -1069,7 +1070,7 @@ export function Transactions() {
             <tbody className="bg-white divide-y divide-gray-200">
               {transactions.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
                     {t('transactions.noTransactions')}
                   </td>
                 </tr>
@@ -1077,6 +1078,9 @@ export function Transactions() {
                 sortedTransactions.map((tr) => (
                   <tr key={tr.id} className="hover:bg-gray-50">
                     <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{formatDate(tr.date)}</td>
+                    <td className="px-3 py-3 text-sm text-gray-500 min-w-[300px] max-w-[400px] truncate" title={tr.description || ''}>
+                      {tr.description || '-'}
+                    </td>
                     <td className="px-3 py-3 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
                         tr.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
