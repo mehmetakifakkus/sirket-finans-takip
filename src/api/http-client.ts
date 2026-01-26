@@ -499,6 +499,17 @@ class HttpClient implements IApiClient {
     return { ...result, details: [] }
   }
 
+  clearTable = async (tableName: string) => {
+    return this.request<{
+      success: boolean
+      message: string
+      table: string
+      deleted_count: number
+    }>(`/database/clear/${tableName}`, {
+      method: 'POST',
+    })
+  }
+
   // Import - Web implementations
   selectImportFile = async () => {
     // Handled by file input in component
@@ -553,7 +564,47 @@ class HttpClient implements IApiClient {
   }
 
   importDatabaseSQL = async () => {
-    return { success: false, message: 'Use the restore form to upload backup file' }
+    return new Promise<{ success: boolean; message: string; details?: string[] }>((resolve) => {
+      // Create file input element
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.accept = '.sql'
+
+      input.onchange = async () => {
+        const file = input.files?.[0]
+        if (!file) {
+          resolve({ success: false, message: 'Import cancelled' })
+          return
+        }
+
+        try {
+          const formData = new FormData()
+          formData.append('file', file)
+
+          const response = await fetch(`${API_URL}/database/restore`, {
+            method: 'POST',
+            headers: {
+              ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),
+            },
+            body: formData,
+          })
+
+          const result = await response.json()
+          resolve(result)
+        } catch (err) {
+          resolve({
+            success: false,
+            message: err instanceof Error ? err.message : 'Import failed',
+          })
+        }
+      }
+
+      input.oncancel = () => {
+        resolve({ success: false, message: 'Import cancelled' })
+      }
+
+      input.click()
+    })
   }
 }
 

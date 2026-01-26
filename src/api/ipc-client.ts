@@ -148,6 +148,7 @@ class IpcClient implements IApiClient {
   getDatabaseStats = () => this.api.getDatabaseStats()
   exportDatabaseSQL = () => this.api.exportDatabaseSQL()
   importDatabaseSQL = () => this.api.importDatabaseSQL()
+  clearTable = (tableName: string) => this.api.clearTable(tableName)
 }
 
 export const ipcClient = new IpcClient()

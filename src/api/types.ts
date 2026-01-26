@@ -186,4 +186,10 @@ export interface IApiClient {
   }>;
   exportDatabaseSQL: () => Promise<{ success: boolean; path?: string; message?: string }>;
   importDatabaseSQL: () => Promise<{ success: boolean; message: string; details?: string[] }>;
+  clearTable: (tableName: string) => Promise<{
+    success: boolean;
+    message: string;
+    table: string;
+    deleted_count: number;
+  }>;
 }
