@@ -9,7 +9,8 @@ class PartyModel extends BaseModel
     protected string $table = 'parties';
     protected string $primaryKey = 'id';
     protected array $allowedFields = [
-        'name', 'type', 'tax_no', 'phone', 'email', 'address', 'notes'
+        'name', 'type', 'tax_no', 'phone', 'email', 'address', 'notes',
+        'grant_rate', 'grant_limit', 'vat_included'
     ];
 
     /**
@@ -59,6 +60,41 @@ class PartyModel extends BaseModel
             [$id, $id]
         );
         return ((int)($result['total'] ?? 0)) > 0;
+    }
+
+    /**
+     * Get remaining grant amount for a party
+     */
+    public function getRemainingGrant(int $partyId): ?float
+    {
+        $party = $this->find($partyId);
+        if (!$party || !$party['grant_limit']) {
+            return null;
+        }
+
+        // Calculate total expenses with this party (VAT excluded if vat_included = 0)
+        $vatIncluded = (int)($party['vat_included'] ?? 1);
+
+        if ($vatIncluded) {
+            // Use net_amount (includes VAT)
+            $sql = "SELECT COALESCE(SUM(net_amount), 0) as total
+                    FROM transactions
+                    WHERE party_id = ? AND type = 'expense'";
+        } else {
+            // Use amount without VAT
+            $sql = "SELECT COALESCE(SUM(amount), 0) as total
+                    FROM transactions
+                    WHERE party_id = ? AND type = 'expense'";
+        }
+
+        $result = Database::queryOne($sql, [$partyId]);
+        $totalExpenses = (float)($result['total'] ?? 0);
+
+        // Calculate used grant amount
+        $grantRate = (float)($party['grant_rate'] ?? 0);
+        $usedAmount = $totalExpenses * $grantRate;
+
+        return (float)$party['grant_limit'] - $usedAmount;
     }
 
     /**

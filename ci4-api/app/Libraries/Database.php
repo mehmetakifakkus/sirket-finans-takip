@@ -94,7 +94,9 @@ class Database
 
     public static function tableExists(string $table): bool
     {
-        $result = self::queryOne("SHOW TABLES LIKE ?", [$table]);
+        // Sanitize table name (only allow alphanumeric and underscore)
+        $table = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
+        $result = self::queryOne("SHOW TABLES LIKE '$table'");
         return $result !== null;
     }
 

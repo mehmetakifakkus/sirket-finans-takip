@@ -256,4 +256,104 @@ class SetupController extends BaseController
             return $this->error('Demo veriler oluşturulamadı: ' . $e->getMessage(), 500);
         }
     }
+
+    /**
+     * Run migrations for party grant fields
+     * POST /api/setup/migrate-party-grants
+     */
+    public function migratePartyGrants()
+    {
+        try {
+            $db = Database::connect();
+
+            // Check if columns already exist
+            $columns = $db->query("SHOW COLUMNS FROM parties")->fetchAll(\PDO::FETCH_COLUMN);
+
+            $added = [];
+
+            if (!in_array('grant_rate', $columns)) {
+                $db->exec("ALTER TABLE parties ADD COLUMN grant_rate DECIMAL(5,2) DEFAULT NULL");
+                $added[] = 'grant_rate';
+            }
+
+            if (!in_array('grant_limit', $columns)) {
+                $db->exec("ALTER TABLE parties ADD COLUMN grant_limit DECIMAL(15,2) DEFAULT NULL");
+                $added[] = 'grant_limit';
+            }
+
+            if (!in_array('vat_included', $columns)) {
+                $db->exec("ALTER TABLE parties ADD COLUMN vat_included TINYINT(1) DEFAULT 1");
+                $added[] = 'vat_included';
+            }
+
+            return $this->success('Party grant alanları eklendi', [
+                'added_columns' => $added
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->error('Migration hatası: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Fix project_grants table schema
+     * POST /api/setup/fix-grants-table
+     */
+    public function fixGrantsTable()
+    {
+        try {
+            $db = Database::connect();
+
+            // Disable foreign key checks temporarily
+            $db->exec("SET FOREIGN_KEY_CHECKS = 0");
+
+            // Drop and recreate project_grants table with correct schema
+            $db->exec("DROP TABLE IF EXISTS project_grants");
+
+            // Get projects table id column type to match
+            $result = $db->query("SHOW COLUMNS FROM projects WHERE Field = 'id'")->fetch(\PDO::FETCH_ASSOC);
+            $idType = $result ? strtoupper($result['Type']) : 'INT';
+
+            // Use BIGINT UNSIGNED if projects.id is BIGINT UNSIGNED, otherwise INT
+            $projectIdType = (strpos($idType, 'BIGINT') !== false) ? 'BIGINT UNSIGNED' : 'INT UNSIGNED';
+
+            $db->exec("CREATE TABLE project_grants (
+                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                project_id {$projectIdType} NOT NULL,
+                provider_name VARCHAR(255) NOT NULL,
+                provider_type ENUM('tubitak', 'kosgeb', 'sponsor', 'other') NOT NULL,
+                funding_rate DECIMAL(5,2),
+                funding_amount DECIMAL(15,2),
+                vat_excluded TINYINT(1) DEFAULT 1,
+                approved_amount DECIMAL(15,2) DEFAULT 0,
+                received_amount DECIMAL(15,2) DEFAULT 0,
+                currency VARCHAR(10) DEFAULT 'TRY',
+                status ENUM('pending', 'approved', 'partial', 'received', 'rejected') DEFAULT 'pending',
+                notes TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_project_grants_project (project_id),
+                INDEX idx_project_grants_status (status)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+            // Add foreign key after table creation
+            $db->exec("ALTER TABLE project_grants ADD CONSTRAINT fk_grants_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE");
+
+            // Re-enable foreign key checks
+            $db->exec("SET FOREIGN_KEY_CHECKS = 1");
+
+            return $this->success('project_grants tablosu yeniden oluşturuldu', [
+                'project_id_type' => $projectIdType
+            ]);
+
+        } catch (\Exception $e) {
+            // Make sure to re-enable foreign key checks even on error
+            try {
+                $db = Database::connect();
+                $db->exec("SET FOREIGN_KEY_CHECKS = 1");
+            } catch (\Exception $ignored) {}
+
+            return $this->error('Tablo oluşturulamadı: ' . $e->getMessage(), 500);
+        }
+    }
 }

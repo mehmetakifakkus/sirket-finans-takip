@@ -103,6 +103,8 @@ $routes = [
         'api/setup/seed-categories' => ['SetupController', 'seedCategories'],
         'api/setup/seed-rates' => ['SetupController', 'seedRates'],
         'api/setup/seed-demo' => ['SetupController', 'seedDemo'],
+        'api/setup/fix-grants-table' => ['SetupController', 'fixGrantsTable'],
+        'api/setup/migrate-party-grants' => ['SetupController', 'migratePartyGrants'],
         'api/transactions' => ['TransactionController', 'create', true],
         'api/transactions/assign' => ['TransactionController', 'assignToProject', true],
         'api/debts' => ['DebtController', 'create', true],
@@ -136,6 +138,8 @@ $dynamicRoutes = [
         'api/transactions/(\d+)' => ['TransactionController', 'show', true],
         'api/debts/(\d+)' => ['DebtController', 'show', true],
         'api/installments/(\d+)' => ['InstallmentController', 'show', true],
+        'api/parties/grant-defaults/([a-z]+)' => ['PartyController', 'grantDefaults', true],
+        'api/parties/(\d+)/remaining-grant' => ['PartyController', 'remainingGrant', true],
         'api/parties/(\d+)' => ['PartyController', 'show', true],
         'api/categories/(\d+)' => ['CategoryController', 'show', true],
         'api/projects/(\d+)' => ['ProjectController', 'show', true],
@@ -178,6 +182,7 @@ $dynamicRoutes = [
     'POST' => [
         'api/debts/(\d+)/installments' => ['DebtController', 'createInstallments', true],
         'api/installments/(\d+)/pay' => ['InstallmentController', 'pay', true],
+        'api/database/clear/([a-z_]+)' => ['DatabaseController', 'clearTable', true, true],
     ],
 ];
 

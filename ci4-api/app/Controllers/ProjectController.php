@@ -140,10 +140,8 @@ class ProjectController extends BaseController
             return $this->notFound('Proje bulunamadı');
         }
 
-        // Check for related transactions
-        if ($this->projectModel->hasRelatedRecords($id)) {
-            return $this->error('Bu projenin ilişkili işlemleri var. Önce işlemlerin proje atamasını kaldırın.', 409);
-        }
+        // Unassign transactions from this project (set project_id to NULL)
+        $this->projectModel->unassignTransactions($id);
 
         // Delete milestones
         $this->milestoneModel->where('project_id', $id)->chainDelete();

@@ -94,4 +94,15 @@ class ProjectModel extends BaseModel
         );
         return ((int)($result['cnt'] ?? 0)) > 0;
     }
+
+    /**
+     * Unassign all transactions from a project
+     */
+    public function unassignTransactions(int $id): void
+    {
+        Database::execute(
+            "UPDATE transactions SET project_id = NULL, milestone_id = NULL WHERE project_id = ?",
+            [$id]
+        );
+    }
 }

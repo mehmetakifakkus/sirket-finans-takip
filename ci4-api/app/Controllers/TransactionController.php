@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\TransactionModel;
 use App\Models\DocumentModel;
+use App\Libraries\Database;
 
 class TransactionController extends BaseController
 {
@@ -30,6 +31,16 @@ class TransactionController extends BaseController
         ]);
 
         $transactions = $this->transactionModel->getFiltered($filters);
+
+        // Döviz kurlarını al ve her işlem için amount_try hesapla
+        $rates = $this->getLatestRates();
+        foreach ($transactions as &$t) {
+            $t['amount_try'] = $this->convertToTRY(
+                (float)($t['net_amount'] ?? 0),
+                $t['currency'] ?? 'TRY',
+                $rates
+            );
+        }
 
         return $this->success('İşlemler listelendi', [
             'transactions' => $transactions,
@@ -226,5 +237,40 @@ class TransactionController extends BaseController
             ->setHeader('Content-Type', 'text/csv; charset=utf-8')
             ->setHeader('Content-Disposition', 'attachment; filename="islemler_' . date('Y-m-d') . '.csv"')
             ->setBody($csv);
+    }
+
+    /**
+     * Get latest exchange rates
+     */
+    private function getLatestRates(): array
+    {
+        $rates = ['TRY' => 1.0, 'USD' => 1.0, 'EUR' => 1.0];
+
+        $usdRate = Database::queryOne(
+            "SELECT rate FROM exchange_rates WHERE quote_currency = 'USD' ORDER BY rate_date DESC LIMIT 1"
+        );
+        if ($usdRate) {
+            $rates['USD'] = (float)$usdRate['rate'];
+        }
+
+        $eurRate = Database::queryOne(
+            "SELECT rate FROM exchange_rates WHERE quote_currency = 'EUR' ORDER BY rate_date DESC LIMIT 1"
+        );
+        if ($eurRate) {
+            $rates['EUR'] = (float)$eurRate['rate'];
+        }
+
+        return $rates;
+    }
+
+    /**
+     * Convert amount to TRY
+     */
+    private function convertToTRY(float $amount, string $currency, array $rates): float
+    {
+        if ($currency === 'TRY') {
+            return $amount;
+        }
+        return $amount * ($rates[$currency] ?? 1.0);
     }
 }

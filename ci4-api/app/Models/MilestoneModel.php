@@ -10,7 +10,7 @@ class MilestoneModel extends BaseModel
     protected string $primaryKey = 'id';
     protected array $allowedFields = [
         'project_id', 'title', 'expected_date', 'expected_amount',
-        'currency', 'status', 'notes'
+        'currency', 'status', 'completed_date', 'notes'
     ];
 
     /**

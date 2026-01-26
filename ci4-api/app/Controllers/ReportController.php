@@ -36,35 +36,70 @@ class ReportController extends BaseController
         $currentMonth = date('Y-m');
         $today = date('Y-m-d');
 
-        // Monthly income (current month, TRY only for simplicity)
-        $monthlyIncomeResult = Database::queryOne(
-            "SELECT COALESCE(SUM(net_amount), 0) as total FROM transactions
-             WHERE type = 'income' AND DATE_FORMAT(date, '%Y-%m') = ? AND currency = 'TRY'",
+        // Get latest exchange rates for conversion
+        $rates = $this->getLatestRates();
+
+        // Monthly income by currency
+        $monthlyIncomeData = Database::query(
+            "SELECT currency, COALESCE(SUM(net_amount), 0) as total FROM transactions
+             WHERE type = 'income' AND DATE_FORMAT(date, '%Y-%m') = ?
+             GROUP BY currency",
             [$currentMonth]
         );
-        $monthlyIncome = (float)($monthlyIncomeResult['total'] ?? 0);
+        $monthlyIncomeByCurrency = [];
+        $monthlyIncome = 0;
+        foreach ($monthlyIncomeData as $row) {
+            $currency = $row['currency'];
+            $amount = (float)$row['total'];
+            $monthlyIncomeByCurrency[$currency] = $amount;
+            $monthlyIncome += $this->convertToTRY($amount, $currency, $rates);
+        }
 
-        // Monthly expense (current month, TRY only)
-        $monthlyExpenseResult = Database::queryOne(
-            "SELECT COALESCE(SUM(net_amount), 0) as total FROM transactions
-             WHERE type = 'expense' AND DATE_FORMAT(date, '%Y-%m') = ? AND currency = 'TRY'",
+        // Monthly expense by currency
+        $monthlyExpenseData = Database::query(
+            "SELECT currency, COALESCE(SUM(net_amount), 0) as total FROM transactions
+             WHERE type = 'expense' AND DATE_FORMAT(date, '%Y-%m') = ?
+             GROUP BY currency",
             [$currentMonth]
         );
-        $monthlyExpense = (float)($monthlyExpenseResult['total'] ?? 0);
+        $monthlyExpenseByCurrency = [];
+        $monthlyExpense = 0;
+        foreach ($monthlyExpenseData as $row) {
+            $currency = $row['currency'];
+            $amount = (float)$row['total'];
+            $monthlyExpenseByCurrency[$currency] = $amount;
+            $monthlyExpense += $this->convertToTRY($amount, $currency, $rates);
+        }
 
-        // Total debt (open debts, TRY)
-        $totalDebtResult = Database::queryOne(
-            "SELECT COALESCE(SUM(principal_amount), 0) as total FROM debts
-             WHERE kind = 'debt' AND status = 'open' AND currency = 'TRY'"
+        // Total debt by currency (open debts)
+        $debtData = Database::query(
+            "SELECT currency, COALESCE(SUM(remaining_amount), 0) as total FROM debts
+             WHERE kind = 'debt' AND status = 'open'
+             GROUP BY currency"
         );
-        $totalDebt = (float)($totalDebtResult['total'] ?? 0);
+        $debtByCurrency = [];
+        $totalDebt = 0;
+        foreach ($debtData as $row) {
+            $currency = $row['currency'];
+            $amount = (float)$row['total'];
+            $debtByCurrency[$currency] = $amount;
+            $totalDebt += $this->convertToTRY($amount, $currency, $rates);
+        }
 
-        // Total receivable (open receivables, TRY)
-        $totalReceivableResult = Database::queryOne(
-            "SELECT COALESCE(SUM(principal_amount), 0) as total FROM debts
-             WHERE kind = 'receivable' AND status = 'open' AND currency = 'TRY'"
+        // Total receivable by currency (open receivables)
+        $receivableData = Database::query(
+            "SELECT currency, COALESCE(SUM(remaining_amount), 0) as total FROM debts
+             WHERE kind = 'receivable' AND status = 'open'
+             GROUP BY currency"
         );
-        $totalReceivable = (float)($totalReceivableResult['total'] ?? 0);
+        $receivableByCurrency = [];
+        $totalReceivable = 0;
+        foreach ($receivableData as $row) {
+            $currency = $row['currency'];
+            $amount = (float)$row['total'];
+            $receivableByCurrency[$currency] = $amount;
+            $totalReceivable += $this->convertToTRY($amount, $currency, $rates);
+        }
 
         // Upcoming installments (next 30 days, pending)
         $upcomingInstallments = $this->installmentModel->getUpcoming(30);
@@ -102,18 +137,62 @@ class ReportController extends BaseController
 
         return $this->success('Dashboard verileri', [
             'monthly_income' => $monthlyIncome,
+            'monthly_income_by_currency' => $monthlyIncomeByCurrency,
             'monthly_expense' => $monthlyExpense,
+            'monthly_expense_by_currency' => $monthlyExpenseByCurrency,
             'monthly_balance' => $monthlyIncome - $monthlyExpense,
             'total_debt' => $totalDebt,
+            'total_debt_by_currency' => $debtByCurrency,
             'total_receivable' => $totalReceivable,
+            'total_receivable_by_currency' => $receivableByCurrency,
             'net_position' => $totalReceivable - $totalDebt,
             'upcoming_installments' => $upcomingInstallments,
             'overdue_installments' => $overdueInstallments,
             'overdue_count' => $overdueCount,
             'active_projects' => $activeProjects,
             'active_projects_count' => $activeProjectsCount,
-            'recent_transactions' => $recentTransactions
+            'recent_transactions' => $recentTransactions,
+            'exchange_rates' => $rates
         ]);
+    }
+
+    /**
+     * Get latest exchange rates
+     */
+    private function getLatestRates(): array
+    {
+        $rates = ['TRY' => 1.0, 'USD' => 1.0, 'EUR' => 1.0];
+
+        // Get latest USD rate
+        $usdRate = Database::queryOne(
+            "SELECT rate FROM exchange_rates WHERE currency = 'USD' ORDER BY rate_date DESC LIMIT 1"
+        );
+        if ($usdRate) {
+            $rates['USD'] = (float)$usdRate['rate'];
+        }
+
+        // Get latest EUR rate
+        $eurRate = Database::queryOne(
+            "SELECT rate FROM exchange_rates WHERE currency = 'EUR' ORDER BY rate_date DESC LIMIT 1"
+        );
+        if ($eurRate) {
+            $rates['EUR'] = (float)$eurRate['rate'];
+        }
+
+        return $rates;
+    }
+
+    /**
+     * Convert amount to TRY
+     */
+    private function convertToTRY(float $amount, string $currency, array $rates): float
+    {
+        if ($currency === 'TRY') {
+            return $amount;
+        }
+
+        $rate = $rates[$currency] ?? 1.0;
+        return $amount * $rate;
     }
 
     /**

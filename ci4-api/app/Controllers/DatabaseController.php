@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Libraries\Database;
+
 class DatabaseController extends BaseController
 {
     /**
@@ -10,8 +12,6 @@ class DatabaseController extends BaseController
      */
     public function stats()
     {
-        $db = \Config\Database::connect();
-
         $tables = [
             'users', 'parties', 'categories', 'projects', 'project_milestones',
             'project_grants', 'transactions', 'transaction_documents', 'debts',
@@ -20,56 +20,82 @@ class DatabaseController extends BaseController
 
         $stats = [];
         foreach ($tables as $table) {
-            if ($db->tableExists($table)) {
-                $stats[$table] = $db->table($table)->countAllResults();
+            if (Database::tableExists($table)) {
+                $stats[$table] = [
+                    'label' => $table,
+                    'count' => Database::count($table)
+                ];
             }
         }
 
         // Get database size
-        $dbName = $db->database;
-        $sizeQuery = $db->query("SELECT
-            SUM(data_length + index_length) as size
-            FROM information_schema.tables
-            WHERE table_schema = ?", [$dbName]);
-        $sizeResult = $sizeQuery->getRowArray();
+        $dbName = getenv('database.default.database') ?: 'sirket_finans';
+        $sizeResult = Database::queryOne(
+            "SELECT SUM(data_length + index_length) as size FROM information_schema.tables WHERE table_schema = ?",
+            [$dbName]
+        );
         $dbSize = $sizeResult ? (int)$sizeResult['size'] : 0;
 
         return $this->success('Veritabanı istatistikleri', [
-            'tables' => $stats,
-            'total_records' => array_sum($stats),
-            'database_size' => $dbSize,
-            'database_size_formatted' => $this->formatBytes($dbSize)
+            'stats' => $stats,
+            'database_size' => $this->formatBytes($dbSize)
         ]);
     }
 
     /**
-     * Export database
+     * Export database as SQL
      * GET /api/database/export
      */
     public function export()
     {
-        $db = \Config\Database::connect();
-
         $tables = [
-            'users', 'parties', 'categories', 'projects', 'project_milestones',
-            'project_grants', 'transactions', 'transaction_documents', 'debts',
-            'installments', 'payments', 'exchange_rates', 'files'
+            'categories', 'parties', 'users', 'projects', 'project_milestones',
+            'project_grants', 'exchange_rates', 'transactions', 'transaction_documents',
+            'debts', 'installments', 'payments', 'files'
         ];
 
-        $exportData = [];
+        $sql = "-- Şirket Finans Takip - Database Export\n";
+        $sql .= "-- Generated: " . date('Y-m-d H:i:s') . "\n";
+        $sql .= "-- ----------------------------------------------\n\n";
+        $sql .= "SET FOREIGN_KEY_CHECKS = 0;\n\n";
+
         foreach ($tables as $table) {
-            if ($db->tableExists($table)) {
-                $exportData[$table] = $db->table($table)->get()->getResultArray();
+            if (!Database::tableExists($table)) {
+                continue;
             }
+
+            $rows = Database::query("SELECT * FROM $table");
+
+            if (empty($rows)) {
+                $sql .= "-- Table `$table` is empty\n\n";
+                continue;
+            }
+
+            $sql .= "-- Table: $table (" . count($rows) . " rows)\n";
+            $sql .= "TRUNCATE TABLE `$table`;\n";
+
+            foreach ($rows as $row) {
+                $columns = array_keys($row);
+                $values = array_map(function($val) {
+                    if ($val === null) {
+                        return 'NULL';
+                    }
+                    return "'" . addslashes($val) . "'";
+                }, array_values($row));
+
+                $sql .= "INSERT INTO `$table` (`" . implode('`, `', $columns) . "`) VALUES (" . implode(', ', $values) . ");\n";
+            }
+            $sql .= "\n";
         }
 
-        $json = json_encode($exportData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-        $filename = 'sirket_finans_export_' . date('Y-m-d_His') . '.json';
+        $sql .= "SET FOREIGN_KEY_CHECKS = 1;\n";
+
+        $filename = 'sirket_finans_export_' . date('Y-m-d_His') . '.sql';
 
         return $this->response
-            ->setHeader('Content-Type', 'application/json')
+            ->setHeader('Content-Type', 'application/sql')
             ->setHeader('Content-Disposition', "attachment; filename=\"$filename\"")
-            ->setBody($json);
+            ->setBody($sql);
     }
 
     /**
@@ -78,8 +104,6 @@ class DatabaseController extends BaseController
      */
     public function backup()
     {
-        $db = \Config\Database::connect();
-
         $tables = [
             'users', 'parties', 'categories', 'projects', 'project_milestones',
             'project_grants', 'transactions', 'transaction_documents', 'debts',
@@ -93,8 +117,8 @@ class DatabaseController extends BaseController
         ];
 
         foreach ($tables as $table) {
-            if ($db->tableExists($table)) {
-                $exportData['tables'][$table] = $db->table($table)->get()->getResultArray();
+            if (Database::tableExists($table)) {
+                $exportData['tables'][$table] = Database::query("SELECT * FROM $table");
             }
         }
 
@@ -112,51 +136,101 @@ class DatabaseController extends BaseController
     }
 
     /**
-     * Restore database from backup
+     * Restore database from SQL file
      * POST /api/database/restore
      */
     public function restore()
     {
-        $file = $this->request->getFile('file');
-        if (!$file || !$file->isValid()) {
-            return $this->validationError(['file' => 'Geçerli bir yedek dosyası yükleyin']);
+        // Handle file upload in standalone mode
+        if (!isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
+            return $this->validationError(['file' => 'Geçerli bir SQL dosyası yükleyin']);
         }
 
-        $content = file_get_contents($file->getTempName());
-        $data = json_decode($content, true);
+        $content = file_get_contents($_FILES['file']['tmp_name']);
 
-        if (!$data || !isset($data['tables'])) {
-            return $this->error('Geçersiz yedek dosyası formatı');
+        if (empty($content)) {
+            return $this->error('Dosya boş');
         }
 
-        $db = \Config\Database::connect();
+        // Parse SQL statements
+        $statements = $this->parseSqlStatements($content);
+
+        if (empty($statements)) {
+            return $this->error('Geçerli SQL ifadesi bulunamadı');
+        }
 
         try {
-            $db->transStart();
+            $executedCount = 0;
+            $errors = [];
 
-            foreach ($data['tables'] as $table => $rows) {
-                if ($db->tableExists($table)) {
-                    // Clear existing data
-                    $db->table($table)->truncate();
+            foreach ($statements as $statement) {
+                $statement = trim($statement);
+                if (empty($statement)) {
+                    continue;
+                }
 
-                    // Insert backup data
-                    foreach ($rows as $row) {
-                        $db->table($table)->insert($row);
-                    }
+                // Skip comments
+                if (strpos($statement, '--') === 0) {
+                    continue;
+                }
+
+                try {
+                    Database::execute($statement);
+                    $executedCount++;
+                } catch (\Exception $e) {
+                    $errors[] = substr($statement, 0, 50) . '... - ' . $e->getMessage();
                 }
             }
 
-            $db->transComplete();
-
-            if ($db->transStatus() === false) {
-                return $this->error('Geri yükleme başarısız oldu', 500);
+            if (!empty($errors) && $executedCount === 0) {
+                return $this->error('SQL çalıştırılamadı', 500, $errors);
             }
 
-            return $this->success('Veritabanı geri yüklendi');
+            return $this->success('Veritabanı geri yüklendi', [
+                'executed_statements' => $executedCount,
+                'errors' => $errors
+            ]);
 
         } catch (\Exception $e) {
             return $this->error('Geri yükleme hatası: ' . $e->getMessage(), 500);
         }
+    }
+
+    /**
+     * Parse SQL content into individual statements
+     */
+    private function parseSqlStatements(string $content): array
+    {
+        $statements = [];
+        $currentStatement = '';
+        $inString = false;
+        $stringChar = '';
+
+        $lines = explode("\n", $content);
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+
+            // Skip empty lines and comments
+            if (empty($line) || strpos($line, '--') === 0 || strpos($line, '#') === 0) {
+                continue;
+            }
+
+            $currentStatement .= ' ' . $line;
+
+            // Check if statement ends with semicolon (simple check)
+            if (substr(rtrim($line), -1) === ';') {
+                $statements[] = trim($currentStatement);
+                $currentStatement = '';
+            }
+        }
+
+        // Add any remaining statement
+        if (!empty(trim($currentStatement))) {
+            $statements[] = trim($currentStatement);
+        }
+
+        return $statements;
     }
 
     /**
@@ -172,8 +246,6 @@ class DatabaseController extends BaseController
             return $this->error('Onay gerekli. confirm: "CLEAR_ALL_DATA" gönderilmeli.');
         }
 
-        $db = \Config\Database::connect();
-
         $tables = [
             'payments', 'installments', 'debts', 'transaction_documents',
             'transactions', 'project_grants', 'project_milestones', 'projects',
@@ -181,19 +253,79 @@ class DatabaseController extends BaseController
         ];
 
         try {
-            $db->transStart();
+            // Disable foreign key checks
+            Database::execute("SET FOREIGN_KEY_CHECKS = 0");
 
             foreach ($tables as $table) {
-                if ($db->tableExists($table)) {
-                    $db->table($table)->truncate();
+                if (Database::tableExists($table)) {
+                    Database::execute("TRUNCATE TABLE $table");
                 }
             }
 
-            $db->transComplete();
+            // Re-enable foreign key checks
+            Database::execute("SET FOREIGN_KEY_CHECKS = 1");
 
             return $this->success('Tüm veriler silindi');
 
         } catch (\Exception $e) {
+            // Make sure to re-enable foreign key checks even on error
+            try {
+                Database::execute("SET FOREIGN_KEY_CHECKS = 1");
+            } catch (\Exception $ignored) {}
+
+            return $this->error('Silme hatası: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Clear a single table
+     * POST /api/database/clear/:tableName
+     */
+    public function clearTable($tableName = null)
+    {
+        // Handle table name from parameter or request body
+        if (empty($tableName)) {
+            $data = $this->getJsonInput();
+            $tableName = $data['table'] ?? null;
+        }
+
+        if (empty($tableName) || !is_string($tableName)) {
+            return $this->error('Tablo adı belirtilmeli', 400);
+        }
+
+        $allowedTables = [
+            'payments', 'installments', 'debts', 'transaction_documents',
+            'transactions', 'project_grants', 'project_milestones',
+            'projects', 'exchange_rates', 'files'
+        ];
+
+        if (!in_array($tableName, $allowedTables)) {
+            return $this->error('Geçersiz tablo adı: ' . $tableName, 400);
+        }
+
+        try {
+            // Get count before deletion
+            $count = 0;
+            if (Database::tableExists($tableName)) {
+                $count = Database::count($tableName);
+
+                // Disable foreign key checks, truncate, then re-enable
+                Database::execute("SET FOREIGN_KEY_CHECKS = 0");
+                Database::execute("TRUNCATE TABLE $tableName");
+                Database::execute("SET FOREIGN_KEY_CHECKS = 1");
+            }
+
+            return $this->success('Tablo silindi', [
+                'table' => $tableName,
+                'deleted_count' => $count
+            ]);
+
+        } catch (\Exception $e) {
+            // Make sure to re-enable foreign key checks even on error
+            try {
+                Database::execute("SET FOREIGN_KEY_CHECKS = 1");
+            } catch (\Exception $ignored) {}
+
             return $this->error('Silme hatası: ' . $e->getMessage(), 500);
         }
     }

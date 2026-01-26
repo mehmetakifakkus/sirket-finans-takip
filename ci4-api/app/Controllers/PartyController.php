@@ -47,6 +47,19 @@ class PartyController extends BaseController
     }
 
     /**
+     * Get grant defaults for a party type
+     */
+    private function getGrantDefaults(string $type): array
+    {
+        return match($type) {
+            'tubitak' => ['grant_rate' => 0.75, 'grant_limit' => 2333000, 'vat_included' => 0],
+            'kosgeb' => ['grant_rate' => 0.80, 'grant_limit' => 1456000, 'vat_included' => 0],
+            'individual' => ['grant_rate' => 1.00, 'grant_limit' => null, 'vat_included' => 1],
+            default => ['grant_rate' => null, 'grant_limit' => null, 'vat_included' => 1]
+        };
+    }
+
+    /**
      * Create party
      * POST /api/parties
      */
@@ -60,6 +73,9 @@ class PartyController extends BaseController
             return $this->validationError($errors);
         }
 
+        // Get grant defaults based on type
+        $grantDefaults = $this->getGrantDefaults($data['type']);
+
         $insertData = [
             'name' => $data['name'],
             'type' => $data['type'],
@@ -69,6 +85,9 @@ class PartyController extends BaseController
             'phone' => $data['phone'] ?? null,
             'email' => $data['email'] ?? null,
             'notes' => $data['notes'] ?? null,
+            'grant_rate' => $data['grant_rate'] ?? $grantDefaults['grant_rate'],
+            'grant_limit' => $data['grant_limit'] ?? $grantDefaults['grant_limit'],
+            'vat_included' => $data['vat_included'] ?? $grantDefaults['vat_included'],
             'created_by' => $this->getUserId()
         ];
 
@@ -166,6 +185,42 @@ class PartyController extends BaseController
 
         return $this->success('Taraflar birleştirildi', [
             'party' => $party
+        ]);
+    }
+
+    /**
+     * Get remaining grant for a party
+     * GET /api/parties/{id}/remaining-grant
+     */
+    public function remainingGrant(int $id)
+    {
+        $party = $this->partyModel->find($id);
+        if (!$party) {
+            return $this->notFound('Taraf bulunamadı');
+        }
+
+        $remainingGrant = $this->partyModel->getRemainingGrant($id);
+
+        return $this->success('Kalan hibe tutarı', [
+            'party_id' => $id,
+            'grant_limit' => $party['grant_limit'],
+            'grant_rate' => $party['grant_rate'],
+            'vat_included' => $party['vat_included'],
+            'remaining_grant' => $remainingGrant
+        ]);
+    }
+
+    /**
+     * Get grant defaults for a party type
+     * GET /api/parties/grant-defaults/{type}
+     */
+    public function grantDefaults(string $type)
+    {
+        $defaults = $this->getGrantDefaults($type);
+
+        return $this->success('Hibe varsayılanları', [
+            'type' => $type,
+            'defaults' => $defaults
         ]);
     }
 }
