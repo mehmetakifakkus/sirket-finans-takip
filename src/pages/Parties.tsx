@@ -3,14 +3,27 @@ import { api } from '@/api'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { useAuthStore } from '../store/authStore'
-import type { Party } from '../types'
+import type { Party, PartyType } from '../types'
+
+// Grant types that show grant fields in form
+const GRANT_TYPES: PartyType[] = ['tubitak', 'kosgeb', 'individual']
+
+// Default grant values by type
+const GRANT_DEFAULTS: Record<string, { grant_rate: number | null; grant_limit: number | null; vat_included: boolean }> = {
+  tubitak: { grant_rate: 0.75, grant_limit: 2333000, vat_included: false },
+  kosgeb: { grant_rate: 0.80, grant_limit: 1456000, vat_included: false },
+  individual: { grant_rate: 1.00, grant_limit: null, vat_included: true },
+}
 
 export function Parties() {
   const { t } = useTranslation()
 
-  const partyTypes = {
+  const partyTypes: Record<PartyType, string> = {
     customer: t('parties.types.customer'),
     vendor: t('parties.types.vendor'),
+    tubitak: t('parties.types.tubitak'),
+    kosgeb: t('parties.types.kosgeb'),
+    individual: t('parties.types.individual'),
     other: t('parties.types.other')
   }
   const [parties, setParties] = useState<Party[]>([])
@@ -23,13 +36,16 @@ export function Parties() {
   const isAdmin = user?.role === 'admin'
 
   const [formData, setFormData] = useState({
-    type: 'customer' as 'customer' | 'vendor' | 'other',
+    type: 'customer' as PartyType,
     name: '',
     tax_no: '',
     phone: '',
     email: '',
     address: '',
-    notes: ''
+    notes: '',
+    grant_rate: null as number | null,
+    grant_limit: null as number | null,
+    vat_included: true
   })
 
   // Merge states
@@ -122,7 +138,10 @@ export function Parties() {
       phone: '',
       email: '',
       address: '',
-      notes: ''
+      notes: '',
+      grant_rate: null,
+      grant_limit: null,
+      vat_included: true
     })
     setShowForm(true)
   }
@@ -136,7 +155,10 @@ export function Parties() {
       phone: party.phone || '',
       email: party.email || '',
       address: party.address || '',
-      notes: party.notes || ''
+      notes: party.notes || '',
+      grant_rate: party.grant_rate,
+      grant_limit: party.grant_limit,
+      vat_included: party.vat_included ?? true
     })
     setShowForm(true)
   }
@@ -214,6 +236,9 @@ export function Parties() {
             <option value="">{t('common.all')}</option>
             <option value="customer">{t('parties.types.customer')}</option>
             <option value="vendor">{t('parties.types.vendor')}</option>
+            <option value="tubitak">{t('parties.types.tubitak')}</option>
+            <option value="kosgeb">{t('parties.types.kosgeb')}</option>
+            <option value="individual">{t('parties.types.individual')}</option>
             <option value="other">{t('parties.types.other')}</option>
           </select>
         </div>
@@ -249,6 +274,9 @@ export function Parties() {
                     <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                       party.type === 'customer' ? 'bg-blue-100 text-blue-800' :
                       party.type === 'vendor' ? 'bg-orange-100 text-orange-800' :
+                      party.type === 'tubitak' ? 'bg-green-100 text-green-800' :
+                      party.type === 'kosgeb' ? 'bg-purple-100 text-purple-800' :
+                      party.type === 'individual' ? 'bg-cyan-100 text-cyan-800' :
                       'bg-gray-100 text-gray-800'
                     }`}>
                       {partyTypes[party.type]}
@@ -311,12 +339,30 @@ export function Parties() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.form.type')}</label>
                 <select
                   value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value as 'customer' | 'vendor' | 'other' })}
+                  onChange={(e) => {
+                    const newType = e.target.value as PartyType
+                    const defaults = GRANT_DEFAULTS[newType]
+                    if (defaults && !editingParty) {
+                      // Auto-fill grant defaults for new parties
+                      setFormData({
+                        ...formData,
+                        type: newType,
+                        grant_rate: defaults.grant_rate,
+                        grant_limit: defaults.grant_limit,
+                        vat_included: defaults.vat_included
+                      })
+                    } else {
+                      setFormData({ ...formData, type: newType })
+                    }
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   required
                 >
                   <option value="customer">{t('parties.types.customer')}</option>
                   <option value="vendor">{t('parties.types.vendor')}</option>
+                  <option value="tubitak">{t('parties.types.tubitak')}</option>
+                  <option value="kosgeb">{t('parties.types.kosgeb')}</option>
+                  <option value="individual">{t('parties.types.individual')}</option>
                   <option value="other">{t('parties.types.other')}</option>
                 </select>
               </div>
@@ -330,42 +376,47 @@ export function Parties() {
                   required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.form.taxNo')}</label>
-                <input
-                  type="text"
-                  value={formData.tax_no}
-                  onChange={(e) => setFormData({ ...formData, tax_no: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.form.phone')}</label>
-                <input
-                  type="text"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.form.email')}</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.form.address')}</label>
-                <textarea
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  rows={2}
-                />
-              </div>
+              {/* Tax, phone, email, address - hide for grant types */}
+              {!GRANT_TYPES.includes(formData.type) && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.form.taxNo')}</label>
+                    <input
+                      type="text"
+                      value={formData.tax_no}
+                      onChange={(e) => setFormData({ ...formData, tax_no: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.form.phone')}</label>
+                    <input
+                      type="text"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.form.email')}</label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.form.address')}</label>
+                    <textarea
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      rows={2}
+                    />
+                  </div>
+                </>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('parties.form.notes')}</label>
                 <textarea
@@ -375,6 +426,65 @@ export function Parties() {
                   rows={2}
                 />
               </div>
+
+              {/* Grant fields - only show for grant types */}
+              {GRANT_TYPES.includes(formData.type) && (
+                <div className="border-t border-gray-200 pt-4 mt-4 space-y-4">
+                  <h4 className="text-sm font-semibold text-gray-900">{t('parties.grantSettings')}</h4>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t('parties.grantRate')} (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="1"
+                        value={formData.grant_rate !== null ? formData.grant_rate * 100 : ''}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          grant_rate: e.target.value ? parseFloat(e.target.value) / 100 : null
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        placeholder="75"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t('parties.grantLimit')} (TRY)
+                      </label>
+                      <input
+                        type="number"
+                        step="1000"
+                        min="0"
+                        value={formData.grant_limit ?? ''}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          grant_limit: e.target.value ? parseFloat(e.target.value) : null
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        placeholder={formData.type === 'individual' ? t('parties.unlimited') : '2333000'}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="vat_included"
+                      checked={formData.vat_included}
+                      onChange={(e) => setFormData({ ...formData, vat_included: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                    />
+                    <label htmlFor="vat_included" className="ml-2 text-sm text-gray-700">
+                      {t('parties.vatIncluded')}
+                    </label>
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-end space-x-3 pt-4">
                 <button
                   type="button"

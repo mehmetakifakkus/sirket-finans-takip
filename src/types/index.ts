@@ -13,17 +13,24 @@ export interface User {
 }
 
 // Party types
+export type PartyType = 'customer' | 'vendor' | 'tubitak' | 'kosgeb' | 'individual' | 'other';
+
 export interface Party {
   id: number;
-  type: 'customer' | 'vendor' | 'other';
+  type: PartyType;
   name: string;
   tax_no: string | null;
   phone: string | null;
   email: string | null;
   address: string | null;
   notes: string | null;
+  grant_rate: number | null;
+  grant_limit: number | null;
+  vat_included: boolean;
   created_at: string;
   updated_at: string;
+  // Computed fields
+  remaining_grant?: number | null;
 }
 
 // Category types
@@ -362,13 +369,16 @@ export interface ProjectFormData {
 }
 
 export interface PartyFormData {
-  type: 'customer' | 'vendor' | 'other';
+  type: PartyType;
   name: string;
   tax_no: string;
   phone: string;
   email: string;
   address: string;
   notes: string;
+  grant_rate: number | null;
+  grant_limit: number | null;
+  vat_included: boolean;
 }
 
 export interface CategoryFormData {
