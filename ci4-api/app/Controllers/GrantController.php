@@ -58,7 +58,7 @@ class GrantController extends BaseController
         $data = $this->getJsonInput();
 
         // Validate required fields
-        $errors = $this->validateRequired($data, ['project_id', 'source', 'name', 'rate']);
+        $errors = $this->validateRequired($data, ['project_id', 'provider_name', 'provider_type']);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
@@ -71,14 +71,14 @@ class GrantController extends BaseController
 
         $insertData = [
             'project_id' => $data['project_id'],
-            'source' => $data['source'],
-            'name' => $data['name'],
-            'description' => $data['description'] ?? null,
-            'rate' => (float)$data['rate'],
-            'max_amount' => $data['max_amount'] ?? 0,
+            'provider_name' => $data['provider_name'],
+            'provider_type' => $data['provider_type'],
+            'funding_rate' => isset($data['funding_rate']) ? (float)$data['funding_rate'] : null,
+            'funding_amount' => isset($data['funding_amount']) ? (float)$data['funding_amount'] : null,
+            'vat_excluded' => $data['vat_excluded'] ?? true,
+            'approved_amount' => (float)($data['approved_amount'] ?? 0),
+            'received_amount' => (float)($data['received_amount'] ?? 0),
             'currency' => $data['currency'] ?? $project['currency'],
-            'calculated_amount' => 0,
-            'received_amount' => $data['received_amount'] ?? 0,
             'status' => $data['status'] ?? 'pending',
             'notes' => $data['notes'] ?? null
         ];
@@ -87,10 +87,6 @@ class GrantController extends BaseController
         if (!$id) {
             return $this->error('Hibe oluşturulamadı', 500);
         }
-
-        // Calculate initial amount
-        $calculatedAmount = $this->grantModel->calculateAmount($id);
-        $this->grantModel->update($id, ['calculated_amount' => $calculatedAmount]);
 
         $grant = $this->grantModel->getWithProject($id);
 

@@ -61,24 +61,20 @@ class ProjectController extends BaseController
         $data = $this->getJsonInput();
 
         // Validate required fields
-        $errors = $this->validateRequired($data, ['name', 'type', 'start_date', 'currency']);
+        $errors = $this->validateRequired($data, ['title', 'currency']);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
 
         $insertData = [
-            'name' => $data['name'],
-            'code' => $data['code'] ?? null,
-            'description' => $data['description'] ?? null,
-            'type' => $data['type'],
+            'title' => $data['title'],
             'party_id' => $data['party_id'] ?? null,
-            'start_date' => $data['start_date'],
+            'start_date' => $data['start_date'] ?? null,
             'end_date' => $data['end_date'] ?? null,
             'contract_amount' => $data['contract_amount'] ?? 0,
             'currency' => $data['currency'],
             'status' => $data['status'] ?? 'active',
-            'notes' => $data['notes'] ?? null,
-            'created_by' => $this->getUserId()
+            'notes' => $data['notes'] ?? null
         ];
 
         $id = $this->projectModel->insert($insertData);
@@ -91,12 +87,12 @@ class ProjectController extends BaseController
             foreach ($data['milestones'] as $milestone) {
                 $this->milestoneModel->insert([
                     'project_id' => $id,
-                    'name' => $milestone['name'],
-                    'description' => $milestone['description'] ?? null,
-                    'amount' => $milestone['amount'] ?? 0,
+                    'title' => $milestone['title'] ?? $milestone['name'] ?? '',
+                    'expected_date' => $milestone['expected_date'] ?? $milestone['due_date'] ?? null,
+                    'expected_amount' => $milestone['expected_amount'] ?? $milestone['amount'] ?? 0,
                     'currency' => $milestone['currency'] ?? $data['currency'],
-                    'due_date' => $milestone['due_date'] ?? null,
-                    'status' => 'pending'
+                    'status' => 'pending',
+                    'notes' => $milestone['notes'] ?? null
                 ]);
             }
         }

@@ -62,33 +62,21 @@ class DebtController extends BaseController
         $data = $this->getJsonInput();
 
         // Validate required fields
-        $errors = $this->validateRequired($data, ['type', 'party_id', 'amount', 'currency', 'date', 'due_date']);
+        $errors = $this->validateRequired($data, ['kind', 'party_id', 'principal_amount', 'currency']);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
 
-        // Calculate VAT
-        $amount = (float)$data['amount'];
-        $vatRate = (float)($data['vat_rate'] ?? 0);
-        $vatAmount = $amount * ($vatRate / 100);
-        $totalAmount = $amount + $vatAmount;
-
         $insertData = [
-            'type' => $data['type'],
+            'kind' => $data['kind'],
             'party_id' => $data['party_id'],
-            'amount' => $amount,
+            'principal_amount' => (float)$data['principal_amount'],
             'currency' => $data['currency'],
-            'vat_rate' => $vatRate,
-            'vat_amount' => $vatAmount,
-            'total_amount' => $totalAmount,
-            'paid_amount' => 0,
-            'remaining_amount' => $totalAmount,
-            'date' => $data['date'],
-            'due_date' => $data['due_date'],
-            'description' => $data['description'] ?? null,
-            'status' => 'pending',
-            'notes' => $data['notes'] ?? null,
-            'created_by' => $this->getUserId()
+            'vat_rate' => (float)($data['vat_rate'] ?? 0),
+            'start_date' => $data['start_date'] ?? null,
+            'due_date' => $data['due_date'] ?? null,
+            'status' => 'open',
+            'notes' => $data['notes'] ?? null
         ];
 
         $id = $this->debtModel->insert($insertData);
@@ -116,29 +104,8 @@ class DebtController extends BaseController
 
         $data = $this->getJsonInput();
 
-        // Recalculate if amount changed
-        if (isset($data['amount'])) {
-            $amount = (float)$data['amount'];
-            $vatRate = (float)($data['vat_rate'] ?? $debt['vat_rate'] ?? 0);
-            $vatAmount = $amount * ($vatRate / 100);
-            $totalAmount = $amount + $vatAmount;
-            $paidAmount = (float)$debt['paid_amount'];
-
-            $data['vat_amount'] = $vatAmount;
-            $data['total_amount'] = $totalAmount;
-            $data['remaining_amount'] = $totalAmount - $paidAmount;
-            $data['vat_rate'] = $vatRate;
-
-            // Update status based on payments
-            if ($data['remaining_amount'] <= 0) {
-                $data['status'] = 'paid';
-            } elseif ($paidAmount > 0) {
-                $data['status'] = 'partial';
-            }
-        }
-
         // Remove fields that shouldn't be updated
-        unset($data['id'], $data['created_at'], $data['created_by']);
+        unset($data['id'], $data['created_at']);
 
         $this->debtModel->update($id, $data);
 

@@ -9,7 +9,7 @@ class CategoryModel extends BaseModel
     protected string $table = 'categories';
     protected string $primaryKey = 'id';
     protected array $allowedFields = [
-        'name', 'type', 'parent_id', 'description', 'is_active', 'created_by'
+        'name', 'type', 'parent_id', 'is_active'
     ];
 
     /**

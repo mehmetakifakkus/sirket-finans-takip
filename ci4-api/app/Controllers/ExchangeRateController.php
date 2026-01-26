@@ -71,20 +71,21 @@ class ExchangeRateController extends BaseController
         $data = $this->getJsonInput();
 
         // Validate required fields
-        $errors = $this->validateRequired($data, ['currency', 'rate', 'date']);
+        $errors = $this->validateRequired($data, ['quote_currency', 'rate', 'rate_date']);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
 
         // Check if rate already exists
-        if ($this->exchangeRateModel->rateExists($data['currency'], $data['date'])) {
+        if ($this->exchangeRateModel->rateExists($data['quote_currency'], $data['rate_date'])) {
             return $this->error('Bu tarih için bu para birimi kuru zaten mevcut', 409);
         }
 
         $insertData = [
-            'currency' => $data['currency'],
+            'quote_currency' => $data['quote_currency'],
+            'base_currency' => $data['base_currency'] ?? 'TRY',
             'rate' => (float)$data['rate'],
-            'date' => $data['date'],
+            'rate_date' => $data['rate_date'],
             'source' => $data['source'] ?? 'manual'
         ];
 

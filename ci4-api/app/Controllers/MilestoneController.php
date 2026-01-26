@@ -43,7 +43,7 @@ class MilestoneController extends BaseController
         $data = $this->getJsonInput();
 
         // Validate required fields
-        $errors = $this->validateRequired($data, ['project_id', 'name']);
+        $errors = $this->validateRequired($data, ['project_id', 'title']);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
@@ -56,13 +56,11 @@ class MilestoneController extends BaseController
 
         $insertData = [
             'project_id' => $data['project_id'],
-            'name' => $data['name'],
-            'description' => $data['description'] ?? null,
-            'amount' => $data['amount'] ?? 0,
+            'title' => $data['title'],
+            'expected_amount' => $data['expected_amount'] ?? 0,
             'currency' => $data['currency'] ?? $project['currency'],
-            'due_date' => $data['due_date'] ?? null,
+            'expected_date' => $data['expected_date'] ?? null,
             'status' => $data['status'] ?? 'pending',
-            'completed_date' => $data['completed_date'] ?? null,
             'notes' => $data['notes'] ?? null
         ];
 

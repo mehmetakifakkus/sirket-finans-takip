@@ -9,8 +9,7 @@ class PartyModel extends BaseModel
     protected string $table = 'parties';
     protected string $primaryKey = 'id';
     protected array $allowedFields = [
-        'name', 'type', 'tax_number', 'tax_office', 'address',
-        'phone', 'email', 'notes', 'created_by'
+        'name', 'type', 'tax_no', 'phone', 'email', 'address', 'notes'
     ];
 
     /**
