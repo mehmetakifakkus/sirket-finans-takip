@@ -1,0 +1,33 @@
+# Composer
+/vendor/
+composer.lock
+
+# Environment
+.env
+
+# Writable directories (keep structure, ignore contents)
+/writable/cache/*
+/writable/logs/*
+/writable/session/*
+/writable/uploads/*
+/writable/backups/*
+!/writable/cache/.gitkeep
+!/writable/logs/.gitkeep
+!/writable/session/.gitkeep
+!/writable/uploads/.gitkeep
+!/writable/backups/.gitkeep
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+phpunit.xml
+.phpunit.result.cache
