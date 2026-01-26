@@ -150,10 +150,10 @@ class ProjectController extends BaseController
         }
 
         // Delete milestones
-        $this->milestoneModel->where('project_id', $id)->delete();
+        $this->milestoneModel->where('project_id', $id)->chainDelete();
 
         // Delete grants
-        $this->grantModel->where('project_id', $id)->delete();
+        $this->grantModel->where('project_id', $id)->chainDelete();
 
         $this->projectModel->delete($id);
 

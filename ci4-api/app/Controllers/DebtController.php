@@ -161,7 +161,7 @@ class DebtController extends BaseController
         }
 
         // Delete related installments
-        $this->installmentModel->where('debt_id', $id)->delete();
+        $this->installmentModel->where('debt_id', $id)->chainDelete();
 
         $this->debtModel->delete($id);
 
@@ -188,7 +188,7 @@ class DebtController extends BaseController
         }
 
         // Delete existing installments
-        $this->installmentModel->where('debt_id', $id)->delete();
+        $this->installmentModel->where('debt_id', $id)->chainDelete();
 
         // Create new installments
         $installments = $this->installmentModel->createInstallments(
