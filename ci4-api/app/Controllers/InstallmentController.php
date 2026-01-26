@@ -80,13 +80,6 @@ class InstallmentController extends BaseController
 
         $this->installmentModel->delete($id);
 
-        // Renumber remaining installments
-        $remaining = $this->installmentModel->getByDebt($debtId);
-        $i = 1;
-        foreach ($remaining as $inst) {
-            $this->installmentModel->update($inst['id'], ['installment_no' => $i++]);
-        }
-
         // Update debt paid amounts
         $this->debtModel->updatePaidAmount($debtId);
 
@@ -104,7 +97,7 @@ class InstallmentController extends BaseController
             return $this->notFound('Taksit bulunamadı');
         }
 
-        if ($installment['is_paid']) {
+        if ($installment['status'] === 'paid') {
             return $this->error('Bu taksit zaten ödenmiş');
         }
 
@@ -112,14 +105,13 @@ class InstallmentController extends BaseController
         $paidDate = $data['paid_date'] ?? date('Y-m-d');
 
         // Mark as paid
-        $this->installmentModel->markAsPaid($id, $paidDate);
+        $this->installmentModel->markAsPaid($id, (float)$installment['amount']);
 
         // Record payment
-        $this->paymentModel->recordPayment(
-            $installment['debt_id'],
+        $this->paymentModel->recordInstallmentPayment(
             $id,
             (float)$installment['amount'],
-            $installment['currency'],
+            $installment['debt_currency'] ?? $installment['currency'] ?? 'TRY',
             $paidDate
         );
 
