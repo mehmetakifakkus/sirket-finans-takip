@@ -405,10 +405,31 @@ function CompleteStep() {
 }
 
 export function Setup() {
-  const { currentStep, setStep } = useSetupStore()
+  const navigate = useNavigate()
+  const { currentStep, setStep, needsSetup, isChecking, checkSetupStatus } = useSetupStore()
+
+  // Check setup status and redirect if already complete
+  useEffect(() => {
+    checkSetupStatus()
+  }, [])
+
+  useEffect(() => {
+    if (!isChecking && needsSetup === false) {
+      navigate('/login', { replace: true })
+    }
+  }, [needsSetup, isChecking, navigate])
 
   const handleWelcomeNext = () => {
     setStep('database')
+  }
+
+  // Show loading while checking
+  if (isChecking) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+      </div>
+    )
   }
 
   const renderStep = () => {
