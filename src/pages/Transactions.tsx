@@ -76,7 +76,8 @@ export function Transactions() {
     date: getToday(),
     amount: '',
     currency: 'TRY' as 'TRY' | 'USD' | 'EUR',
-    vat_rate: '0',
+    vat_rate: '20',
+    vat_included: true,
     withholding_rate: '0',
     description: '',
     ref_no: ''
@@ -397,7 +398,8 @@ export function Transactions() {
       date: getToday(),
       amount: '',
       currency: 'TRY',
-      vat_rate: '0',
+      vat_rate: '20',
+      vat_included: true,
       withholding_rate: '0',
       description: '',
       ref_no: ''
@@ -417,6 +419,7 @@ export function Transactions() {
       amount: transaction.amount.toString(),
       currency: transaction.currency as 'TRY' | 'USD' | 'EUR',
       vat_rate: transaction.vat_rate.toString(),
+      vat_included: true,
       withholding_rate: transaction.withholding_rate.toString(),
       description: transaction.description || '',
       ref_no: transaction.ref_no || ''
@@ -1240,15 +1243,27 @@ export function Transactions() {
                 </div>
               </div>
 
-              {/* Row 2: Tutar + KDV (2/3 + 1/3) */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="col-span-2">
+              {/* Row 2: Tutar + KDV (50/50) */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-0.5">{t('common.amount')} *</label>
                   <input type="number" step="0.01" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} className="w-full px-3 py-1.5 border border-gray-300 rounded-md" required />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-0.5">{t('transactions.vatRate')}</label>
-                  <input type="number" step="0.01" value={formData.vat_rate} onChange={(e) => setFormData({ ...formData, vat_rate: e.target.value })} className="w-full px-3 py-1.5 border border-gray-300 rounded-md" />
+                  <div className="flex items-center gap-2">
+                    <input type="number" step="0.01" value={formData.vat_rate} onChange={(e) => setFormData({ ...formData, vat_rate: e.target.value })} className="w-20 px-3 py-1.5 border border-gray-300 rounded-md" />
+                    <span className="text-gray-500">%</span>
+                    <label className="flex items-center gap-1.5 ml-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.vat_included}
+                        onChange={(e) => setFormData({ ...formData, vat_included: e.target.checked })}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">{t('transactions.vatIncluded')}</span>
+                    </label>
+                  </div>
                 </div>
               </div>
 

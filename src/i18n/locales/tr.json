@@ -186,6 +186,7 @@
     "startDate": "Başlangıç",
     "endDate": "Bitiş",
     "vatRate": "KDV Oranı (%)",
+    "vatIncluded": "KDV dahil",
     "withholdingRate": "Stopaj Oranı (%)",
     "refNo": "Belge No",
     "noTransactions": "İşlem bulunamadı",

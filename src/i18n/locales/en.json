@@ -186,6 +186,7 @@
     "startDate": "Start Date",
     "endDate": "End Date",
     "vatRate": "VAT Rate (%)",
+    "vatIncluded": "VAT included",
     "withholdingRate": "Withholding Rate (%)",
     "refNo": "Reference No",
     "noTransactions": "No transactions found",
