@@ -1036,7 +1036,7 @@ export function Transactions() {
                     <SortIcon field="date" />
                   </span>
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase min-w-[300px]">{t('common.description')}</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase w-[240px]">{t('common.description')}</th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.type')}</th>
                 <th
                   className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none"
@@ -1089,8 +1089,8 @@ export function Transactions() {
                 sortedTransactions.map((tr) => (
                   <tr key={tr.id} className="hover:bg-gray-50">
                     <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">{formatDate(tr.date)}</td>
-                    <td className="px-3 py-3 text-sm text-gray-500 min-w-[300px] max-w-[400px] truncate" title={tr.description || ''}>
-                      {tr.description || '-'}
+                    <td className="px-3 py-3 text-sm text-gray-500 w-[240px] max-w-[240px]" title={tr.description || ''}>
+                      <span className="block truncate">{tr.description || '-'}</span>
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
