@@ -423,4 +423,95 @@ class SetupController extends BaseController
             return $this->error('Sütun eklenemedi: ' . $e->getMessage(), 500);
         }
     }
+
+    /**
+     * Migrate base_amount field for transactions
+     * POST /api/setup/migrate-base-amount
+     *
+     * Adds base_amount column if not exists and calculates values for existing transactions
+     */
+    public function migrateBaseAmount()
+    {
+        try {
+            $db = Database::connect();
+
+            // Check if column already exists
+            $columns = $db->query("SHOW COLUMNS FROM transactions")->fetchAll(\PDO::FETCH_COLUMN);
+
+            $columnAdded = false;
+            if (!in_array('base_amount', $columns)) {
+                $db->exec("ALTER TABLE transactions ADD COLUMN base_amount DECIMAL(15,2) DEFAULT NULL");
+                $columnAdded = true;
+            }
+
+            // Update existing transactions: base_amount = amount - vat_amount
+            // This assumes all existing transactions were entered as VAT-included
+            $db->exec("
+                UPDATE transactions
+                SET base_amount = ROUND(amount - COALESCE(vat_amount, 0), 2),
+                    updated_at = NOW()
+                WHERE base_amount IS NULL
+            ");
+
+            $countResult = Database::queryOne(
+                "SELECT COUNT(*) as count FROM transactions WHERE base_amount IS NOT NULL"
+            );
+            $updated = (int)($countResult['count'] ?? 0);
+
+            return $this->success('base_amount migration tamamlandı', [
+                'column_added' => $columnAdded,
+                'transactions_updated' => $updated
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->error('Migration hatası: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Update existing transactions with 20% VAT
+     * POST /api/setup/update-vat-20
+     *
+     * Sets vat_rate = 20, calculates vat_amount as VAT-included (amount * 20 / 120),
+     * and recalculates net_amount = amount - withholding_amount
+     */
+    public function updateVat20()
+    {
+        try {
+            $db = Database::connect();
+
+            // Get count of transactions to be updated
+            $countResult = Database::queryOne(
+                "SELECT COUNT(*) as count FROM transactions WHERE vat_rate != 20 OR vat_rate IS NULL"
+            );
+            $toUpdate = (int)($countResult['count'] ?? 0);
+
+            if ($toUpdate === 0) {
+                return $this->success('Güncellenecek işlem yok, tüm işlemler zaten %20 KDV ile', [
+                    'updated' => 0
+                ]);
+            }
+
+            // Update all transactions:
+            // vat_rate = 20
+            // vat_amount = amount * 20 / 120 (VAT-included calculation)
+            // net_amount = amount - withholding_amount
+            $db->exec("
+                UPDATE transactions
+                SET
+                    vat_rate = 20,
+                    vat_amount = ROUND(amount * 20 / 120, 2),
+                    net_amount = ROUND(amount - COALESCE(withholding_amount, 0), 2),
+                    updated_at = NOW()
+                WHERE vat_rate != 20 OR vat_rate IS NULL
+            ");
+
+            return $this->success('İşlemler %20 KDV ile güncellendi', [
+                'updated' => $toUpdate
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->error('Güncelleme hatası: ' . $e->getMessage(), 500);
+        }
+    }
 }

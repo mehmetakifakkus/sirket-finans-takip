@@ -37,6 +37,8 @@ $routes->group('api', function ($routes) {
     $routes->post('setup/seed-demo', 'SetupController::seedDemo');
     $routes->post('setup/create-templates-table', 'SetupController::createTemplatesTable');
     $routes->post('setup/add-transaction-description', 'SetupController::addTransactionDescription');
+    $routes->post('setup/update-vat-20', 'SetupController::updateVat20');
+    $routes->post('setup/migrate-base-amount', 'SetupController::migrateBaseAmount');
 
     // ========================================
     // Auth Routes (Protected)

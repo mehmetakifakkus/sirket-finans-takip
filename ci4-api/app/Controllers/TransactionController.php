@@ -95,6 +95,7 @@ class TransactionController extends BaseController
             $netAmount = $amount - $withholdingAmount;
         } else {
             // KDV hariç: add VAT to amount
+            $baseAmount = $amount; // Amount is already VAT-excluded
             $vatAmount = $amount * ($vatRate / 100);
             $withholdingAmount = $amount * ($withholdingRate / 100);
             $netAmount = $amount + $vatAmount - $withholdingAmount;
@@ -114,6 +115,7 @@ class TransactionController extends BaseController
             'withholding_rate' => $withholdingRate,
             'withholding_amount' => $withholdingAmount,
             'net_amount' => $netAmount,
+            'base_amount' => $baseAmount,
             'description' => $data['description'] ?? null,
             'ref_no' => $data['ref_no'] ?? null,
             'created_by' => $this->getUserId()
@@ -157,11 +159,14 @@ class TransactionController extends BaseController
                 $baseAmount = $amount - $data['vat_amount'];
                 $data['withholding_amount'] = $baseAmount * ($withholdingRate / 100);
                 $data['net_amount'] = $amount - $data['withholding_amount'];
+                $data['base_amount'] = $baseAmount;
             } else {
                 // KDV hariç: add VAT to amount
+                $baseAmount = $amount; // Amount is already VAT-excluded
                 $data['vat_amount'] = $amount * ($vatRate / 100);
                 $data['withholding_amount'] = $amount * ($withholdingRate / 100);
                 $data['net_amount'] = $amount + $data['vat_amount'] - $data['withholding_amount'];
+                $data['base_amount'] = $baseAmount;
             }
             $data['vat_rate'] = $vatRate;
             $data['withholding_rate'] = $withholdingRate;

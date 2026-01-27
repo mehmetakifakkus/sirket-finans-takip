@@ -128,6 +128,7 @@ export interface Transaction {
   withholding_rate: number;
   withholding_amount: number;
   net_amount: number;
+  base_amount?: number;
   description: string | null;
   ref_no: string | null;
   document_path: string | null;

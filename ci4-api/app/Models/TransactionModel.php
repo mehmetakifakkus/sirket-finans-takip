@@ -11,7 +11,7 @@ class TransactionModel extends BaseModel
     protected array $allowedFields = [
         'type', 'party_id', 'category_id', 'project_id', 'milestone_id',
         'date', 'amount', 'currency', 'vat_rate', 'vat_amount',
-        'withholding_rate', 'withholding_amount', 'net_amount',
+        'withholding_rate', 'withholding_amount', 'net_amount', 'base_amount',
         'description', 'ref_no', 'document_path', 'created_by'
     ];
 
