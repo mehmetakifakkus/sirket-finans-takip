@@ -369,7 +369,7 @@ export function Transactions() {
 
   const handleOpenDocument = async (doc: TransactionDocument) => {
     try {
-      await api.openDocument(doc.filename)
+      await api.openDocument(doc.id)
     } catch {
       addAlert('error', t('transactions.documents.openFailed'))
     }

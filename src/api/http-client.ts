@@ -473,9 +473,9 @@ class HttpClient implements IApiClient {
       method: 'DELETE',
     })
 
-  openDocument = async (filename: string) => {
-    window.open(`${API_URL}/documents/file/${filename}`, '_blank')
-    return filename
+  openDocument = async (documentId: number | string) => {
+    window.open(`${API_URL}/documents/${documentId}/preview`, '_blank')
+    return documentId
   }
 
   getDocumentCount = async (transactionId: number) => {
