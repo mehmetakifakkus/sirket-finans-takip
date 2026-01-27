@@ -19,7 +19,9 @@ class DocumentModel extends BaseModel
     public function getByTransaction(int $transactionId): array
     {
         return Database::query(
-            "SELECT * FROM transaction_documents WHERE transaction_id = ? ORDER BY created_at DESC",
+            "SELECT id, transaction_id, file_name as original_name, file_path as filename,
+                    file_type as mime_type, file_size, description, created_by, created_at as uploaded_at
+             FROM transaction_documents WHERE transaction_id = ? ORDER BY created_at DESC",
             [$transactionId]
         );
     }
@@ -29,7 +31,9 @@ class DocumentModel extends BaseModel
      */
     public function getAll(array $filters = []): array
     {
-        $sql = "SELECT d.*, t.date as transaction_date, t.type as transaction_type,
+        $sql = "SELECT d.id, d.transaction_id, d.file_name as original_name, d.file_path as filename,
+                d.file_type as mime_type, d.file_size, d.description, d.created_by, d.created_at as uploaded_at,
+                t.date as transaction_date, t.type as transaction_type,
                 t.description as transaction_description, p.name as party_name
                 FROM transaction_documents d
                 LEFT JOIN transactions t ON t.id = d.transaction_id
@@ -80,7 +84,9 @@ class DocumentModel extends BaseModel
      */
     public function getWithTransaction(int $id): ?array
     {
-        $sql = "SELECT d.*, t.date as transaction_date, t.type as transaction_type, t.description as transaction_description
+        $sql = "SELECT d.id, d.transaction_id, d.file_name as original_name, d.file_path as filename,
+                d.file_type as mime_type, d.file_size, d.description, d.created_by, d.created_at as uploaded_at,
+                t.date as transaction_date, t.type as transaction_type, t.description as transaction_description
                 FROM transaction_documents d
                 LEFT JOIN transactions t ON t.id = d.transaction_id
                 WHERE d.id = ?";

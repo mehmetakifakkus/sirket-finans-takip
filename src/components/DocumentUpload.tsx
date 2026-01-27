@@ -15,7 +15,8 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-function getFileIcon(mimeType: string): string {
+function getFileIcon(mimeType: string | undefined): string {
+  if (!mimeType) return 'file'
   if (mimeType.startsWith('image/')) return 'image'
   if (mimeType === 'application/pdf') return 'pdf'
   if (mimeType.includes('word')) return 'doc'
