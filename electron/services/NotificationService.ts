@@ -1,5 +1,5 @@
 import { Notification, BrowserWindow } from 'electron'
-import type { Database } from 'better-sqlite3'
+import { DatabaseWrapper } from '../database/connection'
 
 interface UpcomingPayment {
   id: number
@@ -18,7 +18,7 @@ interface NotificationSettings {
 }
 
 export class NotificationService {
-  constructor(private db: Database) {}
+  constructor(private db: DatabaseWrapper) {}
 
   private formatDate(dateStr: string): string {
     const date = new Date(dateStr)

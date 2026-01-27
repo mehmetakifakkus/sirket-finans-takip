@@ -1,4 +1,4 @@
-import type { Database } from 'better-sqlite3'
+import { DatabaseWrapper } from '../database/connection'
 
 interface TransactionTemplate {
   id: number
@@ -41,7 +41,7 @@ interface CreateTemplateData {
 interface UpdateTemplateData extends Partial<CreateTemplateData> {}
 
 export class TemplateService {
-  constructor(private db: Database) {}
+  constructor(private db: DatabaseWrapper) {}
 
   private formatDate(date: Date): string {
     return date.toISOString().split('T')[0]
