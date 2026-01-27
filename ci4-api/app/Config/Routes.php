@@ -35,6 +35,8 @@ $routes->group('api', function ($routes) {
     $routes->post('setup/seed-categories', 'SetupController::seedCategories');
     $routes->post('setup/seed-rates', 'SetupController::seedRates');
     $routes->post('setup/seed-demo', 'SetupController::seedDemo');
+    $routes->post('setup/create-templates-table', 'SetupController::createTemplatesTable');
+    $routes->post('setup/add-transaction-description', 'SetupController::addTransactionDescription');
 
     // ========================================
     // Auth Routes (Protected)
@@ -134,6 +136,25 @@ $routes->group('api', function ($routes) {
         $routes->get('reports/debts', 'ReportController::debts');
         $routes->get('reports/projects', 'ReportController::projects');
         $routes->get('reports/export', 'ReportController::export');
+
+        // Charts
+        $routes->get('charts/monthly', 'ChartController::monthly');
+        $routes->get('charts/category', 'ChartController::category');
+        $routes->get('charts/debt-summary', 'ChartController::debtSummary');
+
+        // Notifications (Payment Reminders)
+        $routes->get('notifications/upcoming', 'NotificationController::upcoming');
+        $routes->get('notifications/overdue', 'NotificationController::overdue');
+        $routes->get('notifications/summary', 'NotificationController::summary');
+
+        // Templates (Transaction Templates)
+        $routes->get('templates', 'TemplateController::index');
+        $routes->get('templates/due', 'TemplateController::due');
+        $routes->get('templates/(:num)', 'TemplateController::show/$1');
+        $routes->post('templates', 'TemplateController::create');
+        $routes->put('templates/(:num)', 'TemplateController::update/$1');
+        $routes->delete('templates/(:num)', 'TemplateController::delete/$1');
+        $routes->post('templates/(:num)/create-transaction', 'TemplateController::createTransaction/$1');
 
         // Documents
         $routes->get('documents', 'DocumentController::index');

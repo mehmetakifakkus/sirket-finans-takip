@@ -88,7 +88,25 @@
     "categories": "Kategoriler",
     "exchangeRates": "Döviz Kurları",
     "users": "Kullanıcılar",
-    "databaseOperations": "Veritabanı"
+    "databaseOperations": "Veritabanı",
+    "reminders": "Ödeme Hatırlatıcıları"
+  },
+  "reminders": {
+    "title": "Ödeme Hatırlatıcıları",
+    "settingsTitle": "Bildirim Ayarları",
+    "settingsDescription": "Vadesi yaklaşan ve geciken ödemeler için bildirim tercihlerinizi ayarlayın.",
+    "overdueTitle": "Vadesi Geçmiş Ödemeler",
+    "upcomingTitle": "Yaklaşan Ödemeler",
+    "overdueCount": "Gecikmiş Ödeme",
+    "overdueAmount": "Gecikmiş Tutar",
+    "upcomingCount": "Yaklaşan Ödeme",
+    "upcomingAmount": "Yaklaşan Tutar",
+    "noUpcoming": "Önümüzdeki 30 gün içinde vadesi dolacak ödeme bulunmuyor.",
+    "viewAllDebts": "Tüm borç/alacakları gör",
+    "today": "Bugün",
+    "tomorrow": "Yarın",
+    "daysOverdue": "{{days}} gün gecikmiş",
+    "daysUntil": "{{days}} gün kaldı"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -112,6 +130,44 @@
     "noActiveProjects": "Aktif proje yok",
     "viewAllProjects": "Tüm projeleri gör",
     "dueDate": "Vade"
+  },
+  "charts": {
+    "monthlyIncomeExpense": "Aylık Gelir/Gider",
+    "categoryDistribution": "Gider Kategorileri Dağılımı",
+    "debtReceivableSummary": "Borç/Alacak Özeti",
+    "paid": "Ödenen",
+    "remaining": "Kalan",
+    "overdue": "Vadesi Geçmiş",
+    "last6Months": "Son 6 Ay",
+    "last12Months": "Son 12 Ay"
+  },
+  "templates": {
+    "title": "İşlem Şablonları",
+    "newTemplate": "Yeni Şablon",
+    "editTemplate": "Şablon Düzenle",
+    "templateName": "Şablon Adı",
+    "templateNamePlaceholder": "Örn: Aylık Kira Ödemesi",
+    "createTransaction": "İşlem Oluştur",
+    "useTemplate": "Şablonu Kullan",
+    "noTemplates": "Henüz şablon oluşturulmamış",
+    "recurrence": "Tekrar",
+    "recurrenceOptions": {
+      "none": "Tekrarsız",
+      "daily": "Günlük",
+      "weekly": "Haftalık",
+      "monthly": "Aylık",
+      "yearly": "Yıllık"
+    },
+    "nextDate": "Sonraki Tarih",
+    "active": "Aktif",
+    "inactive": "Pasif",
+    "templateCreated": "Şablon oluşturuldu",
+    "templateUpdated": "Şablon güncellendi",
+    "templateDeleted": "Şablon silindi",
+    "transactionCreated": "Şablondan işlem oluşturuldu",
+    "confirmDelete": "Bu şablonu silmek istediğinizden emin misiniz?",
+    "selectTemplate": "Şablon seçin",
+    "fromTemplate": "Şablondan"
   },
   "transactions": {
     "title": "Gelir / Gider İşlemleri",
@@ -653,6 +709,10 @@
     "transactionType": "İşlem Tipi",
     "debtType": "Tür",
     "downloadCSV": "CSV İndir",
+    "downloadPDF": "PDF İndir",
+    "pdfGenerating": "PDF oluşturuluyor...",
+    "pdfSuccess": "PDF indirildi",
+    "pdfFailed": "PDF oluşturulamadı",
     "totalIncome": "Toplam Gelir",
     "totalExpense": "Toplam Gider",
     "netBalance": "Net Bakiye",
@@ -758,7 +818,23 @@
     "turkish": "Türkçe",
     "english": "İngilizce",
     "german": "Almanca",
-    "languageChanged": "Dil değiştirildi"
+    "languageChanged": "Dil değiştirildi",
+    "notifications": {
+      "title": "Ödeme Hatırlatıcıları",
+      "description": "Vadesi yaklaşan ve geciken ödemeler için bildirim alın.",
+      "enabled": "Bildirimleri Etkinleştir",
+      "showOverdue": "Vadesi Geçmiş Ödemeleri Göster",
+      "reminderDays": "Hatırlatma Günleri",
+      "reminderDaysDesc": "Vadeden kaç gün önce hatırlatılsın",
+      "day": "gün önce",
+      "days": "gün önce",
+      "overdueTitle": "Vadesi Geçmiş Ödemeler",
+      "overdueBody": "{{count}} adet vadesi geçmiş ödeme var.",
+      "upcomingTitle": "Yaklaşan Ödemeler",
+      "upcomingBody": "{{count}} adet ödeme {{days}} gün içinde vadesi dolacak.",
+      "debtLabel": "borç",
+      "receivableLabel": "alacak"
+    }
   },
   "databaseOps": {
     "title": "Veritabanı İşlemleri",

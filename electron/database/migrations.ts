@@ -314,5 +314,32 @@ export function runMigrations(db: DatabaseWrapper): void {
   db.exec('CREATE INDEX IF NOT EXISTS idx_project_grants_project ON project_grants(project_id)')
   db.exec('CREATE INDEX IF NOT EXISTS idx_project_grants_status ON project_grants(status)')
 
+  // Create transaction_templates table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS transaction_templates (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
+      category_id INTEGER,
+      party_id INTEGER,
+      amount REAL,
+      currency TEXT DEFAULT 'TRY',
+      vat_rate REAL DEFAULT 0,
+      withholding_rate REAL DEFAULT 0,
+      description TEXT,
+      recurrence TEXT DEFAULT 'none' CHECK (recurrence IN ('none', 'daily', 'weekly', 'monthly', 'yearly')),
+      next_date TEXT,
+      is_active INTEGER DEFAULT 1,
+      created_by INTEGER,
+      created_at TEXT,
+      updated_at TEXT,
+      FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
+      FOREIGN KEY (party_id) REFERENCES parties(id) ON DELETE SET NULL,
+      FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+    )
+  `)
+  db.exec('CREATE INDEX IF NOT EXISTS idx_templates_type ON transaction_templates(type)')
+  db.exec('CREATE INDEX IF NOT EXISTS idx_templates_active ON transaction_templates(is_active)')
+
   console.log('Database migrations completed successfully')
 }

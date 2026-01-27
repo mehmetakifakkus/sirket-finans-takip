@@ -114,6 +114,27 @@ class IpcClient implements IApiClient {
   getProjectReport = (filters?: object) => this.api.getProjectReport(filters)
   exportReport = (type: string, filters?: object) => this.api.exportReport(type, filters)
 
+  // Charts
+  getMonthlyChartData = (months?: number) => this.api.getMonthlyChartData(months)
+  getCategoryChartData = (type?: string, months?: number) => this.api.getCategoryChartData(type, months)
+  getDebtSummaryChartData = () => this.api.getDebtSummaryChartData()
+
+  // Notifications
+  getUpcomingPayments = (days?: number) => this.api.getUpcomingPayments(days)
+  getOverduePayments = () => this.api.getOverduePayments()
+  getPaymentSummary = () => this.api.getPaymentSummary()
+  checkNotifications = (settings: object, translations: object) => this.api.checkNotifications(settings, translations)
+
+  // Templates
+  getTemplates = (filters?: object) => this.api.getTemplates(filters)
+  getTemplate = (id: number) => this.api.getTemplate(id)
+  createTemplate = (data: object) => this.api.createTemplate(data)
+  updateTemplate = (id: number, data: object) => this.api.updateTemplate(id, data)
+  deleteTemplate = (id: number) => this.api.deleteTemplate(id)
+  createTransactionFromTemplate = (templateId: number, date: string, userId: number, overrides?: object) =>
+    this.api.createTransactionFromTemplate(templateId, date, userId, overrides)
+  getDueTemplates = () => this.api.getDueTemplates()
+
   // File operations
   uploadFile = (documentPath?: string) => this.api.uploadFile(documentPath)
   deleteFile = (path: string) => this.api.deleteFile(path)

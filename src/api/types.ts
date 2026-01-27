@@ -103,6 +103,27 @@ export interface IApiClient {
   getProjectReport: (filters?: object) => Promise<object[]>;
   exportReport: (type: string, filters?: object) => Promise<{ success: boolean; message: string; path?: string }>;
 
+  // Charts
+  getMonthlyChartData: (months?: number) => Promise<object[]>;
+  getCategoryChartData: (type?: string, months?: number) => Promise<object[]>;
+  getDebtSummaryChartData: () => Promise<object>;
+
+  // Notifications
+  getUpcomingPayments: (days?: number) => Promise<object[]>;
+  getOverduePayments: () => Promise<object[]>;
+  getPaymentSummary: () => Promise<{ overdueCount: number; upcomingCount: number; overdueAmount: number; upcomingAmount: number }>;
+  checkNotifications: (settings: object, translations: object) => Promise<{ upcoming: object[]; overdue: object[] }>;
+
+  // Templates
+  getTemplates: (filters?: object) => Promise<object[]>;
+  getTemplate: (id: number) => Promise<object | null>;
+  createTemplate: (data: object) => Promise<{ success: boolean; message: string; id?: number }>;
+  updateTemplate: (id: number, data: object) => Promise<{ success: boolean; message: string }>;
+  deleteTemplate: (id: number) => Promise<{ success: boolean; message: string }>;
+  createTransactionFromTemplate: (templateId: number, date: string, userId: number, overrides?: object) =>
+    Promise<{ success: boolean; message: string; id?: number }>;
+  getDueTemplates: () => Promise<object[]>;
+
   // File operations
   uploadFile: (documentPath?: string) => Promise<string | null>;
   deleteFile: (path: string) => Promise<boolean>;

@@ -88,7 +88,25 @@
     "categories": "Categories",
     "exchangeRates": "Exchange Rates",
     "users": "Users",
-    "databaseOperations": "Database"
+    "databaseOperations": "Database",
+    "reminders": "Payment Reminders"
+  },
+  "reminders": {
+    "title": "Payment Reminders",
+    "settingsTitle": "Notification Settings",
+    "settingsDescription": "Configure your notification preferences for upcoming and overdue payments.",
+    "overdueTitle": "Overdue Payments",
+    "upcomingTitle": "Upcoming Payments",
+    "overdueCount": "Overdue Payments",
+    "overdueAmount": "Overdue Amount",
+    "upcomingCount": "Upcoming Payments",
+    "upcomingAmount": "Upcoming Amount",
+    "noUpcoming": "No payments due in the next 30 days.",
+    "viewAllDebts": "View all debts/receivables",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "daysOverdue": "{{days}} days overdue",
+    "daysUntil": "{{days}} days left"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -112,6 +130,44 @@
     "noActiveProjects": "No active projects",
     "viewAllProjects": "View all projects",
     "dueDate": "Due Date"
+  },
+  "charts": {
+    "monthlyIncomeExpense": "Monthly Income/Expense",
+    "categoryDistribution": "Expense Categories Distribution",
+    "debtReceivableSummary": "Debt/Receivable Summary",
+    "paid": "Paid",
+    "remaining": "Remaining",
+    "overdue": "Overdue",
+    "last6Months": "Last 6 Months",
+    "last12Months": "Last 12 Months"
+  },
+  "templates": {
+    "title": "Transaction Templates",
+    "newTemplate": "New Template",
+    "editTemplate": "Edit Template",
+    "templateName": "Template Name",
+    "templateNamePlaceholder": "E.g., Monthly Rent Payment",
+    "createTransaction": "Create Transaction",
+    "useTemplate": "Use Template",
+    "noTemplates": "No templates created yet",
+    "recurrence": "Recurrence",
+    "recurrenceOptions": {
+      "none": "None",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    },
+    "nextDate": "Next Date",
+    "active": "Active",
+    "inactive": "Inactive",
+    "templateCreated": "Template created",
+    "templateUpdated": "Template updated",
+    "templateDeleted": "Template deleted",
+    "transactionCreated": "Transaction created from template",
+    "confirmDelete": "Are you sure you want to delete this template?",
+    "selectTemplate": "Select template",
+    "fromTemplate": "From Template"
   },
   "transactions": {
     "title": "Income / Expense Transactions",
@@ -653,6 +709,10 @@
     "transactionType": "Transaction Type",
     "debtType": "Type",
     "downloadCSV": "Download CSV",
+    "downloadPDF": "Download PDF",
+    "pdfGenerating": "Generating PDF...",
+    "pdfSuccess": "PDF downloaded",
+    "pdfFailed": "Failed to generate PDF",
     "totalIncome": "Total Income",
     "totalExpense": "Total Expense",
     "netBalance": "Net Balance",
@@ -758,7 +818,23 @@
     "turkish": "Turkish",
     "german": "German",
     "english": "English",
-    "languageChanged": "Language changed"
+    "languageChanged": "Language changed",
+    "notifications": {
+      "title": "Payment Reminders",
+      "description": "Get notifications for upcoming and overdue payments.",
+      "enabled": "Enable Notifications",
+      "showOverdue": "Show Overdue Payments",
+      "reminderDays": "Reminder Days",
+      "reminderDaysDesc": "How many days before due date to remind",
+      "day": "day before",
+      "days": "days before",
+      "overdueTitle": "Overdue Payments",
+      "overdueBody": "You have {{count}} overdue payment(s).",
+      "upcomingTitle": "Upcoming Payments",
+      "upcomingBody": "{{count}} payment(s) due in {{days}} day(s).",
+      "debtLabel": "debt",
+      "receivableLabel": "receivable"
+    }
   },
   "databaseOps": {
     "title": "Database Operations",

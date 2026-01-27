@@ -5,14 +5,44 @@ import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '../utils/currency'
 import { formatDate, isOverdue } from '../utils/date'
 import type { DashboardData, Transaction, Installment, Project } from '../types'
+import { MonthlyIncomeExpenseChart, CategoryPieChart, DebtReceivableBarChart } from '../components/charts'
+
+interface MonthlyData {
+  month: string
+  month_label: string
+  income: number
+  expense: number
+}
+
+interface CategoryData {
+  category_id: number
+  category_name: string
+  total: number
+  percentage: number
+}
+
+interface DebtSummary {
+  debt_total: number
+  debt_paid: number
+  debt_remaining: number
+  debt_overdue: number
+  receivable_total: number
+  receivable_paid: number
+  receivable_remaining: number
+  receivable_overdue: number
+}
 
 export function Dashboard() {
   const { t } = useTranslation()
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([])
+  const [categoryData, setCategoryData] = useState<CategoryData[]>([])
+  const [debtSummary, setDebtSummary] = useState<DebtSummary | null>(null)
 
   useEffect(() => {
     loadDashboardData()
+    loadChartData()
   }, [])
 
   const loadDashboardData = async () => {
@@ -23,6 +53,21 @@ export function Dashboard() {
       console.error('Dashboard data fetch error:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadChartData = async () => {
+    try {
+      const [monthly, category, debt] = await Promise.all([
+        api.getMonthlyChartData(6),
+        api.getCategoryChartData('expense', 6),
+        api.getDebtSummaryChartData()
+      ])
+      setMonthlyData(monthly as MonthlyData[])
+      setCategoryData(category as CategoryData[])
+      setDebtSummary(debt as DebtSummary)
+    } catch (error) {
+      console.error('Chart data fetch error:', error)
     }
   }
 
@@ -130,6 +175,20 @@ export function Dashboard() {
           <p className="text-sm text-gray-500 mt-2">{t('dashboard.receivableMinusDebt')}</p>
         </div>
       </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Monthly Income/Expense Chart */}
+        <MonthlyIncomeExpenseChart data={monthlyData} />
+
+        {/* Category Distribution Pie Chart */}
+        <CategoryPieChart data={categoryData} />
+      </div>
+
+      {/* Debt/Receivable Summary Chart */}
+      {debtSummary && (
+        <DebtReceivableBarChart data={debtSummary} />
+      )}
 
       {/* Overdue and Upcoming */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

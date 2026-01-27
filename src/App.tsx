@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuthStore } from './store/authStore'
 import { useSetupStore } from './store/setupStore'
 import { MainLayout } from './components/layout/MainLayout'
+import { useNotificationChecker } from './hooks/useNotificationChecker'
 import { Login } from './pages/Login'
 import { Setup } from './pages/Setup'
 import { Dashboard } from './pages/Dashboard'
@@ -16,6 +17,7 @@ import { Projects } from './pages/Projects'
 import { ProjectDetail } from './pages/ProjectDetail'
 import { Payments } from './pages/Payments'
 import { Reports } from './pages/Reports'
+import { PaymentReminders } from './pages/PaymentReminders'
 import { Settings } from './pages/Settings'
 
 // Import i18n config
@@ -40,6 +42,9 @@ function LoadingScreen() {
 // Protected route wrapper
 function ProtectedRoute() {
   const { isLoggedIn } = useAuthStore()
+
+  // Check for payment notifications on startup
+  useNotificationChecker()
 
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />
@@ -116,6 +121,7 @@ export default function App() {
           <Route path="/projects/:id" element={<ProjectDetail />} />
           <Route path="/payments" element={<Payments />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/reminders" element={<PaymentReminders />} />
           <Route path="/settings" element={<Settings />} />
 
           {/* Admin only routes */}

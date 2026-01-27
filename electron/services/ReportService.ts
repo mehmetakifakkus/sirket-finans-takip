@@ -363,4 +363,153 @@ export class ReportService {
     d.setDate(0)
     return formatDate(d)
   }
+
+  getMonthlyChartData(months: number = 12): object[] {
+    const today = new Date()
+    const result: object[] = []
+
+    for (let i = months - 1; i >= 0; i--) {
+      const date = new Date(today.getFullYear(), today.getMonth() - i, 1)
+      const firstDay = formatDate(date)
+      const lastDay = this.getLastDayOfMonth(firstDay)
+
+      const transactions = this.db.prepare(`
+        SELECT type, net_amount, currency, date FROM transactions
+        WHERE date >= ? AND date <= ?
+      `).all(firstDay, lastDay) as { type: string; net_amount: number; currency: string; date: string }[]
+
+      let income = 0
+      let expense = 0
+
+      for (const t of transactions) {
+        const conversion = this.currencyService.convertToTRY(t.net_amount, t.currency, t.date)
+        if (t.type === 'income') {
+          income += conversion.amount_try
+        } else {
+          expense += conversion.amount_try
+        }
+      }
+
+      const monthNames = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
+
+      result.push({
+        month: firstDay.substring(0, 7),
+        month_label: `${monthNames[date.getMonth()]} ${date.getFullYear().toString().slice(-2)}`,
+        income: Math.round(income * 100) / 100,
+        expense: Math.round(expense * 100) / 100
+      })
+    }
+
+    return result
+  }
+
+  getCategoryChartData(type: 'income' | 'expense' = 'expense', months: number = 6): object[] {
+    const today = new Date()
+    const startDate = new Date(today.getFullYear(), today.getMonth() - months + 1, 1)
+    const start = formatDate(startDate)
+    const end = formatDate(today)
+
+    const transactions = this.db.prepare(`
+      SELECT t.category_id, c.name as category_name, t.net_amount, t.currency, t.date
+      FROM transactions t
+      LEFT JOIN categories c ON t.category_id = c.id
+      WHERE t.type = ? AND t.date >= ? AND t.date <= ?
+    `).all(type, start, end) as { category_id: number | null; category_name: string | null; net_amount: number; currency: string; date: string }[]
+
+    const categoryTotals: Record<string, { category_id: number; category_name: string; total: number }> = {}
+
+    for (const t of transactions) {
+      const categoryId = t.category_id || 0
+      const categoryName = t.category_name || 'Kategorisiz'
+      const key = String(categoryId)
+
+      if (!categoryTotals[key]) {
+        categoryTotals[key] = { category_id: categoryId, category_name: categoryName, total: 0 }
+      }
+
+      const conversion = this.currencyService.convertToTRY(t.net_amount, t.currency, t.date)
+      categoryTotals[key].total += conversion.amount_try
+    }
+
+    const sorted = Object.values(categoryTotals).sort((a, b) => b.total - a.total)
+    const grandTotal = sorted.reduce((sum, item) => sum + item.total, 0)
+
+    // Top 5 categories + others
+    const result: object[] = []
+    let othersTotal = 0
+
+    sorted.forEach((item, index) => {
+      if (index < 5) {
+        result.push({
+          category_id: item.category_id,
+          category_name: item.category_name,
+          total: Math.round(item.total * 100) / 100,
+          percentage: grandTotal > 0 ? (item.total / grandTotal) * 100 : 0
+        })
+      } else {
+        othersTotal += item.total
+      }
+    })
+
+    if (othersTotal > 0) {
+      result.push({
+        category_id: -1,
+        category_name: 'Diğerleri',
+        total: Math.round(othersTotal * 100) / 100,
+        percentage: grandTotal > 0 ? (othersTotal / grandTotal) * 100 : 0
+      })
+    }
+
+    return result
+  }
+
+  getDebtSummaryChartData(): object {
+    const today = formatDate(new Date())
+
+    // Get all open debts
+    const debts = this.db.prepare(`
+      SELECT d.*,
+        (SELECT COALESCE(SUM(p.amount), 0) FROM payments p
+         JOIN installments i ON p.related_id = i.id AND p.related_type = 'installment'
+         WHERE i.debt_id = d.id) as total_paid
+      FROM debts d WHERE d.status = 'open'
+    `).all() as { id: number; kind: string; principal_amount: number; currency: string; due_date: string; total_paid: number }[]
+
+    const summary = {
+      debt_total: 0,
+      debt_paid: 0,
+      debt_remaining: 0,
+      debt_overdue: 0,
+      receivable_total: 0,
+      receivable_paid: 0,
+      receivable_remaining: 0,
+      receivable_overdue: 0
+    }
+
+    for (const debt of debts) {
+      const convPrincipal = this.currencyService.convertToTRY(debt.principal_amount, debt.currency, today)
+      const convPaid = this.currencyService.convertToTRY(debt.total_paid || 0, debt.currency, today)
+      const remaining = convPrincipal.amount_try - convPaid.amount_try
+      const isOverdue = debt.due_date && debt.due_date < today
+
+      if (debt.kind === 'debt') {
+        summary.debt_total += convPrincipal.amount_try
+        summary.debt_paid += convPaid.amount_try
+        summary.debt_remaining += remaining
+        if (isOverdue) summary.debt_overdue += remaining
+      } else {
+        summary.receivable_total += convPrincipal.amount_try
+        summary.receivable_paid += convPaid.amount_try
+        summary.receivable_remaining += remaining
+        if (isOverdue) summary.receivable_overdue += remaining
+      }
+    }
+
+    // Round all values
+    Object.keys(summary).forEach(key => {
+      summary[key as keyof typeof summary] = Math.round(summary[key as keyof typeof summary] * 100) / 100
+    })
+
+    return summary
+  }
 }

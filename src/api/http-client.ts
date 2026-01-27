@@ -356,6 +356,69 @@ class HttpClient implements IApiClient {
     return { success: true, message: 'Export started', path: '' }
   }
 
+  // Charts
+  getMonthlyChartData = async (months?: number) => {
+    const result = await this.request<{ data: object[] }>(`/charts/monthly${months ? `?months=${months}` : ''}`)
+    return result.data || []
+  }
+  getCategoryChartData = async (type?: string, months?: number) => {
+    const params = this.buildQueryString({ type, months })
+    const result = await this.request<{ data: object[] }>(`/charts/category${params}`)
+    return result.data || []
+  }
+  getDebtSummaryChartData = () => this.request<object>('/charts/debt-summary')
+
+  // Notifications - Web browser doesn't have native notifications for installments
+  getUpcomingPayments = async (days?: number) => {
+    const result = await this.request<{ payments: object[] }>(`/notifications/upcoming${days ? `?days=${days}` : ''}`)
+    return result.payments || []
+  }
+  getOverduePayments = async () => {
+    const result = await this.request<{ payments: object[] }>('/notifications/overdue')
+    return result.payments || []
+  }
+  getPaymentSummary = () =>
+    this.request<{ overdueCount: number; upcomingCount: number; overdueAmount: number; upcomingAmount: number }>(
+      '/notifications/summary'
+    )
+  checkNotifications = async (_settings: object, _translations: object) => {
+    // Web browser notifications are handled differently
+    // Just return the data, UI will handle the display
+    const [upcoming, overdue] = await Promise.all([
+      this.getUpcomingPayments(7),
+      this.getOverduePayments()
+    ])
+    return { upcoming, overdue }
+  }
+
+  // Templates
+  getTemplates = async (filters?: object) => {
+    const result = await this.request<{ templates: object[] }>(`/templates${this.buildQueryString(filters)}`)
+    return result.templates || []
+  }
+  getTemplate = (id: number) => this.request<object | null>(`/templates/${id}`)
+  createTemplate = (data: object) =>
+    this.request<{ success: boolean; message: string; id?: number }>('/templates', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  updateTemplate = (id: number, data: object) =>
+    this.request<{ success: boolean; message: string }>(`/templates/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  deleteTemplate = (id: number) =>
+    this.request<{ success: boolean; message: string }>(`/templates/${id}`, { method: 'DELETE' })
+  createTransactionFromTemplate = (templateId: number, date: string, userId: number, overrides?: object) =>
+    this.request<{ success: boolean; message: string; id?: number }>(`/templates/${templateId}/create-transaction`, {
+      method: 'POST',
+      body: JSON.stringify({ date, userId, ...overrides }),
+    })
+  getDueTemplates = async () => {
+    const result = await this.request<{ templates: object[] }>('/templates/due')
+    return result.templates || []
+  }
+
   // File operations - Web implementations
   uploadFile = async (_documentPath?: string) => {
     // In web, file uploads happen via input element

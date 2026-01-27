@@ -16,6 +16,7 @@ export function Settings() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">{t('settings.title')}</h1>
 
+      {/* Language Settings */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('settings.language')}</h2>
 

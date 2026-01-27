@@ -356,4 +356,71 @@ class SetupController extends BaseController
             return $this->error('Tablo oluşturulamadı: ' . $e->getMessage(), 500);
         }
     }
+
+    /**
+     * Create transaction_templates table
+     * POST /api/setup/create-templates-table
+     */
+    public function createTemplatesTable()
+    {
+        try {
+            $db = Database::connect();
+
+            // Check if table exists
+            if (Database::tableExists('transaction_templates')) {
+                return $this->success('transaction_templates tablosu zaten mevcut');
+            }
+
+            $db->exec("CREATE TABLE transaction_templates (
+                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                type ENUM('income', 'expense') NOT NULL,
+                category_id INT UNSIGNED DEFAULT NULL,
+                party_id INT UNSIGNED DEFAULT NULL,
+                amount DECIMAL(15,2) DEFAULT NULL,
+                currency VARCHAR(10) DEFAULT 'TRY',
+                vat_rate DECIMAL(5,2) DEFAULT 0,
+                withholding_rate DECIMAL(5,2) DEFAULT 0,
+                description TEXT,
+                recurrence ENUM('none', 'daily', 'weekly', 'monthly', 'yearly') DEFAULT 'none',
+                next_date DATE DEFAULT NULL,
+                is_active TINYINT(1) DEFAULT 1,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_templates_type (type),
+                INDEX idx_templates_active (is_active),
+                INDEX idx_templates_next_date (next_date)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+            return $this->success('transaction_templates tablosu oluşturuldu');
+
+        } catch (\Exception $e) {
+            return $this->error('Tablo oluşturulamadı: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Add description column to transactions table
+     * POST /api/setup/add-transaction-description
+     */
+    public function addTransactionDescription()
+    {
+        try {
+            $db = Database::connect();
+
+            // Check if column already exists
+            $columns = $db->query("SHOW COLUMNS FROM transactions")->fetchAll(\PDO::FETCH_COLUMN);
+
+            if (in_array('description', $columns)) {
+                return $this->success('description sütunu zaten mevcut');
+            }
+
+            $db->exec("ALTER TABLE transactions ADD COLUMN description TEXT DEFAULT NULL");
+
+            return $this->success('description sütunu eklendi');
+
+        } catch (\Exception $e) {
+            return $this->error('Sütun eklenemedi: ' . $e->getMessage(), 500);
+        }
+    }
 }

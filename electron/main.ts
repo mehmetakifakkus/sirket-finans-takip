@@ -20,6 +20,8 @@ import { ImportService } from './services/ImportService'
 import { DatabaseService } from './services/DatabaseService'
 import { DocumentService } from './services/DocumentService'
 import { GrantService } from './services/GrantService'
+import { NotificationService } from './services/NotificationService'
+import { TemplateService } from './services/TemplateService'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -70,6 +72,8 @@ let importService: ImportService
 let databaseService: DatabaseService
 let documentService: DocumentService
 let grantService: GrantService
+let notificationService: NotificationService
+let templateService: TemplateService
 
 app.whenReady().then(async () => {
   // Initialize database (async for sql.js)
@@ -101,6 +105,8 @@ app.whenReady().then(async () => {
   databaseService = new DatabaseService(db)
   documentService = new DocumentService(db)
   grantService = new GrantService(db)
+  notificationService = new NotificationService(db)
+  templateService = new TemplateService(db)
 
   // Register IPC handlers
   registerIpcHandlers()
@@ -452,6 +458,78 @@ function registerIpcHandlers() {
       return { success: true, path: result.filePath }
     }
     return { success: false }
+  })
+
+  // Chart data handlers
+  ipcMain.handle('charts:monthlyData', async (_, months?: number) => {
+    return reportService.getMonthlyChartData(months || 12)
+  })
+
+  ipcMain.handle('charts:categoryData', async (_, type?: string, months?: number) => {
+    return reportService.getCategoryChartData((type as 'income' | 'expense') || 'expense', months || 6)
+  })
+
+  ipcMain.handle('charts:debtSummary', async () => {
+    return reportService.getDebtSummaryChartData()
+  })
+
+  // Notification handlers
+  ipcMain.handle('notifications:getUpcoming', async (_, days?: number) => {
+    return notificationService.getUpcomingPayments(days || 7)
+  })
+
+  ipcMain.handle('notifications:getOverdue', async () => {
+    return notificationService.getOverduePayments()
+  })
+
+  ipcMain.handle('notifications:getSummary', async () => {
+    return notificationService.getPaymentSummary()
+  })
+
+  ipcMain.handle('notifications:check', async (_, settings: {
+    enabled: boolean
+    reminderDays: number[]
+    showOverdue: boolean
+  }, translations: {
+    overdueTitle: string
+    overdueBody: string
+    upcomingTitle: string
+    upcomingBody: string
+    debtLabel: string
+    receivableLabel: string
+  }) => {
+    return notificationService.checkAndNotify(settings, mainWindow, translations)
+  })
+
+  // Template handlers
+  ipcMain.handle('templates:list', async (_, filters?: { type?: string; is_active?: number }) => {
+    return templateService.getAll(filters)
+  })
+
+  ipcMain.handle('templates:get', async (_, id: number) => {
+    return templateService.getById(id)
+  })
+
+  ipcMain.handle('templates:create', async (_, data: object) => {
+    return templateService.create(data as Parameters<typeof templateService.create>[0])
+  })
+
+  ipcMain.handle('templates:update', async (_, id: number, data: object) => {
+    return templateService.update(id, data)
+  })
+
+  ipcMain.handle('templates:delete', async (_, id: number) => {
+    return templateService.delete(id)
+  })
+
+  ipcMain.handle('templates:createTransaction', async (_, templateId: number, date: string, userId: number, overrides?: object) => {
+    return templateService.createTransactionFromTemplate(
+      templateId, date, userId, overrides as Parameters<typeof templateService.createTransactionFromTemplate>[3]
+    )
+  })
+
+  ipcMain.handle('templates:getDue', async () => {
+    return templateService.getDueTemplates()
   })
 
   // File handlers

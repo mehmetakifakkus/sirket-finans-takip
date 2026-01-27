@@ -105,6 +105,27 @@ contextBridge.exposeInMainWorld('api', {
   getProjectReport: (filters?: object) => ipcRenderer.invoke('reports:projects', filters),
   exportReport: (type: string, filters?: object) => ipcRenderer.invoke('reports:export', type, filters),
 
+  // Charts
+  getMonthlyChartData: (months?: number) => ipcRenderer.invoke('charts:monthlyData', months),
+  getCategoryChartData: (type?: string, months?: number) => ipcRenderer.invoke('charts:categoryData', type, months),
+  getDebtSummaryChartData: () => ipcRenderer.invoke('charts:debtSummary'),
+
+  // Notifications
+  getUpcomingPayments: (days?: number) => ipcRenderer.invoke('notifications:getUpcoming', days),
+  getOverduePayments: () => ipcRenderer.invoke('notifications:getOverdue'),
+  getPaymentSummary: () => ipcRenderer.invoke('notifications:getSummary'),
+  checkNotifications: (settings: object, translations: object) => ipcRenderer.invoke('notifications:check', settings, translations),
+
+  // Templates
+  getTemplates: (filters?: object) => ipcRenderer.invoke('templates:list', filters),
+  getTemplate: (id: number) => ipcRenderer.invoke('templates:get', id),
+  createTemplate: (data: object) => ipcRenderer.invoke('templates:create', data),
+  updateTemplate: (id: number, data: object) => ipcRenderer.invoke('templates:update', id, data),
+  deleteTemplate: (id: number) => ipcRenderer.invoke('templates:delete', id),
+  createTransactionFromTemplate: (templateId: number, date: string, userId: number, overrides?: object) =>
+    ipcRenderer.invoke('templates:createTransaction', templateId, date, userId, overrides),
+  getDueTemplates: () => ipcRenderer.invoke('templates:getDue'),
+
   // File operations
   uploadFile: (documentPath?: string) => ipcRenderer.invoke('file:upload', documentPath),
   deleteFile: (path: string) => ipcRenderer.invoke('file:delete', path),
@@ -240,6 +261,27 @@ export interface IElectronAPI {
   getDebtReport: (filters?: object) => Promise<object[]>;
   getProjectReport: (filters?: object) => Promise<object[]>;
   exportReport: (type: string, filters?: object) => Promise<{ success: boolean; message: string; path?: string }>;
+
+  // Charts
+  getMonthlyChartData: (months?: number) => Promise<object[]>;
+  getCategoryChartData: (type?: string, months?: number) => Promise<object[]>;
+  getDebtSummaryChartData: () => Promise<object>;
+
+  // Notifications
+  getUpcomingPayments: (days?: number) => Promise<object[]>;
+  getOverduePayments: () => Promise<object[]>;
+  getPaymentSummary: () => Promise<{ overdueCount: number; upcomingCount: number; overdueAmount: number; upcomingAmount: number }>;
+  checkNotifications: (settings: object, translations: object) => Promise<{ upcoming: object[]; overdue: object[] }>;
+
+  // Templates
+  getTemplates: (filters?: object) => Promise<object[]>;
+  getTemplate: (id: number) => Promise<object | null>;
+  createTemplate: (data: object) => Promise<{ success: boolean; message: string; id?: number }>;
+  updateTemplate: (id: number, data: object) => Promise<{ success: boolean; message: string }>;
+  deleteTemplate: (id: number) => Promise<{ success: boolean; message: string }>;
+  createTransactionFromTemplate: (templateId: number, date: string, userId: number, overrides?: object) =>
+    Promise<{ success: boolean; message: string; id?: number }>;
+  getDueTemplates: () => Promise<object[]>;
 
   // File operations
   uploadFile: (documentPath?: string) => Promise<string | null>;

@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { formatCurrency } from '../utils/currency'
 import { formatDate } from '../utils/date'
+import { pdf } from '@react-pdf/renderer'
+import { SummaryReportPDF, TransactionReportPDF, DebtReportPDF, ProjectReportPDF } from '../components/pdf'
 
 type ReportType = 'summary' | 'transactions' | 'debts' | 'projects'
 
@@ -130,6 +132,52 @@ export function Reports() {
     }
   }
 
+  const handleExportPDF = async () => {
+    try {
+      addAlert('info', t('reports.pdfGenerating'))
+
+      let doc = null
+      const pdfFilters = {
+        start_date: filters.start_date || undefined,
+        end_date: filters.end_date || undefined,
+        type: filters.type || undefined,
+        kind: filters.kind || undefined,
+      }
+
+      switch (activeReport) {
+        case 'summary':
+          if (!summaryData) return
+          doc = <SummaryReportPDF data={summaryData} filters={pdfFilters} t={t} />
+          break
+        case 'transactions':
+          doc = <TransactionReportPDF data={transactionData} filters={pdfFilters} t={t} />
+          break
+        case 'debts':
+          doc = <DebtReportPDF data={debtData} filters={pdfFilters} t={t} />
+          break
+        case 'projects':
+          doc = <ProjectReportPDF data={projectData} filters={pdfFilters} t={t} />
+          break
+      }
+
+      if (doc) {
+        const blob = await pdf(doc).toBlob()
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `rapor_${activeReport}_${new Date().toISOString().split('T')[0]}.pdf`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+        addAlert('success', t('reports.pdfSuccess'))
+      }
+    } catch (error) {
+      console.error('PDF export error:', error)
+      addAlert('error', t('reports.pdfFailed'))
+    }
+  }
+
   const renderFilters = () => {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
@@ -180,7 +228,7 @@ export function Reports() {
               </select>
             </div>
           )}
-          <div className="flex items-end">
+          <div className="flex items-end gap-2">
             <button
               onClick={handleExport}
               className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
@@ -189,6 +237,15 @@ export function Reports() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
               {t('reports.downloadCSV')}
+            </button>
+            <button
+              onClick={handleExportPDF}
+              className="inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              {t('reports.downloadPDF')}
             </button>
           </div>
         </div>

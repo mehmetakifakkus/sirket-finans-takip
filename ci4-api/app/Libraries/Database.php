@@ -120,4 +120,9 @@ class Database
     {
         self::connect()->rollBack();
     }
+
+    public static function lastInsertId(): string
+    {
+        return self::connect()->lastInsertId();
+    }
 }
