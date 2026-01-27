@@ -24,9 +24,9 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:8888/ci4-api/public/index.php',
+        target: 'http://localhost:8888',
         changeOrigin: true,
-        rewrite: (path) => path,
+        rewrite: (path) => `/ci4-api/public/index.php${path}`,
       },
     },
   },
