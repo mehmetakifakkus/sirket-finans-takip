@@ -474,7 +474,8 @@ class HttpClient implements IApiClient {
     })
 
   openDocument = async (documentId: number | string) => {
-    window.open(`${API_URL}/documents/${documentId}/preview`, '_blank')
+    const tokenParam = this.token ? `?token=${this.token}` : ''
+    window.open(`${API_URL}/documents/${documentId}/preview${tokenParam}`, '_blank')
     return documentId
   }
 

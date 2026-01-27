@@ -208,24 +208,32 @@ $dynamicRoutes = [
 
 // JWT Helper
 function verifyToken() {
-    // Try multiple sources for Authorization header
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (empty($authHeader)) {
-        $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
-    }
-    if (empty($authHeader) && function_exists('apache_request_headers')) {
-        $headers = apache_request_headers();
-        $authHeader = $headers['Authorization'] ?? '';
-    }
-    if (empty($authHeader) && function_exists('getallheaders')) {
-        $headers = getallheaders();
-        $authHeader = $headers['Authorization'] ?? '';
-    }
-    if (empty($authHeader)) {
-        return null;
+    $token = null;
+
+    // First, check for token in query parameter (for file preview in new tab)
+    if (!empty($_GET['token'])) {
+        $token = $_GET['token'];
     }
 
-    $token = str_replace('Bearer ', '', $authHeader);
+    // If no query token, try Authorization header
+    if (empty($token)) {
+        $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+        if (empty($authHeader)) {
+            $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+        }
+        if (empty($authHeader) && function_exists('apache_request_headers')) {
+            $headers = apache_request_headers();
+            $authHeader = $headers['Authorization'] ?? '';
+        }
+        if (empty($authHeader) && function_exists('getallheaders')) {
+            $headers = getallheaders();
+            $authHeader = $headers['Authorization'] ?? '';
+        }
+        if (!empty($authHeader)) {
+            $token = str_replace('Bearer ', '', $authHeader);
+        }
+    }
+
     if (empty($token)) {
         return null;
     }
