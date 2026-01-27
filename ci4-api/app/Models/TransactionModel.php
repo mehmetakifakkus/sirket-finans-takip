@@ -21,7 +21,8 @@ class TransactionModel extends BaseModel
     public function getFiltered(array $filters = []): array
     {
         $sql = "SELECT t.*, p.name as party_name, c.name as category_name,
-                pr.title as project_name
+                pr.title as project_name,
+                (SELECT COUNT(*) FROM transaction_documents td WHERE td.transaction_id = t.id) as document_count
                 FROM transactions t
                 LEFT JOIN parties p ON p.id = t.party_id
                 LEFT JOIN categories c ON c.id = t.category_id
@@ -92,7 +93,8 @@ class TransactionModel extends BaseModel
     public function getWithDetails(int $id): ?array
     {
         $sql = "SELECT t.*, p.name as party_name, c.name as category_name,
-                pr.title as project_name, m.title as milestone_name
+                pr.title as project_name, m.title as milestone_name,
+                (SELECT COUNT(*) FROM transaction_documents td WHERE td.transaction_id = t.id) as document_count
                 FROM transactions t
                 LEFT JOIN parties p ON p.id = t.party_id
                 LEFT JOIN categories c ON c.id = t.category_id
@@ -117,7 +119,8 @@ class TransactionModel extends BaseModel
      */
     public function getUnassigned(): array
     {
-        $sql = "SELECT t.*, p.name as party_name, c.name as category_name
+        $sql = "SELECT t.*, p.name as party_name, c.name as category_name,
+                (SELECT COUNT(*) FROM transaction_documents td WHERE td.transaction_id = t.id) as document_count
                 FROM transactions t
                 LEFT JOIN parties p ON p.id = t.party_id
                 LEFT JOIN categories c ON c.id = t.category_id
