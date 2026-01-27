@@ -55,8 +55,9 @@ class DocumentController extends BaseController
      */
     public function create()
     {
-        $transactionId = $this->request->getPost('transaction_id');
-        $description = $this->request->getPost('description');
+        // Get POST data (works with both CI4 and SimpleRouter)
+        $transactionId = $_POST['transaction_id'] ?? null;
+        $description = $_POST['description'] ?? '';
 
         if (!$transactionId) {
             return $this->validationError(['transaction_id' => 'İşlem ID zorunludur']);
@@ -68,40 +69,61 @@ class DocumentController extends BaseController
             return $this->notFound('İşlem bulunamadı');
         }
 
-        // Handle file upload
-        $file = $this->request->getFile('file');
-        if (!$file || !$file->isValid()) {
-            return $this->validationError(['file' => 'Geçerli bir dosya yükleyin']);
+        // Handle file upload (works with both CI4 and SimpleRouter)
+        if (!isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
+            $errorMsg = 'Geçerli bir dosya yükleyin';
+            if (isset($_FILES['file'])) {
+                switch ($_FILES['file']['error']) {
+                    case UPLOAD_ERR_INI_SIZE:
+                    case UPLOAD_ERR_FORM_SIZE:
+                        $errorMsg = 'Dosya boyutu çok büyük';
+                        break;
+                    case UPLOAD_ERR_NO_FILE:
+                        $errorMsg = 'Dosya seçilmedi';
+                        break;
+                }
+            }
+            return $this->validationError(['file' => $errorMsg]);
         }
 
-        // Validate file type
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf',
-            'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+        $file = $_FILES['file'];
+        $fileMimeType = mime_content_type($file['tmp_name']) ?: $file['type'];
+        $fileSize = $file['size'];
+        $originalName = $file['name'];
 
-        if (!in_array($file->getMimeType(), $allowedTypes)) {
-            return $this->validationError(['file' => 'Desteklenmeyen dosya türü']);
+        // Validate file type
+        $allowedTypes = [
+            'image/jpeg', 'image/png', 'image/gif', 'application/pdf',
+            'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        ];
+
+        if (!in_array($fileMimeType, $allowedTypes)) {
+            return $this->validationError(['file' => 'Desteklenmeyen dosya türü: ' . $fileMimeType]);
         }
 
         // Check file size (10MB max)
-        if ($file->getSize() > 10 * 1024 * 1024) {
+        if ($fileSize > 10 * 1024 * 1024) {
             return $this->validationError(['file' => 'Dosya boyutu 10MB\'dan büyük olamaz']);
         }
 
         // Generate unique filename
-        $newName = $file->getRandomName();
+        $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+        $newName = uniqid() . '_' . time() . '.' . $extension;
         $uploadPath = $this->getUploadPath();
 
         // Move file
-        $file->move($uploadPath, $newName);
+        if (!move_uploaded_file($file['tmp_name'], $uploadPath . $newName)) {
+            return $this->error('Dosya yüklenemedi', 500);
+        }
 
         // Save to database
         $insertData = [
             'transaction_id' => $transactionId,
-            'file_name' => $file->getClientName(),
+            'file_name' => $originalName,
             'file_path' => $newName,
-            'file_type' => $file->getMimeType(),
-            'file_size' => $file->getSize(),
+            'file_type' => $fileMimeType,
+            'file_size' => $fileSize,
             'description' => $description,
             'created_by' => $this->getUserId()
         ];

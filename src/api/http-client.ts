@@ -444,7 +444,7 @@ class HttpClient implements IApiClient {
 
     const formData = new FormData()
     formData.append('file', file)
-    formData.append('transactionId', String(transactionId))
+    formData.append('transaction_id', String(transactionId))
 
     const response = await fetch(`${API_URL}/documents`, {
       method: 'POST',
