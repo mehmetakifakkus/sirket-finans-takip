@@ -51,6 +51,9 @@ export function Transactions() {
   const [loadingDocIds, setLoadingDocIds] = useState<Record<number, boolean>>({})
   const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [showSettingsMenu, setShowSettingsMenu] = useState(false)
+  const [showPasteModal, setShowPasteModal] = useState(false)
+  const [pastedText, setPastedText] = useState('')
+  const [importSource, setImportSource] = useState<'file' | 'paste'>('file')
   const { addAlert } = useAppStore()
   const { user } = useAuthStore()
   const isAdmin = user?.role === 'admin'
@@ -103,6 +106,8 @@ export function Transactions() {
           setShowProjectForm(false)
         } else if (showDocumentPreview) {
           setShowDocumentPreview(false)
+        } else if (showPasteModal) {
+          setShowPasteModal(false)
         } else if (showImportModal) {
           setShowImportModal(false)
         } else if (showForm) {
@@ -113,7 +118,7 @@ export function Transactions() {
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [showForm, showCategoryForm, showPartyForm, showProjectForm, showDocumentPreview, showImportModal])
+  }, [showForm, showCategoryForm, showPartyForm, showProjectForm, showDocumentPreview, showPasteModal, showImportModal])
 
   const loadData = async () => {
     try {
@@ -549,6 +554,7 @@ export function Transactions() {
       })
       setPartyApprovals(initialApprovals)
 
+      setImportSource('file')
       setShowImportModal(true)
     } catch {
       addAlert('error', t('transactions.import.fileSelectFailed'))
@@ -598,6 +604,8 @@ export function Transactions() {
         setShowImportModal(false)
         setImportPreview(null)
         setImportRows([])
+        setPastedText('')
+        setImportSource('file')
         loadTransactions()
         loadData()
       } else {
@@ -623,6 +631,206 @@ export function Transactions() {
     setImportRows([])
     setPartyApprovals({})
     setPartyMerges({})
+    setPastedText('')
+    setImportSource('file')
+  }
+
+  // Parse tab-separated data from Excel paste
+  const parseTabSeparatedData = (text: string): ImportPreview | null => {
+    const lines = text.trim().split('\n')
+    if (lines.length === 0) return null
+
+    const rows: ImportRow[] = []
+    const categoriesSet = new Map<string, boolean>()
+    const partiesSet = new Map<string, boolean>()
+
+    // Header detection function
+    const isHeaderRow = (firstCol: string): boolean => {
+      const headers = ['harcama', 'tarihi', 'tür', 'type', 'date', 'expense', 'ausgabe', 'datum']
+      return headers.some(h => firstCol.toLowerCase().includes(h))
+    }
+
+    // Parse date in various formats
+    const parseDate = (dateStr: string): string | null => {
+      if (!dateStr) return null
+
+      // Try DD.MM.YYYY format
+      let match = dateStr.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/)
+      if (match) {
+        const [, day, month, year] = match
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+      }
+
+      // Try DD/MM/YYYY format
+      match = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+      if (match) {
+        const [, day, month, year] = match
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+      }
+
+      // Try YYYY-MM-DD format
+      match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+      if (match) {
+        return dateStr
+      }
+
+      return null
+    }
+
+    // Parse number in Turkish or standard format
+    const parseNumber = (numStr: string): number | null => {
+      if (!numStr) return null
+      // Remove currency symbols and spaces
+      let cleaned = numStr.replace(/[₺$€\s]/g, '').replace(/TL/gi, '').trim()
+
+      // Check if it's Turkish format (1.234,56)
+      if (cleaned.includes(',') && cleaned.includes('.')) {
+        cleaned = cleaned.replace(/\./g, '').replace(',', '.')
+      } else if (cleaned.includes(',') && !cleaned.includes('.')) {
+        // Could be 1,50 or 1,234 - check position
+        const commaPos = cleaned.indexOf(',')
+        if (cleaned.length - commaPos - 1 <= 2) {
+          // Decimal separator
+          cleaned = cleaned.replace(',', '.')
+        } else {
+          // Thousand separator
+          cleaned = cleaned.replace(/,/g, '')
+        }
+      }
+
+      const num = parseFloat(cleaned)
+      return isNaN(num) ? null : num
+    }
+
+    for (let i = 0; i < lines.length; i++) {
+      const cols = lines[i].split('\t')
+
+      // Skip lines with too few columns
+      if (cols.length < 4) continue
+
+      // Skip header row
+      if (i === 0 && isHeaderRow(cols[0])) continue
+
+      const errors: string[] = []
+
+      // Parse columns based on expected format:
+      // Harcama Türü | Tarihi | Yer | Cins | Miktar | Birim Tutar | Toplam (TL)
+      const expenseType = cols[0]?.trim() || ''
+      const dateStr = cols[1]?.trim() || ''
+      const location = cols[2]?.trim() || ''
+      const itemType = cols[3]?.trim() || ''
+      const quantity = cols.length > 4 ? parseNumber(cols[4]) : null
+      const unitPrice = cols.length > 5 ? parseNumber(cols[5]) : null
+      const total = cols.length > 6 ? parseNumber(cols[6]) : (quantity && unitPrice ? quantity * unitPrice : null)
+
+      // Validate
+      if (!expenseType) {
+        errors.push('Harcama türü boş')
+      }
+
+      const dateISO = parseDate(dateStr)
+      if (!dateISO) {
+        errors.push('Geçersiz tarih')
+      }
+
+      if (!total || total <= 0) {
+        errors.push('Geçersiz tutar')
+      }
+
+      // Check if category exists
+      const categoryExists = categories.some(c =>
+        c.name.toLowerCase() === expenseType.toLowerCase() && c.type === 'expense'
+      )
+      if (expenseType && !categoriesSet.has(expenseType)) {
+        categoriesSet.set(expenseType, categoryExists)
+      }
+
+      // Check if party exists
+      const partyExists = parties.some(p =>
+        p.name.toLowerCase() === location.toLowerCase()
+      )
+      if (location && !partiesSet.has(location)) {
+        partiesSet.set(location, partyExists)
+      }
+
+      const row: ImportRow = {
+        rowNumber: rows.length + 1,
+        expenseType,
+        date: dateStr,
+        dateISO,
+        location,
+        itemType,
+        quantity,
+        unitPrice,
+        total: total || 0,
+        isValid: errors.length === 0,
+        errors,
+        selected: errors.length === 0,
+        isNewCategory: !categoryExists,
+        isNewParty: !!location && !partyExists
+      }
+
+      rows.push(row)
+    }
+
+    if (rows.length === 0) return null
+
+    return {
+      fileName: t('transactions.import.pastedData'),
+      totalRows: rows.length,
+      validRows: rows.filter(r => r.isValid).length,
+      invalidRows: rows.filter(r => !r.isValid).length,
+      skippedRows: 0,
+      rows,
+      categories: Array.from(categoriesSet.entries()).map(([name, exists]) => ({ name, exists })),
+      parties: Array.from(partiesSet.entries()).map(([name, exists]) => ({ name, exists }))
+    }
+  }
+
+  // Handle paste preview
+  const handlePastePreview = () => {
+    if (!pastedText.trim()) {
+      addAlert('error', t('transactions.import.noValidRows'))
+      return
+    }
+
+    const preview = parseTabSeparatedData(pastedText)
+    if (!preview || preview.rows.length === 0) {
+      addAlert('error', t('transactions.import.noValidRows'))
+      return
+    }
+
+    setImportPreview(preview)
+    setImportRows(preview.rows)
+
+    // Initialize party approvals - all new parties are approved by default
+    const newParties = preview.parties.filter(p => !p.exists)
+    const initialApprovals: Record<string, boolean> = {}
+    newParties.forEach(p => {
+      initialApprovals[p.name] = true
+    })
+    setPartyApprovals(initialApprovals)
+
+    setShowPasteModal(false)
+    // Keep pastedText so user can go back and edit
+    setImportSource('paste')
+    setShowImportModal(true)
+  }
+
+  // Go back to paste modal from import preview
+  const handleBackToPaste = () => {
+    setShowImportModal(false)
+    setImportPreview(null)
+    setImportRows([])
+    setPartyApprovals({})
+    setPartyMerges({})
+    setShowPasteModal(true)
+  }
+
+  // Close paste modal
+  const closePasteModal = () => {
+    setShowPasteModal(false)
+    setPastedText('')
   }
 
   // Normalize vendor name for similarity comparison
@@ -827,6 +1035,15 @@ export function Transactions() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m4-8l-4-4m0 0l-4 4m4-4v12" />
                       </svg>
                       {t('transactions.import.title')}
+                    </button>
+                    <button
+                      onClick={() => { setShowPasteModal(true); setShowSettingsMenu(false); }}
+                      className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      <svg className="w-4 h-4 mr-3 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                      {t('transactions.import.pasteData')}
                     </button>
                     <button
                       onClick={() => { handleExport(); setShowSettingsMenu(false); }}
@@ -1092,6 +1309,9 @@ export function Transactions() {
                     <SortIcon field="amount" />
                   </span>
                 </th>
+                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  {t('transactions.baseAmount')}
+                </th>
                 <th
                   className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none"
                   onClick={() => handleSort('net_amount')}
@@ -1108,7 +1328,7 @@ export function Transactions() {
             <tbody className="bg-white divide-y divide-gray-200">
               {transactions.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={10} className="px-6 py-12 text-center text-gray-500">
                     {t('transactions.noTransactions')}
                   </td>
                 </tr>
@@ -1141,6 +1361,7 @@ export function Transactions() {
                       )}
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap text-sm text-right">{formatCurrency(tr.amount, tr.currency as 'TRY' | 'USD' | 'EUR')}</td>
+                    <td className="px-3 py-3 whitespace-nowrap text-sm text-right text-gray-600">{tr.base_amount ? formatCurrency(tr.base_amount, tr.currency as 'TRY' | 'USD' | 'EUR') : '-'}</td>
                     <td className="px-3 py-3 whitespace-nowrap text-sm text-right font-medium">{formatCurrency(tr.net_amount, tr.currency as 'TRY' | 'USD' | 'EUR')}</td>
                     <td className="px-2 py-3 whitespace-nowrap text-sm text-center">
                       {tr.document_count && tr.document_count > 0 ? (
@@ -1189,7 +1410,7 @@ export function Transactions() {
             {transactions.length > 0 && (
               <tfoot className="bg-gray-100 border-t-2 border-gray-300">
                 <tr>
-                  <td colSpan={4} className="px-3 py-3 text-sm font-semibold text-gray-700 text-right">
+                  <td colSpan={5} className="px-3 py-3 text-sm font-semibold text-gray-700 text-right">
                     {t('common.total')} ({transactions.length} {t('transactions.transaction')}):
                   </td>
                   <td className="px-3 py-3 text-sm text-right">
@@ -1197,6 +1418,7 @@ export function Transactions() {
                     {' / '}
                     <span className="text-red-600 font-medium">{formatCurrency(totals.expense, 'TRY')}</span>
                   </td>
+                  <td className="px-3"></td>
                   <td className="px-3 py-3 text-sm text-right font-bold text-gray-900">
                     {formatCurrency(totals.income - totals.expense, 'TRY')}
                   </td>
@@ -1575,6 +1797,58 @@ export function Transactions() {
         </div>
       )}
 
+      {/* Paste Modal */}
+      {showPasteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-900">{t('transactions.import.pasteData')}</h3>
+              <button
+                type="button"
+                onClick={closePasteModal}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="px-6 py-4">
+              <p className="text-sm text-gray-600 mb-4">{t('transactions.import.pasteDescription')}</p>
+              <textarea
+                value={pastedText}
+                onChange={(e) => setPastedText(e.target.value)}
+                placeholder={t('transactions.import.pastePlaceholder')}
+                rows={12}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                autoFocus
+              />
+              <p className="mt-2 text-xs text-gray-500">
+                {t('transactions.import.pasteHint')}
+              </p>
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={closePasteModal}
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={handlePastePreview}
+                className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+              >
+                {t('transactions.import.pastePreview')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Import Modal */}
       {showImportModal && importPreview && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -1839,35 +2113,51 @@ export function Transactions() {
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3 flex-shrink-0">
-              <button
-                type="button"
-                onClick={closeImportModal}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                disabled={isImporting}
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                type="button"
-                onClick={handleImportExecute}
-                className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
-                disabled={isImporting || importRows.filter(r => r.selected).length === 0}
-              >
-                {isImporting ? (
-                  <span className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    {t('transactions.import.importing')}
-                  </span>
-                ) : (
-                  <>
-                    {t('transactions.import.execute')} ({importRows.filter(r => r.selected).length})
-                  </>
-                )}
-              </button>
+            <div className={`px-6 py-4 border-t border-gray-200 flex ${importSource === 'paste' ? 'justify-between' : 'justify-end'} flex-shrink-0`}>
+              {/* Back button - only show when import source is paste */}
+              {importSource === 'paste' && (
+                <button
+                  type="button"
+                  onClick={handleBackToPaste}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  disabled={isImporting}
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                  {t('transactions.import.backToEdit')}
+                </button>
+              )}
+              <div className="flex space-x-3">
+                <button
+                  type="button"
+                  onClick={closeImportModal}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  disabled={isImporting}
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleImportExecute}
+                  className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                  disabled={isImporting || importRows.filter(r => r.selected).length === 0}
+                >
+                  {isImporting ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      {t('transactions.import.importing')}
+                    </span>
+                  ) : (
+                    <>
+                      {t('transactions.import.execute')} ({importRows.filter(r => r.selected).length})
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>

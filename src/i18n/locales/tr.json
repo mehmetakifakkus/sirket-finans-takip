@@ -183,6 +183,7 @@
     "party": "Taraf",
     "project": "Proje",
     "netAmount": "Net Tutar",
+    "baseAmount": "KDV Hariç",
     "startDate": "Başlangıç",
     "endDate": "Bitiş",
     "vatRate": "KDV Oranı (%)",
@@ -267,7 +268,14 @@
       "rowsDisabledByRejectedParty": "Reddedilen tedarikçiye ait satırlar devre dışı",
       "mergeWith": "Birleştir",
       "similarVendors": "Benzer tedarikçi bulundu",
-      "mergedTo": "{{source}} → {{target}} olarak birleştirildi"
+      "mergedTo": "{{source}} → {{target}} olarak birleştirildi",
+      "pasteData": "Veri Yapıştır",
+      "pasteDescription": "Excel'den kopyaladığınız tabloyu aşağıya yapıştırın",
+      "pastePreview": "Önizle",
+      "pastedData": "Yapıştırılan Veri",
+      "pastePlaceholder": "Harcama Türü\tTarihi\tYer\tCins\tMiktar\tBirim Tutar\tToplam",
+      "pasteHint": "Excel'den kopyaladığınız tablo verisi Tab karakteriyle ayrılmış olmalıdır.",
+      "backToEdit": "Geri Dön ve Düzenle"
     },
     "export": {
       "csv": "CSV Dışarı Aktar"

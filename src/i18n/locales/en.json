@@ -183,6 +183,7 @@
     "party": "Party",
     "project": "Project",
     "netAmount": "Net Amount",
+    "baseAmount": "VAT Excl.",
     "startDate": "Start Date",
     "endDate": "End Date",
     "vatRate": "VAT Rate (%)",
@@ -267,7 +268,14 @@
       "rowsDisabledByRejectedParty": "Rows with rejected vendors are disabled",
       "mergeWith": "Merge with",
       "similarVendors": "Similar vendor found",
-      "mergedTo": "{{source}} → merged to {{target}}"
+      "mergedTo": "{{source}} → merged to {{target}}",
+      "pasteData": "Paste Data",
+      "pasteDescription": "Paste the table you copied from Excel below",
+      "pastePreview": "Preview",
+      "pastedData": "Pasted Data",
+      "pastePlaceholder": "Expense Type\tDate\tLocation\tItem Type\tQuantity\tUnit Price\tTotal",
+      "pasteHint": "The table data copied from Excel should be separated by Tab characters.",
+      "backToEdit": "Go Back and Edit"
     },
     "export": {
       "csv": "Export CSV"

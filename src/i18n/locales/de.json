@@ -127,6 +127,7 @@
     "party": "Partei",
     "project": "Projekt",
     "netAmount": "Nettobetrag",
+    "baseAmount": "Ohne MwSt.",
     "startDate": "Startdatum",
     "endDate": "Enddatum",
     "vatRate": "MwSt.-Satz (%)",
@@ -210,7 +211,14 @@
       "rowsDisabledByRejectedParty": "Zeilen mit abgelehnten Lieferanten sind deaktiviert",
       "mergeWith": "Zusammenfuhren mit",
       "similarVendors": "Ahnlicher Lieferant gefunden",
-      "mergedTo": "{{source}} → zusammengefuhrt zu {{target}}"
+      "mergedTo": "{{source}} → zusammengefuhrt zu {{target}}",
+      "pasteData": "Daten einfugen",
+      "pasteDescription": "Fugen Sie die aus Excel kopierte Tabelle unten ein",
+      "pastePreview": "Vorschau",
+      "pastedData": "Eingefugte Daten",
+      "pastePlaceholder": "Ausgabentyp\tDatum\tOrt\tArtikeltyp\tMenge\tStuckpreis\tGesamt",
+      "pasteHint": "Die aus Excel kopierten Tabellendaten sollten durch Tab-Zeichen getrennt sein.",
+      "backToEdit": "Zurück und Bearbeiten"
     }
   },
   "categories": {
