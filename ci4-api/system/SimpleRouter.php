@@ -94,6 +94,17 @@ $routes = [
         'api/files' => ['FileController', 'index', true],
         'api/database/stats' => ['DatabaseController', 'stats', true],
         'api/database/export' => ['DatabaseController', 'export', true],
+        // Charts
+        'api/charts/monthly' => ['ChartController', 'monthly', true],
+        'api/charts/category' => ['ChartController', 'category', true],
+        'api/charts/debt-summary' => ['ChartController', 'debtSummary', true],
+        // Notifications
+        'api/notifications/upcoming' => ['NotificationController', 'upcoming', true],
+        'api/notifications/overdue' => ['NotificationController', 'overdue', true],
+        'api/notifications/summary' => ['NotificationController', 'summary', true],
+        // Templates
+        'api/templates' => ['TemplateController', 'index', true],
+        'api/templates/due' => ['TemplateController', 'due', true],
     ],
     'POST' => [
         'api/auth/login' => ['AuthController', 'login'],
@@ -129,6 +140,10 @@ $routes = [
         'api/database/backup' => ['DatabaseController', 'backup', true, true],
         'api/database/restore' => ['DatabaseController', 'restore', true, true],
         'api/database/clear' => ['DatabaseController', 'clear', true, true],
+        'api/setup/create-templates-table' => ['SetupController', 'createTemplatesTable'],
+        'api/setup/add-transaction-description' => ['SetupController', 'addTransactionDescription'],
+        // Templates
+        'api/templates' => ['TemplateController', 'create', true],
     ],
 ];
 
@@ -151,6 +166,7 @@ $dynamicRoutes = [
         'api/documents/(\d+)/preview' => ['DocumentController', 'preview', true],
         'api/files/(\d+)' => ['FileController', 'show', true],
         'api/files/(\d+)/open' => ['FileController', 'open', true],
+        'api/templates/(\d+)' => ['TemplateController', 'show', true],
     ],
     'PUT' => [
         'api/transactions/(\d+)' => ['TransactionController', 'update', true],
@@ -163,6 +179,7 @@ $dynamicRoutes = [
         'api/grants/(\d+)' => ['GrantController', 'update', true],
         'api/exchange-rates/(\d+)' => ['ExchangeRateController', 'update', true],
         'api/users/(\d+)' => ['UserController', 'update', true, true],
+        'api/templates/(\d+)' => ['TemplateController', 'update', true],
     ],
     'DELETE' => [
         'api/transactions/(\d+)' => ['TransactionController', 'delete', true],
@@ -178,11 +195,13 @@ $dynamicRoutes = [
         'api/users/(\d+)' => ['UserController', 'delete', true, true],
         'api/documents/(\d+)' => ['DocumentController', 'delete', true],
         'api/files/(\d+)' => ['FileController', 'delete', true],
+        'api/templates/(\d+)' => ['TemplateController', 'delete', true],
     ],
     'POST' => [
         'api/debts/(\d+)/installments' => ['DebtController', 'createInstallments', true],
         'api/installments/(\d+)/pay' => ['InstallmentController', 'pay', true],
         'api/database/clear/([a-z_]+)' => ['DatabaseController', 'clearTable', true, true],
+        'api/templates/(\d+)/create-transaction' => ['TemplateController', 'createTransaction', true],
     ],
 ];
 
