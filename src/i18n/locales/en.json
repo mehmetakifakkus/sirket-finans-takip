@@ -267,6 +267,9 @@
       "mergeWith": "Merge with",
       "similarVendors": "Similar vendor found",
       "mergedTo": "{{source}} → merged to {{target}}"
+    },
+    "export": {
+      "csv": "Export CSV"
     }
   },
   "categories": {

@@ -267,6 +267,9 @@
       "mergeWith": "Birleştir",
       "similarVendors": "Benzer tedarikçi bulundu",
       "mergedTo": "{{source}} → {{target}} olarak birleştirildi"
+    },
+    "export": {
+      "csv": "CSV Dışarı Aktar"
     }
   },
   "categories": {
