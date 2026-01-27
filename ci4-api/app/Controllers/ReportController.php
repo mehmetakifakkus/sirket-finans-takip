@@ -73,7 +73,7 @@ class ReportController extends BaseController
 
         // Total debt by currency (open debts)
         $debtData = Database::query(
-            "SELECT currency, COALESCE(SUM(remaining_amount), 0) as total FROM debts
+            "SELECT currency, COALESCE(SUM(principal_amount), 0) as total FROM debts
              WHERE kind = 'debt' AND status = 'open'
              GROUP BY currency"
         );
@@ -88,7 +88,7 @@ class ReportController extends BaseController
 
         // Total receivable by currency (open receivables)
         $receivableData = Database::query(
-            "SELECT currency, COALESCE(SUM(remaining_amount), 0) as total FROM debts
+            "SELECT currency, COALESCE(SUM(principal_amount), 0) as total FROM debts
              WHERE kind = 'receivable' AND status = 'open'
              GROUP BY currency"
         );
@@ -165,7 +165,7 @@ class ReportController extends BaseController
 
         // Get latest USD rate
         $usdRate = Database::queryOne(
-            "SELECT rate FROM exchange_rates WHERE currency = 'USD' ORDER BY rate_date DESC LIMIT 1"
+            "SELECT rate FROM exchange_rates WHERE quote_currency = 'USD' ORDER BY rate_date DESC LIMIT 1"
         );
         if ($usdRate) {
             $rates['USD'] = (float)$usdRate['rate'];
@@ -173,7 +173,7 @@ class ReportController extends BaseController
 
         // Get latest EUR rate
         $eurRate = Database::queryOne(
-            "SELECT rate FROM exchange_rates WHERE currency = 'EUR' ORDER BY rate_date DESC LIMIT 1"
+            "SELECT rate FROM exchange_rates WHERE quote_currency = 'EUR' ORDER BY rate_date DESC LIMIT 1"
         );
         if ($eurRate) {
             $rates['EUR'] = (float)$eurRate['rate'];
@@ -297,7 +297,7 @@ class ReportController extends BaseController
             }
             $totals[$type][$currency]['total'] += (float)($d['principal_amount'] ?? $d['total_amount'] ?? 0);
             $totals[$type][$currency]['paid'] += (float)($d['paid_amount'] ?? 0);
-            $totals[$type][$currency]['remaining'] += (float)($d['remaining_amount'] ?? 0);
+            $totals[$type][$currency]['remaining'] += (float)($d['principal_amount'] ?? 0);
         }
 
         return $this->success('Borç/alacak raporu', [

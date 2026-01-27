@@ -210,7 +210,6 @@ function verifyToken() {
     // Try multiple sources for Authorization header
     $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
     if (empty($authHeader)) {
-        // Apache might strip the header - try REDIRECT version
         $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
     }
     if (empty($authHeader) && function_exists('apache_request_headers')) {

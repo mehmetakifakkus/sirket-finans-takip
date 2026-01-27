@@ -15,7 +15,7 @@ class ChartController extends BaseController
 
         // Get latest USD rate
         $usdRate = Database::queryOne(
-            "SELECT rate FROM exchange_rates WHERE currency = 'USD' ORDER BY rate_date DESC LIMIT 1"
+            "SELECT rate FROM exchange_rates WHERE quote_currency = 'USD' ORDER BY rate_date DESC LIMIT 1"
         );
         if ($usdRate) {
             $rates['USD'] = (float)$usdRate['rate'];
@@ -23,7 +23,7 @@ class ChartController extends BaseController
 
         // Get latest EUR rate
         $eurRate = Database::queryOne(
-            "SELECT rate FROM exchange_rates WHERE currency = 'EUR' ORDER BY rate_date DESC LIMIT 1"
+            "SELECT rate FROM exchange_rates WHERE quote_currency = 'EUR' ORDER BY rate_date DESC LIMIT 1"
         );
         if ($eurRate) {
             $rates['EUR'] = (float)$eurRate['rate'];
