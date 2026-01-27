@@ -214,6 +214,7 @@ export function Transactions() {
       amount: parseFloat(formData.amount),
       currency: formData.currency,
       vat_rate: parseFloat(formData.vat_rate) || 0,
+      vat_included: formData.vat_included,
       withholding_rate: parseFloat(formData.withholding_rate) || 0,
       description: formData.description,
       ref_no: formData.ref_no,
