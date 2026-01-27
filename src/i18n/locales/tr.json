@@ -48,16 +48,16 @@
     "file": "Dosya"
   },
   "app": {
-    "title": "Finans Takip",
-    "subtitle": "Şirket Yönetim Sistemi",
-    "version": "Şirket Finans Takip v1.0"
+    "title": "BurnWise",
+    "subtitle": "Şirket Finans Yönetimi",
+    "version": "BurnWise v1.0"
   },
   "auth": {
     "login": "Giriş Yap",
     "logout": "Çıkış",
     "email": "E-posta Adresi",
     "password": "Şifre",
-    "loginTitle": "Şirket Finans Takip",
+    "loginTitle": "BurnWise",
     "loginSubtitle": "Hesabınıza giriş yapın",
     "emailPlaceholder": "ornek@sirket.com",
     "passwordPlaceholder": "********",
@@ -753,7 +753,7 @@
       "complete": "Tamamlandı"
     },
     "welcome": {
-      "title": "Şirket Finans Takip",
+      "title": "BurnWise",
       "description": "Şirketinizin finansal işlemlerini kolayca yönetmenizi sağlayan bu uygulamaya hoşgeldiniz. Kurulum sihirbazı size veritabanı oluşturma ve ilk ayarları yapma konusunda yardımcı olacak.",
       "startSetup": "Kuruluma Başla"
     },

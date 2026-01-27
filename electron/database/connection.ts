@@ -16,7 +16,7 @@ export async function initDatabaseAsync(): Promise<SqlJsDatabase> {
 
   // Get the user data path for storing the database
   const userDataPath = app.getPath('userData')
-  dbPath = path.join(userDataPath, 'sirket-finans.db')
+  dbPath = path.join(userDataPath, 'burnwise.db')
 
   // Ensure the directory exists
   if (!fs.existsSync(userDataPath)) {

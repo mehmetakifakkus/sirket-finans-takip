@@ -48,16 +48,16 @@
     "file": "Datei"
   },
   "app": {
-    "title": "Finanzverfolgung",
-    "subtitle": "Unternehmensverwaltungssystem",
-    "version": "Unternehmensfinanzverfolgung v1.0"
+    "title": "BurnWise",
+    "subtitle": "Unternehmensfinanzverwaltung",
+    "version": "BurnWise v1.0"
   },
   "auth": {
     "login": "Anmelden",
     "logout": "Abmelden",
     "email": "E-Mail-Adresse",
     "password": "Passwort",
-    "loginTitle": "Unternehmensfinanzverfolgung",
+    "loginTitle": "BurnWise",
     "loginSubtitle": "Melden Sie sich bei Ihrem Konto an",
     "emailPlaceholder": "beispiel@firma.com",
     "passwordPlaceholder": "********",
@@ -689,7 +689,7 @@
       "complete": "Abgeschlossen"
     },
     "welcome": {
-      "title": "Unternehmensfinanzverfolgung",
+      "title": "BurnWise",
       "description": "Willkommen bei dieser Anwendung, die Ihnen hilft, die Finanztransaktionen Ihres Unternehmens einfach zu verwalten. Der Einrichtungsassistent hilft Ihnen bei der Datenbankerstellung und den ersten Einstellungen.",
       "startSetup": "Einrichtung starten"
     },

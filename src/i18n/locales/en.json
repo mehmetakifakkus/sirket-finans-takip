@@ -48,16 +48,16 @@
     "file": "File"
   },
   "app": {
-    "title": "Finance Tracking",
-    "subtitle": "Company Management System",
-    "version": "Company Finance Tracking v1.0"
+    "title": "BurnWise",
+    "subtitle": "Company Finance Management",
+    "version": "BurnWise v1.0"
   },
   "auth": {
     "login": "Login",
     "logout": "Logout",
     "email": "Email Address",
     "password": "Password",
-    "loginTitle": "Company Finance Tracking",
+    "loginTitle": "BurnWise",
     "loginSubtitle": "Sign in to your account",
     "emailPlaceholder": "example@company.com",
     "passwordPlaceholder": "********",
@@ -753,7 +753,7 @@
       "complete": "Complete"
     },
     "welcome": {
-      "title": "Company Finance Tracking",
+      "title": "BurnWise",
       "description": "Welcome to this application that helps you easily manage your company's financial transactions. The setup wizard will help you create the database and configure initial settings.",
       "startSetup": "Start Setup"
     },

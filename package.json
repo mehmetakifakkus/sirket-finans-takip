@@ -1,7 +1,7 @@
 {
-  "name": "sirket-finans-takip",
+  "name": "burnwise",
   "version": "1.0.0",
-  "description": "Şirket Finans Takip - Desktop Application",
+  "description": "BurnWise - Company Finance Management",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
@@ -21,7 +21,7 @@
     "finance",
     "desktop"
   ],
-  "author": "Şirket Finans",
+  "author": "BurnWise",
   "license": "MIT",
   "dependencies": {
     "@react-pdf/renderer": "^4.3.2",
@@ -59,8 +59,8 @@
     "wait-on": "^7.2.0"
   },
   "build": {
-    "appId": "com.sirket.finans",
-    "productName": "Şirket Finans Takip",
+    "appId": "com.burnwise.app",
+    "productName": "BurnWise",
     "asar": true,
     "asarUnpack": [
       "node_modules/sql.js/**/*"

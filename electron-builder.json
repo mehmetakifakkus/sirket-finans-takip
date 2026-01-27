@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
-  "appId": "com.sirket.finans",
-  "productName": "Şirket Finans Takip",
+  "appId": "com.burnwise.app",
+  "productName": "BurnWise",
   "copyright": "Copyright © 2024",
   "directories": {
     "output": "release",
@@ -54,7 +54,7 @@
     "installerHeaderIcon": "build/icon.ico",
     "createDesktopShortcut": true,
     "createStartMenuShortcut": true,
-    "shortcutName": "Sirket Finans Takip"
+    "shortcutName": "BurnWise"
   },
   "linux": {
     "target": [

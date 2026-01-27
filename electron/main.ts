@@ -40,7 +40,7 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
     },
-    title: 'Şirket Finans Takip',
+    title: 'BurnWise',
     icon: path.join(__dirname, '../assets/icon.png'),
   })
 
@@ -707,7 +707,7 @@ function registerIpcHandlers() {
     }
 
     const saveResult = await dialog.showSaveDialog(mainWindow!, {
-      defaultPath: `sirket-finans-backup_${new Date().toISOString().split('T')[0]}.sql`,
+      defaultPath: `burnwise-backup_${new Date().toISOString().split('T')[0]}.sql`,
       filters: [{ name: 'SQL Files', extensions: ['sql'] }]
     })
 
