@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { api } from '@/api'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
@@ -28,6 +28,7 @@ export function DocumentUpload({ transactionId, onDocumentsChange }: DocumentUpl
   const { addAlert } = useAppStore()
   const [documents, setDocuments] = useState<TransactionDocument[]>([])
   const [loading, setLoading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (transactionId) {
@@ -48,17 +49,27 @@ export function DocumentUpload({ transactionId, onDocumentsChange }: DocumentUpl
     }
   }
 
-  const handleAddDocument = async () => {
+  const handleAddDocument = () => {
     if (!transactionId) return
+    // Trigger file input click
+    fileInputRef.current?.click()
+  }
+
+  const handleFileSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file || !transactionId) return
+
+    // Reset file input so the same file can be selected again
+    event.target.value = ''
 
     setLoading(true)
     try {
-      const result = await api.addDocument(transactionId)
+      const result = await api.addDocument(transactionId, file)
       if (result.success && result.document) {
         setDocuments(prev => [result.document!, ...prev])
         onDocumentsChange?.(documents.length + 1)
         addAlert('success', t('transactions.documents.uploadSuccess'))
-      } else if (result.message !== 'Dosya seçilmedi') {
+      } else {
         addAlert('error', result.message || t('transactions.documents.uploadFailed'))
       }
     } catch (error) {
@@ -158,6 +169,15 @@ export function DocumentUpload({ transactionId, onDocumentsChange }: DocumentUpl
 
   return (
     <div className="space-y-3">
+      {/* Hidden file input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileSelected}
+        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+        className="hidden"
+      />
+
       <div className="flex items-center justify-between">
         <label className="block text-sm font-medium text-gray-700">
           {t('transactions.documents.title')}
