@@ -485,7 +485,7 @@ class HttpClient implements IApiClient {
 
   getDocumentPreview = (documentId: number) =>
     this.request<{ success: boolean; data?: string; mimeType?: string; message?: string }>(
-      `/documents/${documentId}/preview`
+      `/documents/${documentId}/data`
     )
 
   // Dialogs - Web implementations

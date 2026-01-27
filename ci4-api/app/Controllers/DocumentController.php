@@ -165,7 +165,7 @@ class DocumentController extends BaseController
     }
 
     /**
-     * Preview/download document
+     * Preview/download document (raw file)
      * GET /api/documents/{id}/preview
      */
     public function preview(int $id)
@@ -186,6 +186,31 @@ class DocumentController extends BaseController
             ->setHeader('Content-Type', $document['file_type'])
             ->setHeader('Content-Disposition', ($download ? 'attachment' : 'inline') . '; filename="' . $document['file_name'] . '"')
             ->setBody(file_get_contents($filePath));
+    }
+
+    /**
+     * Get document data as base64 (for thumbnails)
+     * GET /api/documents/{id}/data
+     */
+    public function data(int $id)
+    {
+        $document = $this->documentModel->find($id);
+        if (!$document) {
+            return $this->notFound('Belge bulunamadı');
+        }
+
+        $filePath = $this->getUploadPath() . $document['file_path'];
+        if (!file_exists($filePath)) {
+            return $this->notFound('Dosya bulunamadı');
+        }
+
+        $content = file_get_contents($filePath);
+        $base64 = base64_encode($content);
+
+        return $this->success('Belge verisi', [
+            'data' => $base64,
+            'mimeType' => $document['file_type']
+        ]);
     }
 
     /**

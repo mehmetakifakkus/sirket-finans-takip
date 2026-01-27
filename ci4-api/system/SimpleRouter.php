@@ -164,6 +164,7 @@ $dynamicRoutes = [
         'api/users/(\d+)' => ['UserController', 'show', true, true],
         'api/documents/(\d+)' => ['DocumentController', 'show', true],
         'api/documents/(\d+)/preview' => ['DocumentController', 'preview', true],
+        'api/documents/(\d+)/data' => ['DocumentController', 'data', true],
         'api/files/(\d+)' => ['FileController', 'show', true],
         'api/files/(\d+)/open' => ['FileController', 'open', true],
         'api/templates/(\d+)' => ['TemplateController', 'show', true],
