@@ -60,7 +60,7 @@ class NotificationController extends BaseController
         $futureDate = date('Y-m-d', strtotime("+$days days"));
 
         $payments = Database::query(
-            "SELECT i.*, d.kind as debt_type, d.currency, d.description as debt_description,
+            "SELECT i.*, d.kind as debt_type, d.currency, d.notes as debt_description,
                     p.name as party_name
              FROM installments i
              JOIN debts d ON d.id = i.debt_id
@@ -84,7 +84,7 @@ class NotificationController extends BaseController
         $today = date('Y-m-d');
 
         $payments = Database::query(
-            "SELECT i.*, d.kind as debt_type, d.currency, d.description as debt_description,
+            "SELECT i.*, d.kind as debt_type, d.currency, d.notes as debt_description,
                     p.name as party_name
              FROM installments i
              JOIN debts d ON d.id = i.debt_id
