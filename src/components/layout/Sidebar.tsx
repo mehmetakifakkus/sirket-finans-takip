@@ -3,6 +3,7 @@ import { api } from '@/api'
 import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../../store/authStore'
+import { BurnWiseLogo } from '../BurnWiseLogo'
 
 interface NavItemProps {
   path: string
@@ -55,6 +56,8 @@ export function Sidebar() {
   const { user } = useAuthStore()
   const isAdmin = user?.role === 'admin'
   const [incompleteProjectCount, setIncompleteProjectCount] = useState(0)
+  const [isHeaderHovered, setIsHeaderHovered] = useState(false)
+  const [isInitialAnimation, setIsInitialAnimation] = useState(true)
 
   useEffect(() => {
     const fetchCount = async () => {
@@ -68,6 +71,14 @@ export function Sidebar() {
     fetchCount()
     const interval = setInterval(fetchCount, 30000)
     return () => clearInterval(interval)
+  }, [])
+
+  // Initial animation on page load - runs once then stops
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialAnimation(false)
+    }, 2500)
+    return () => clearTimeout(timer)
   }, [])
 
   const icons = {
@@ -147,9 +158,18 @@ export function Sidebar() {
   return (
     <aside className="w-64 bg-gray-900 text-white flex flex-col h-screen fixed left-0 top-0 z-30">
       {/* Logo */}
-      <div className="p-4 border-b border-gray-800">
-        <h1 className="text-xl font-bold">{t('app.title')}</h1>
-        <p className="text-xs text-gray-400 mt-1">{t('app.subtitle')}</p>
+      <div
+        className="p-4 border-b border-gray-800"
+        onMouseEnter={() => setIsHeaderHovered(true)}
+        onMouseLeave={() => setIsHeaderHovered(false)}
+      >
+        <div className="flex items-center gap-3">
+          <BurnWiseLogo size={48} animated={isInitialAnimation || isHeaderHovered} />
+          <div>
+            <h1 className="text-xl font-bold">{t('app.title')}</h1>
+            <p className="text-xs text-gray-400">{t('app.subtitle')}</p>
+          </div>
+        </div>
       </div>
 
       {/* Navigation */}
@@ -184,8 +204,11 @@ export function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-800 text-xs text-gray-500">
-        {t('app.version')}
+      <div className="p-4 border-t border-gray-800">
+        <div className="flex items-center gap-2">
+          <BurnWiseLogo size="sm" />
+          <p className="text-xs text-gray-500">{t('app.version')}</p>
+        </div>
       </div>
     </aside>
   )

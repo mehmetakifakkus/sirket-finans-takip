@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../store/authStore'
+import { BurnWiseLogo } from '../components/BurnWiseLogo'
 
 export function Login() {
   const { t } = useTranslation()
@@ -29,10 +30,8 @@ export function Login() {
       <div className="max-w-md w-full">
         {/* Logo and Title */}
         <div className="text-center mb-8">
-          <div className="mx-auto h-16 w-16 bg-blue-600 rounded-lg flex items-center justify-center">
-            <svg className="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+          <div className="mx-auto flex justify-center">
+            <BurnWiseLogo size="lg" animated />
           </div>
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900">{t('auth.loginTitle')}</h2>
           <p className="mt-2 text-sm text-gray-600">{t('auth.loginSubtitle')}</p>
