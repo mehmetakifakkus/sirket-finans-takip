@@ -469,6 +469,37 @@ class SetupController extends BaseController
     }
 
     /**
+     * Make projects.party_id nullable for internal projects
+     * POST /api/setup/fix-project-party
+     */
+    public function fixProjectParty()
+    {
+        try {
+            $db = Database::connect();
+
+            // Disable foreign key checks
+            $db->exec("SET FOREIGN_KEY_CHECKS = 0");
+
+            // Modify column to allow NULL
+            $db->exec("ALTER TABLE projects MODIFY COLUMN party_id INT UNSIGNED NULL");
+
+            // Re-enable foreign key checks
+            $db->exec("SET FOREIGN_KEY_CHECKS = 1");
+
+            return $this->success('projects.party_id nullable yapıldı');
+
+        } catch (\Exception $e) {
+            // Re-enable foreign key checks on error
+            try {
+                $db = Database::connect();
+                $db->exec("SET FOREIGN_KEY_CHECKS = 1");
+            } catch (\Exception $ignored) {}
+
+            return $this->error('Migration hatası: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
      * Update existing transactions with 20% VAT
      * POST /api/setup/update-vat-20
      *
@@ -512,6 +543,42 @@ class SetupController extends BaseController
 
         } catch (\Exception $e) {
             return $this->error('Güncelleme hatası: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Add 'individual' type to parties table
+     * POST /api/setup/add-party-individual
+     */
+    public function addPartyIndividual()
+    {
+        try {
+            $db = Database::connect();
+
+            $db->exec("ALTER TABLE parties MODIFY COLUMN type ENUM('customer', 'vendor', 'other', 'individual') NOT NULL DEFAULT 'customer'");
+
+            return $this->success('parties.type güncellendi, individual eklendi');
+
+        } catch (\Exception $e) {
+            return $this->error('Migration hatası: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Add grant party types (tubitak, kosgeb) to parties table
+     * POST /api/setup/add-party-grant-types
+     */
+    public function addPartyGrantTypes()
+    {
+        try {
+            $db = Database::connect();
+
+            $db->exec("ALTER TABLE parties MODIFY COLUMN type ENUM('customer', 'vendor', 'tubitak', 'kosgeb', 'individual', 'other') NOT NULL DEFAULT 'customer'");
+
+            return $this->success('parties.type güncellendi - tubitak, kosgeb eklendi');
+
+        } catch (\Exception $e) {
+            return $this->error('Migration hatası: ' . $e->getMessage(), 500);
         }
     }
 }

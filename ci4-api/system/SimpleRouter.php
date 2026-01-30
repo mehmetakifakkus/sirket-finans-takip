@@ -119,6 +119,7 @@ $routes = [
         'api/setup/migrate-party-grants' => ['SetupController', 'migratePartyGrants'],
         'api/setup/fix-project-party' => ['SetupController', 'fixProjectParty'],
         'api/setup/add-party-individual' => ['SetupController', 'addPartyIndividual'],
+        'api/setup/add-party-grant-types' => ['SetupController', 'addPartyGrantTypes'],
         'api/transactions' => ['TransactionController', 'create', true],
         'api/transactions/assign' => ['TransactionController', 'assignToProject', true],
         'api/debts' => ['DebtController', 'create', true],
