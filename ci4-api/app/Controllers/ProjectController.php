@@ -68,13 +68,13 @@ class ProjectController extends BaseController
 
         $insertData = [
             'title' => $data['title'],
-            'party_id' => $data['party_id'] ?? null,
-            'start_date' => $data['start_date'] ?? null,
-            'end_date' => $data['end_date'] ?? null,
+            'party_id' => !empty($data['party_id']) ? $data['party_id'] : null,
+            'start_date' => !empty($data['start_date']) ? $data['start_date'] : null,
+            'end_date' => !empty($data['end_date']) ? $data['end_date'] : null,
             'contract_amount' => $data['contract_amount'] ?? 0,
             'currency' => $data['currency'],
             'status' => $data['status'] ?? 'active',
-            'notes' => $data['notes'] ?? null
+            'notes' => !empty($data['notes']) ? $data['notes'] : null
         ];
 
         $id = $this->projectModel->insert($insertData);
