@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { api } from '@/api'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../../store/authStore'
+import { useAppStore } from '../../store/appStore'
 import { BurnWiseLogo } from '../BurnWiseLogo'
 
 interface NavItemProps {
@@ -10,12 +11,14 @@ interface NavItemProps {
   icon: React.ReactNode
   title: string
   badge?: number
+  onClick?: () => void
 }
 
-function NavItem({ path, icon, title, badge }: NavItemProps) {
+function NavItem({ path, icon, title, badge, onClick }: NavItemProps) {
   return (
     <NavLink
       to={path}
+      onClick={onClick}
       className={({ isActive }) =>
         `flex items-center justify-between px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors duration-200 ${
           isActive ? 'bg-gray-800' : ''
@@ -54,10 +57,28 @@ function NavSection({ title, children }: NavSectionProps) {
 export function Sidebar() {
   const { t } = useTranslation()
   const { user } = useAuthStore()
+  const { sidebarOpen, setSidebarOpen } = useAppStore()
+  const location = useLocation()
   const isAdmin = user?.role === 'admin'
   const [incompleteProjectCount, setIncompleteProjectCount] = useState(0)
   const [isHeaderHovered, setIsHeaderHovered] = useState(false)
   const [isInitialAnimation, setIsInitialAnimation] = useState(true)
+
+  // Close sidebar on mobile when route changes
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setSidebarOpen(false)
+      }
+    }
+    handleResize()
+  }, [location.pathname, setSidebarOpen])
+
+  const closeSidebarOnMobile = () => {
+    if (window.innerWidth < 768) {
+      setSidebarOpen(false)
+    }
+  }
 
   useEffect(() => {
     const fetchCount = async () => {
@@ -156,60 +177,86 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="w-64 bg-gray-900 text-white flex flex-col h-screen fixed left-0 top-0 z-30">
-      {/* Logo */}
-      <div
-        className="p-4 border-b border-gray-800"
-        onMouseEnter={() => setIsHeaderHovered(true)}
-        onMouseLeave={() => setIsHeaderHovered(false)}
+    <>
+      {/* Overlay for mobile */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`w-64 bg-gray-900 text-white flex flex-col h-screen fixed left-0 top-0 z-30 transform transition-transform duration-300 ease-in-out ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } md:translate-x-0`}
       >
-        <div className="flex items-center gap-3">
-          <BurnWiseLogo size={48} animated={isInitialAnimation || isHeaderHovered} />
-          <div>
-            <h1 className="text-xl font-bold">{t('app.title')}</h1>
-            <p className="text-xs text-gray-400">{t('app.subtitle')}</p>
+        {/* Logo */}
+        <div
+          className="p-4 border-b border-gray-800"
+          onMouseEnter={() => setIsHeaderHovered(true)}
+          onMouseLeave={() => setIsHeaderHovered(false)}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <BurnWiseLogo size={48} animated={isInitialAnimation || isHeaderHovered} />
+              <div>
+                <h1 className="text-xl font-bold">{t('app.title')}</h1>
+                <p className="text-xs text-gray-400">{t('app.subtitle')}</p>
+              </div>
+            </div>
+            {/* Close button for mobile */}
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="md:hidden p-1 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white"
+              aria-label="Close sidebar"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         </div>
-      </div>
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        <NavItem path="/" icon={icons.dashboard} title={t('nav.dashboard')} />
+        <NavItem path="/" icon={icons.dashboard} title={t('nav.dashboard')} onClick={closeSidebarOnMobile} />
 
         <NavSection title={t('nav.transactions')}>
-          <NavItem path="/transactions" icon={icons.transactions} title={t('nav.incomeExpense')} />
-          <NavItem path="/debts" icon={icons.debts} title={t('nav.debts')} />
-          <NavItem path="/payments" icon={icons.payments} title={t('nav.payments')} />
+          <NavItem path="/transactions" icon={icons.transactions} title={t('nav.incomeExpense')} onClick={closeSidebarOnMobile} />
+          <NavItem path="/debts" icon={icons.debts} title={t('nav.debts')} onClick={closeSidebarOnMobile} />
+          <NavItem path="/payments" icon={icons.payments} title={t('nav.payments')} onClick={closeSidebarOnMobile} />
         </NavSection>
 
         <NavSection title={t('nav.projectsAndParties')}>
-          <NavItem path="/projects" icon={icons.projects} title={t('nav.projects')} badge={incompleteProjectCount} />
-          <NavItem path="/parties" icon={icons.parties} title={t('nav.parties')} />
+          <NavItem path="/projects" icon={icons.projects} title={t('nav.projects')} badge={incompleteProjectCount} onClick={closeSidebarOnMobile} />
+          <NavItem path="/parties" icon={icons.parties} title={t('nav.parties')} onClick={closeSidebarOnMobile} />
         </NavSection>
 
         <NavSection title={t('nav.reports')}>
-          <NavItem path="/reports" icon={icons.reports} title={t('nav.reports')} />
-          <NavItem path="/reminders" icon={icons.reminders} title={t('nav.reminders')} />
+          <NavItem path="/reports" icon={icons.reports} title={t('nav.reports')} onClick={closeSidebarOnMobile} />
+          <NavItem path="/reminders" icon={icons.reminders} title={t('nav.reminders')} onClick={closeSidebarOnMobile} />
         </NavSection>
 
         {isAdmin && (
           <NavSection title={t('nav.administration')}>
-            <NavItem path="/admin" icon={icons.settings} title={t('nav.administration')} />
+            <NavItem path="/admin" icon={icons.settings} title={t('nav.administration')} onClick={closeSidebarOnMobile} />
           </NavSection>
         )}
 
         <NavSection title={t('nav.settings')}>
-          <NavItem path="/settings" icon={icons.language} title={t('nav.languages')} />
+          <NavItem path="/settings" icon={icons.language} title={t('nav.languages')} onClick={closeSidebarOnMobile} />
         </NavSection>
       </nav>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-gray-800">
-        <div className="flex items-center gap-2">
-          <BurnWiseLogo size="sm" />
-          <p className="text-xs text-gray-500">{t('app.version')}</p>
+        {/* Footer */}
+        <div className="p-4 border-t border-gray-800">
+          <div className="flex items-center gap-2">
+            <BurnWiseLogo size="sm" />
+            <p className="text-xs text-gray-500">{t('app.version')}</p>
+          </div>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   )
 }

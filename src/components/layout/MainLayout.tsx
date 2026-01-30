@@ -17,8 +17,8 @@ export function MainLayout() {
       {/* Sidebar - Fixed */}
       <Sidebar />
 
-      {/* Main Content - With left margin for sidebar */}
-      <div className="ml-64 flex flex-col min-h-screen">
+      {/* Main Content - With left margin for sidebar on desktop */}
+      <div className="ml-0 md:ml-64 flex flex-col min-h-screen">
         {/* Topbar */}
         <Topbar />
 
