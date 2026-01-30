@@ -21,13 +21,16 @@ export function runMigrations(db: DatabaseWrapper): void {
   db.exec(`
     CREATE TABLE IF NOT EXISTS parties (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      type TEXT NOT NULL DEFAULT 'customer' CHECK (type IN ('customer', 'vendor', 'other')),
+      type TEXT NOT NULL DEFAULT 'customer' CHECK (type IN ('customer', 'vendor', 'tubitak', 'kosgeb', 'individual', 'other')),
       name TEXT NOT NULL,
       tax_no TEXT,
       phone TEXT,
       email TEXT,
       address TEXT,
       notes TEXT,
+      grant_rate REAL,
+      grant_limit REAL,
+      vat_included INTEGER DEFAULT 1,
       created_at TEXT,
       updated_at TEXT
     )
@@ -340,6 +343,57 @@ export function runMigrations(db: DatabaseWrapper): void {
   `)
   db.exec('CREATE INDEX IF NOT EXISTS idx_templates_type ON transaction_templates(type)')
   db.exec('CREATE INDEX IF NOT EXISTS idx_templates_active ON transaction_templates(is_active)')
+
+  // Migration: Add grant fields and new party types to parties table
+  const partiesTableInfo = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='parties'").get() as { sql: string } | undefined
+  if (partiesTableInfo && partiesTableInfo.sql) {
+    // Check if grant_rate column exists
+    const hasGrantRate = partiesTableInfo.sql.includes('grant_rate')
+    if (!hasGrantRate) {
+      console.log('Migrating parties table to add grant fields...')
+      db.exec('ALTER TABLE parties ADD COLUMN grant_rate REAL')
+      db.exec('ALTER TABLE parties ADD COLUMN grant_limit REAL')
+      db.exec('ALTER TABLE parties ADD COLUMN vat_included INTEGER DEFAULT 1')
+      console.log('Migration completed: parties table now has grant fields')
+    }
+
+    // Check if type constraint includes new types (tubitak, kosgeb, individual)
+    if (!partiesTableInfo.sql.includes('tubitak')) {
+      console.log('Migrating parties table to support new party types...')
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS parties_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          type TEXT NOT NULL DEFAULT 'customer' CHECK (type IN ('customer', 'vendor', 'tubitak', 'kosgeb', 'individual', 'other')),
+          name TEXT NOT NULL,
+          tax_no TEXT,
+          phone TEXT,
+          email TEXT,
+          address TEXT,
+          notes TEXT,
+          grant_rate REAL,
+          grant_limit REAL,
+          vat_included INTEGER DEFAULT 1,
+          created_at TEXT,
+          updated_at TEXT
+        )
+      `)
+      // Copy data - use COALESCE to provide defaults for new columns if they don't exist
+      const columns = db.prepare("PRAGMA table_info(parties)").all() as { name: string }[]
+      const columnNames = columns.map(c => c.name)
+      const hasGrantFields = columnNames.includes('grant_rate')
+
+      if (hasGrantFields) {
+        db.exec(`INSERT INTO parties_new SELECT * FROM parties`)
+      } else {
+        db.exec(`INSERT INTO parties_new (id, type, name, tax_no, phone, email, address, notes, created_at, updated_at)
+                 SELECT id, type, name, tax_no, phone, email, address, notes, created_at, updated_at FROM parties`)
+      }
+      db.exec(`DROP TABLE parties`)
+      db.exec(`ALTER TABLE parties_new RENAME TO parties`)
+      db.exec('CREATE INDEX IF NOT EXISTS idx_parties_type ON parties(type)')
+      console.log('Migration completed: parties table now supports new party types')
+    }
+  }
 
   console.log('Database migrations completed successfully')
 }

@@ -1,21 +1,49 @@
 import { DatabaseWrapper, getCurrentTimestamp } from '../database/connection'
 
+type PartyType = 'customer' | 'vendor' | 'tubitak' | 'kosgeb' | 'individual' | 'other'
+
 interface Party {
   id: number
-  type: 'customer' | 'vendor' | 'other'
+  type: PartyType
   name: string
   tax_no: string | null
   phone: string | null
   email: string | null
   address: string | null
   notes: string | null
+  grant_rate: number | null
+  grant_limit: number | null
+  vat_included: boolean
   created_at: string
   updated_at: string
 }
 
 interface PartyFilters {
-  type?: 'customer' | 'vendor' | 'other'
+  type?: PartyType
   search?: string
+}
+
+interface PartyRow {
+  id: number
+  type: PartyType
+  name: string
+  tax_no: string | null
+  phone: string | null
+  email: string | null
+  address: string | null
+  notes: string | null
+  grant_rate: number | null
+  grant_limit: number | null
+  vat_included: number | null
+  created_at: string
+  updated_at: string
+}
+
+function mapRowToParty(row: PartyRow): Party {
+  return {
+    ...row,
+    vat_included: row.vat_included === 1 || row.vat_included === null
+  }
 }
 
 export class PartyService {
@@ -42,12 +70,13 @@ export class PartyService {
 
     query += ' ORDER BY name'
 
-    return this.db.prepare(query).all(...params) as Party[]
+    const rows = this.db.prepare(query).all(...params) as PartyRow[]
+    return rows.map(mapRowToParty)
   }
 
   getById(id: number): Party | null {
-    const party = this.db.prepare('SELECT * FROM parties WHERE id = ?').get(id) as Party | undefined
-    return party || null
+    const row = this.db.prepare('SELECT * FROM parties WHERE id = ?').get(id) as PartyRow | undefined
+    return row ? mapRowToParty(row) : null
   }
 
   create(data: Omit<Party, 'id' | 'created_at' | 'updated_at'>): { success: boolean; message: string; id?: number } {
@@ -55,8 +84,8 @@ export class PartyService {
 
     try {
       const result = this.db.prepare(`
-        INSERT INTO parties (type, name, tax_no, phone, email, address, notes, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO parties (type, name, tax_no, phone, email, address, notes, grant_rate, grant_limit, vat_included, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         data.type,
         data.name,
@@ -65,6 +94,9 @@ export class PartyService {
         data.email || null,
         data.address || null,
         data.notes || null,
+        data.grant_rate ?? null,
+        data.grant_limit ?? null,
+        data.vat_included ? 1 : 0,
         now,
         now
       )
@@ -85,7 +117,7 @@ export class PartyService {
 
     try {
       this.db.prepare(`
-        UPDATE parties SET type = ?, name = ?, tax_no = ?, phone = ?, email = ?, address = ?, notes = ?, updated_at = ?
+        UPDATE parties SET type = ?, name = ?, tax_no = ?, phone = ?, email = ?, address = ?, notes = ?, grant_rate = ?, grant_limit = ?, vat_included = ?, updated_at = ?
         WHERE id = ?
       `).run(
         data.type ?? existing.type,
@@ -95,6 +127,9 @@ export class PartyService {
         data.email ?? existing.email,
         data.address ?? existing.address,
         data.notes ?? existing.notes,
+        data.grant_rate !== undefined ? data.grant_rate : existing.grant_rate,
+        data.grant_limit !== undefined ? data.grant_limit : existing.grant_limit,
+        data.vat_included !== undefined ? (data.vat_included ? 1 : 0) : (existing.vat_included ? 1 : 0),
         now,
         id
       )
