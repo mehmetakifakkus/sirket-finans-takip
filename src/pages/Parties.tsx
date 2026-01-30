@@ -31,6 +31,7 @@ export function Parties() {
   const [showForm, setShowForm] = useState(false)
   const [editingParty, setEditingParty] = useState<Party | null>(null)
   const [filterType, setFilterType] = useState<string>('')
+  const [searchTerm, setSearchTerm] = useState('')
   const { addAlert } = useAppStore()
   const { user } = useAuthStore()
   const isAdmin = user?.role === 'admin'
@@ -52,6 +53,18 @@ export function Parties() {
   const [showMergeModal, setShowMergeModal] = useState(false)
   const [mergingParty, setMergingParty] = useState<Party | null>(null)
   const [mergeTargetId, setMergeTargetId] = useState<string>('')
+
+  // Filter parties by search term
+  const filteredParties = parties.filter(party => {
+    if (!searchTerm) return true
+    const search = searchTerm.toLowerCase()
+    return (
+      party.name.toLowerCase().includes(search) ||
+      (party.tax_no && party.tax_no.toLowerCase().includes(search)) ||
+      (party.email && party.email.toLowerCase().includes(search)) ||
+      (party.phone && party.phone.toLowerCase().includes(search))
+    )
+  })
 
   useEffect(() => {
     loadParties()
@@ -227,6 +240,37 @@ export function Parties() {
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div className="flex items-center space-x-4">
+          {/* Search */}
+          <div className="relative flex-1 max-w-xs">
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder={t('parties.searchPlaceholder')}
+              className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          {/* Type filter */}
           <label className="text-sm font-medium text-gray-700">{t('parties.filters.type')}:</label>
           <select
             value={filterType}
@@ -241,6 +285,13 @@ export function Parties() {
             <option value="individual">{t('parties.types.individual')}</option>
             <option value="other">{t('parties.types.other')}</option>
           </select>
+
+          {/* Result count */}
+          {(searchTerm || filterType) && (
+            <span className="text-sm text-gray-500">
+              {filteredParties.length} / {parties.length}
+            </span>
+          )}
         </div>
       </div>
 
@@ -258,14 +309,14 @@ export function Parties() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {parties.length === 0 ? (
+            {filteredParties.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                  {t('parties.noParties')}
+                  {searchTerm ? t('common.noResults') : t('parties.noParties')}
                 </td>
               </tr>
             ) : (
-              parties.map((party) => (
+              filteredParties.map((party) => (
                 <tr key={party.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="font-medium text-gray-900">{party.name}</div>
@@ -441,7 +492,7 @@ export function Parties() {
                         type="number"
                         step="0.01"
                         min="0"
-                        max="1"
+                        max="100"
                         value={formData.grant_rate !== null ? formData.grant_rate * 100 : ''}
                         onChange={(e) => setFormData({
                           ...formData,
