@@ -79,16 +79,14 @@ class PartyController extends BaseController
         $insertData = [
             'name' => $data['name'],
             'type' => $data['type'],
-            'tax_number' => $data['tax_number'] ?? null,
-            'tax_office' => $data['tax_office'] ?? null,
+            'tax_no' => $data['tax_no'] ?? $data['tax_number'] ?? null,
             'address' => $data['address'] ?? null,
             'phone' => $data['phone'] ?? null,
             'email' => $data['email'] ?? null,
             'notes' => $data['notes'] ?? null,
             'grant_rate' => $data['grant_rate'] ?? $grantDefaults['grant_rate'],
             'grant_limit' => $data['grant_limit'] ?? $grantDefaults['grant_limit'],
-            'vat_included' => $data['vat_included'] ?? $grantDefaults['vat_included'],
-            'created_by' => $this->getUserId()
+            'vat_included' => $data['vat_included'] ?? $grantDefaults['vat_included']
         ];
 
         $id = $this->partyModel->insert($insertData);
