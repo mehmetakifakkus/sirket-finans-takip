@@ -1,8 +1,10 @@
 import { Currency, CURRENCY_SYMBOLS, CURRENCY_NAMES } from '../types'
 
-export function formatCurrency(amount: number | undefined | null, currency: Currency = 'TRY'): string {
+export function formatCurrency(amount: number | string | undefined | null, currency: Currency = 'TRY'): string {
   const symbol = CURRENCY_SYMBOLS[currency] || currency
-  const value = amount ?? 0
+  // Parse string values and round to 2 decimal places
+  let value = typeof amount === 'string' ? parseFloat(amount) : (amount ?? 0)
+  value = Math.round(value * 100) / 100
   const formatted = value.toLocaleString('tr-TR', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2

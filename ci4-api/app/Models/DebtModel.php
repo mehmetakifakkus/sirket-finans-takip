@@ -21,15 +21,15 @@ class DebtModel extends BaseModel
         $sql = "SELECT d.*, p.name as party_name,
                 (SELECT COUNT(*) FROM installments WHERE debt_id = d.id) as installment_count,
                 (SELECT COUNT(*) FROM installments WHERE debt_id = d.id AND status = 'paid') as paid_installment_count,
-                (
+                ROUND(
                     COALESCE((SELECT SUM(paid_amount) FROM installments WHERE debt_id = d.id), 0) +
                     COALESCE((SELECT SUM(amount) FROM payments WHERE related_type = 'debt' AND related_id = d.id), 0)
-                ) as total_paid,
-                (
+                , 2) as total_paid,
+                ROUND(
                     d.principal_amount * (1 + d.vat_rate / 100) -
                     COALESCE((SELECT SUM(paid_amount) FROM installments WHERE debt_id = d.id), 0) -
                     COALESCE((SELECT SUM(amount) FROM payments WHERE related_type = 'debt' AND related_id = d.id), 0)
-                ) as remaining_amount
+                , 2) as remaining_amount
                 FROM debts d
                 LEFT JOIN parties p ON p.id = d.party_id
                 WHERE 1=1";
@@ -111,8 +111,8 @@ class DebtModel extends BaseModel
             $vatAmount = (float)$debt['principal_amount'] * ((float)$debt['vat_rate'] / 100);
             $totalAmount = (float)$debt['principal_amount'] + $vatAmount;
 
-            $debt['total_paid'] = $totalPaid;
-            $debt['remaining_amount'] = max(0, $totalAmount - $totalPaid);
+            $debt['total_paid'] = round($totalPaid, 2);
+            $debt['remaining_amount'] = round(max(0, $totalAmount - $totalPaid), 2);
 
             // Get direct payments for display
             $debt['direct_payments'] = Database::query(
