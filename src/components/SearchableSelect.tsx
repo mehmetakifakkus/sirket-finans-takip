@@ -14,6 +14,9 @@ interface SearchableSelectProps {
   allLabel?: string
   className?: string
   disabled?: boolean
+  onAddNew?: () => void
+  addNewLabel?: string
+  showAllOption?: boolean
 }
 
 export function SearchableSelect({
@@ -23,19 +26,22 @@ export function SearchableSelect({
   placeholder,
   allLabel,
   className = '',
-  disabled = false
+  disabled = false,
+  onAddNew,
+  addNewLabel,
+  showAllOption = true
 }: SearchableSelectProps) {
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
-  const [highlightedIndex, setHighlightedIndex] = useState(-1) // -1 = "All" option
+  const [highlightedIndex, setHighlightedIndex] = useState(showAllOption ? -1 : 0) // -1 = "All" option
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const optionRefs = useRef<(HTMLButtonElement | null)[]>([])
 
   const selectedOption = options.find(o => o.value === value)
-  const displayValue = selectedOption?.label || allLabel || t('common.all')
+  const displayValue = selectedOption?.label || (showAllOption ? (allLabel || t('common.all')) : (allLabel || t('common.select')))
 
   const filteredOptions = options.filter(option =>
     option.label.toLowerCase().includes(search.toLowerCase())
@@ -44,11 +50,11 @@ export function SearchableSelect({
   // Reset highlight when search changes
   useEffect(() => {
     if (search) {
-      setHighlightedIndex(filteredOptions.length > 0 ? 0 : -1)
+      setHighlightedIndex(filteredOptions.length > 0 ? 0 : (showAllOption ? -1 : 0))
     } else {
-      setHighlightedIndex(-1)
+      setHighlightedIndex(showAllOption ? -1 : 0)
     }
-  }, [search, filteredOptions.length])
+  }, [search, filteredOptions.length, showAllOption])
 
   // Scroll highlighted option into view
   useEffect(() => {
@@ -65,13 +71,13 @@ export function SearchableSelect({
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false)
         setSearch('')
-        setHighlightedIndex(-1)
+        setHighlightedIndex(showAllOption ? -1 : 0)
       }
     }
 
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  }, [showAllOption])
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -83,18 +89,28 @@ export function SearchableSelect({
     onChange(optionValue)
     setIsOpen(false)
     setSearch('')
-    setHighlightedIndex(-1)
-  }, [onChange])
+    setHighlightedIndex(showAllOption ? -1 : 0)
+  }, [onChange, showAllOption])
+
+  const handleAddNew = useCallback(() => {
+    if (onAddNew) {
+      onAddNew()
+      setIsOpen(false)
+      setSearch('')
+      setHighlightedIndex(showAllOption ? -1 : 0)
+    }
+  }, [onAddNew, showAllOption])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const totalOptions = filteredOptions.length + 1 // +1 for "All" option
+    const minIndex = showAllOption ? -1 : 0
+    const totalOptions = filteredOptions.length + (showAllOption ? 1 : 0) // +1 for "All" option if shown
 
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault()
         setHighlightedIndex(prev => {
           const next = prev + 1
-          return next >= totalOptions ? 0 : next
+          return next >= (showAllOption ? totalOptions : filteredOptions.length) ? minIndex : next
         })
         break
 
@@ -102,7 +118,7 @@ export function SearchableSelect({
         e.preventDefault()
         setHighlightedIndex(prev => {
           const next = prev - 1
-          return next < -1 ? totalOptions - 1 : next
+          return next < minIndex ? (showAllOption ? totalOptions - 1 : filteredOptions.length - 1) : next
         })
         break
 
@@ -111,7 +127,7 @@ export function SearchableSelect({
         // If single result and searching, select it
         if (search && filteredOptions.length === 1) {
           handleSelect(filteredOptions[0].value)
-        } else if (highlightedIndex === -1) {
+        } else if (highlightedIndex === -1 && showAllOption) {
           // "All" option selected
           handleSelect('')
         } else if (highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
@@ -123,7 +139,7 @@ export function SearchableSelect({
         e.preventDefault()
         setIsOpen(false)
         setSearch('')
-        setHighlightedIndex(-1)
+        setHighlightedIndex(showAllOption ? -1 : 0)
         break
     }
   }
@@ -134,11 +150,11 @@ export function SearchableSelect({
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
-        className={`w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-left bg-white flex items-center justify-between ${
+        className={`w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm text-left bg-white flex items-center justify-between ${
           disabled ? 'bg-gray-100 cursor-not-allowed' : 'hover:border-gray-400 cursor-pointer'
         } ${isOpen ? 'border-blue-500 ring-1 ring-blue-500' : ''}`}
       >
-        <span className={value ? 'text-gray-900' : 'text-gray-500'}>
+        <span className={value || !showAllOption ? 'text-gray-900' : 'text-gray-500'}>
           {displayValue}
         </span>
         <svg
@@ -189,21 +205,23 @@ export function SearchableSelect({
 
           {/* Options List */}
           <div ref={listRef} className="max-h-60 overflow-y-auto">
-            {/* All Option */}
-            <button
-              type="button"
-              onClick={() => handleSelect('')}
-              className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between ${
-                highlightedIndex === -1 ? 'bg-blue-100' : 'hover:bg-gray-100'
-              } ${!value ? 'text-blue-700' : 'text-gray-700'}`}
-            >
-              <span>{allLabel || t('common.all')}</span>
-              {!value && (
-                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              )}
-            </button>
+            {/* All Option - only show if showAllOption is true */}
+            {showAllOption && (
+              <button
+                type="button"
+                onClick={() => handleSelect('')}
+                className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between ${
+                  highlightedIndex === -1 ? 'bg-blue-100' : 'hover:bg-gray-100'
+                } ${!value ? 'text-blue-700' : 'text-gray-700'}`}
+              >
+                <span>{allLabel || t('common.all')}</span>
+                {!value && (
+                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </button>
+            )}
 
             {filteredOptions.length === 0 ? (
               <div className="px-3 py-4 text-sm text-gray-500 text-center">
@@ -231,6 +249,22 @@ export function SearchableSelect({
               ))
             )}
           </div>
+
+          {/* Add New Button */}
+          {onAddNew && addNewLabel && (
+            <div className="border-t border-gray-200">
+              <button
+                type="button"
+                onClick={handleAddNew}
+                className="w-full px-3 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                {addNewLabel}
+              </button>
+            </div>
+          )}
 
           {/* Result count */}
           {search && (

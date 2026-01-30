@@ -456,7 +456,10 @@ export function Transactions() {
         addAlert('success', t('categories.categoryCreated'))
         const categoriesRes = await api.getCategories()
         setCategories(categoriesRes as Category[])
-        setFormData({ ...formData, category_id: result.id.toString() })
+        const newCategoryId = (result as { category?: { id: number } }).category?.id
+        if (newCategoryId) {
+          setFormData({ ...formData, category_id: newCategoryId.toString() })
+        }
         setShowCategoryForm(false)
         setNewCategoryName('')
       } else {
@@ -482,7 +485,10 @@ export function Transactions() {
         addAlert('success', t('parties.partyCreated'))
         const partiesRes = await api.getParties()
         setParties(partiesRes as Party[])
-        setFormData({ ...formData, party_id: result.id!.toString() })
+        const newPartyId = (result as { party?: { id: number } }).party?.id
+        if (newPartyId) {
+          setFormData({ ...formData, party_id: newPartyId.toString() })
+        }
         setShowPartyForm(false)
         setNewPartyData({ type: 'customer', name: '' })
       } else {
@@ -518,7 +524,10 @@ export function Transactions() {
         addAlert('success', t('transactions.projectCreatedMissingInfo'))
         const projectsRes = await api.getProjects()
         setProjects(projectsRes as Project[])
-        setFormData({ ...formData, project_id: result.id!.toString() })
+        const newProjectId = (result as { project?: { id: number } }).project?.id
+        if (newProjectId) {
+          setFormData({ ...formData, project_id: newProjectId.toString() })
+        }
         setShowProjectForm(false)
         setNewProjectTitle('')
       } else {
@@ -1513,64 +1522,51 @@ export function Transactions() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-0.5">{t('transactions.category')}</label>
-                  <select
+                  <SearchableSelect
+                    options={filteredCategories.map(c => ({ value: c.id.toString(), label: c.name }))}
                     value={formData.category_id}
-                    onChange={(e) => {
-                      if (e.target.value === 'new') {
-                        setShowCategoryForm(true)
-                      } else {
-                        setFormData({ ...formData, category_id: e.target.value })
-                      }
-                    }}
-                    className="w-full px-3 py-1.5 border border-gray-300 rounded-md"
-                  >
-                    <option value="">{t('common.select')}</option>
-                    {filteredCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    <option value="new">+ {t('transactions.addNewCategory')}</option>
-                  </select>
+                    onChange={(value) => setFormData({ ...formData, category_id: value })}
+                    placeholder={t('transactions.searchCategory')}
+                    allLabel={t('common.select')}
+                    showAllOption={false}
+                    onAddNew={() => setShowCategoryForm(true)}
+                    addNewLabel={t('transactions.addNewCategory')}
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-0.5">{t('transactions.party')}</label>
-                  <select
+                  <SearchableSelect
+                    options={parties.map(p => ({ value: p.id.toString(), label: p.name }))}
                     value={formData.party_id}
-                    onChange={(e) => {
-                      if (e.target.value === 'new') {
-                        setShowPartyForm(true)
-                      } else {
-                        setFormData({ ...formData, party_id: e.target.value })
-                      }
-                    }}
-                    className="w-full px-3 py-1.5 border border-gray-300 rounded-md"
-                  >
-                    <option value="">{t('common.select')}</option>
-                    {parties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                    <option value="new">+ {t('transactions.addNewParty')}</option>
-                  </select>
+                    onChange={(value) => setFormData({ ...formData, party_id: value })}
+                    placeholder={t('transactions.searchParty')}
+                    allLabel={t('common.select')}
+                    showAllOption={false}
+                    onAddNew={() => setShowPartyForm(true)}
+                    addNewLabel={t('transactions.addNewParty')}
+                  />
                 </div>
               </div>
 
               {/* Row 5: Proje (full) */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-0.5">{t('transactions.project')}</label>
-                <select
+                <SearchableSelect
+                  options={projects.map(p => ({ value: p.id.toString(), label: p.title }))}
                   value={formData.project_id}
-                  onChange={(e) => {
-                    if (e.target.value === 'new') {
-                      if (!formData.party_id) {
-                        addAlert('error', t('transactions.partySelectFirst'))
-                      } else {
-                        setShowProjectForm(true)
-                      }
+                  onChange={(value) => setFormData({ ...formData, project_id: value })}
+                  placeholder={t('transactions.searchProject')}
+                  allLabel={t('common.select')}
+                  showAllOption={false}
+                  onAddNew={() => {
+                    if (!formData.party_id) {
+                      addAlert('error', t('transactions.partySelectFirst'))
                     } else {
-                      setFormData({ ...formData, project_id: e.target.value })
+                      setShowProjectForm(true)
                     }
                   }}
-                  className="w-full px-3 py-1.5 border border-gray-300 rounded-md"
-                >
-                  <option value="">{t('common.select')}</option>
-                  {projects.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
-                  <option value="new">+ {t('transactions.addNewProject')}</option>
-                </select>
+                  addNewLabel={t('transactions.addNewProject')}
+                />
               </div>
 
               {/* Row 6: Açıklama (1 satır) */}
