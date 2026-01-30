@@ -145,7 +145,7 @@ class HttpClient implements IApiClient {
   createInstallments = (debtId: number, count: number, startDate?: string) =>
     this.request<{ success: boolean; message: string }>(`/debts/${debtId}/installments`, {
       method: 'POST',
-      body: JSON.stringify({ count, startDate }),
+      body: JSON.stringify({ count, start_date: startDate || new Date().toISOString().split('T')[0] }),
     })
   exportDebts = async (filters?: object) => {
     const query = this.buildQueryString(filters)
@@ -166,6 +166,11 @@ class HttpClient implements IApiClient {
     })
   addInstallmentPayment = (installmentId: number, data: object) =>
     this.request<{ success: boolean; message: string }>(`/installments/${installmentId}/pay`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  addDebtPayment = (debtId: number, data: { amount: number; date?: string; method?: string; notes?: string }) =>
+    this.request<{ success: boolean; message: string }>(`/debts/${debtId}/pay`, {
       method: 'POST',
       body: JSON.stringify(data),
     })

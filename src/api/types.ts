@@ -34,6 +34,7 @@ export interface IApiClient {
   updateInstallment: (id: number, data: object) => Promise<{ success: boolean; message: string }>;
   deleteInstallment: (id: number) => Promise<{ success: boolean; message: string }>;
   addInstallmentPayment: (installmentId: number, data: object) => Promise<{ success: boolean; message: string }>;
+  addDebtPayment: (debtId: number, data: { amount: number; date?: string; method?: string; notes?: string }) => Promise<{ success: boolean; message: string }>;
 
   // Parties
   getParties: (filters?: object) => Promise<object[]>;

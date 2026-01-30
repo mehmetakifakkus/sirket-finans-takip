@@ -17,6 +17,7 @@ export function DebtDetail() {
   const [showPaymentForm, setShowPaymentForm] = useState(false)
   const [selectedInstallment, setSelectedInstallment] = useState<Installment | null>(null)
   const [showInstallmentForm, setShowInstallmentForm] = useState(false)
+  const [showDirectPaymentForm, setShowDirectPaymentForm] = useState(false)
   const { addAlert } = useAppStore()
   const { user } = useAuthStore()
   const isAdmin = user?.role === 'admin'
@@ -87,6 +88,40 @@ export function DebtDetail() {
     }
   }
 
+  const handleDirectPayment = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!debt) return
+
+    try {
+      const result = await api.addDebtPayment(debt.id, {
+        amount: parseFloat(paymentData.amount),
+        date: paymentData.date,
+        method: paymentData.method,
+        notes: paymentData.notes
+      })
+      if (result.success) {
+        addAlert('success', result.message)
+        loadDebt()
+        setShowDirectPaymentForm(false)
+      } else {
+        addAlert('error', result.message)
+      }
+    } catch {
+      addAlert('error', t('debtDetail.errors.paymentFailed'))
+    }
+  }
+
+  const openDirectPaymentForm = () => {
+    if (!debt) return
+    setPaymentData({
+      amount: (debt.remaining_amount || debt.principal_amount).toString(),
+      date: getToday(),
+      method: 'bank',
+      notes: ''
+    })
+    setShowDirectPaymentForm(true)
+  }
+
   const handleDeleteInstallment = async (installmentId: number) => {
     const confirmed = await api.confirm(t('debtDetail.confirmDeleteInstallment'))
     if (!confirmed) return
@@ -155,6 +190,17 @@ export function DebtDetail() {
             {debt.kind === 'receivable' ? t('debts.receivable') : t('debts.debt')}
           </span>
         </div>
+        {debt.status === 'open' && (debt.remaining_amount || 0) > 0 && (
+          <button
+            onClick={openDirectPaymentForm}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            {t('debtDetail.addPayment')}
+          </button>
+        )}
       </div>
 
       {/* Summary */}
@@ -250,6 +296,33 @@ export function DebtDetail() {
         </div>
       )}
 
+      {/* Direct Payments */}
+      {debt.direct_payments && debt.direct_payments.length > 0 && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900">{t('debtDetail.directPayments')}</h3>
+          </div>
+          <div className="p-6">
+            <div className="space-y-3">
+              {debt.direct_payments.map((payment: { id: number; amount: number; currency: string; payment_date: string; payment_method: string; notes?: string }) => (
+                <div key={payment.id} className="p-4 rounded-lg bg-green-50 border border-green-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-gray-900">{formatCurrency(payment.amount, payment.currency as 'TRY' | 'USD' | 'EUR')}</p>
+                      <p className="text-sm text-gray-500">{formatDate(payment.payment_date)} - {t(`debtDetail.paymentForm.methods.${payment.payment_method}`)}</p>
+                      {payment.notes && <p className="text-sm text-gray-400 mt-1">{payment.notes}</p>}
+                    </div>
+                    <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                      {t('debtDetail.status.paid')}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Installment Creation Modal */}
       {showInstallmentForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -322,6 +395,56 @@ export function DebtDetail() {
               <div className="flex justify-end space-x-3 pt-4">
                 <button type="button" onClick={closePaymentForm} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">{t('common.cancel')}</button>
                 <button type="submit" className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">{t('debtDetail.makePayment')}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Direct Payment Modal */}
+      {showDirectPaymentForm && debt && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-900">{t('debtDetail.addPayment')}</h3>
+              <button
+                type="button"
+                onClick={() => setShowDirectPaymentForm(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <form onSubmit={handleDirectPayment} className="p-6 space-y-4">
+              <div className="bg-gray-50 p-3 rounded-md mb-2">
+                <p className="text-sm text-gray-600">{t('debtDetail.remaining')}: <span className="font-semibold">{formatCurrency(debt.remaining_amount || 0, debt.currency as 'TRY' | 'USD' | 'EUR')}</span></p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('debtDetail.paymentForm.amount')} *</label>
+                <input type="number" step="0.01" value={paymentData.amount} onChange={(e) => setPaymentData({ ...paymentData, amount: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('debtDetail.paymentForm.date')} *</label>
+                <input type="date" value={paymentData.date} onChange={(e) => setPaymentData({ ...paymentData, date: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('debtDetail.paymentForm.method')}</label>
+                <select value={paymentData.method} onChange={(e) => setPaymentData({ ...paymentData, method: e.target.value as 'cash' | 'bank' | 'card' | 'other' })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                  <option value="bank">{t('debtDetail.paymentForm.methods.bank')}</option>
+                  <option value="cash">{t('debtDetail.paymentForm.methods.cash')}</option>
+                  <option value="card">{t('debtDetail.paymentForm.methods.card')}</option>
+                  <option value="other">{t('debtDetail.paymentForm.methods.other')}</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('debtDetail.paymentForm.notes')}</label>
+                <textarea value={paymentData.notes} onChange={(e) => setPaymentData({ ...paymentData, notes: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" rows={2} />
+              </div>
+              <div className="flex justify-end space-x-3 pt-4">
+                <button type="button" onClick={() => setShowDirectPaymentForm(false)} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">{t('common.cancel')}</button>
+                <button type="submit" className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">{t('debtDetail.addPayment')}</button>
               </div>
             </form>
           </div>
