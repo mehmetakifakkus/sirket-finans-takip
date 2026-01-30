@@ -61,7 +61,7 @@ export function Projects() {
     party_id: '',
     title: '',
     contract_amount: '',
-    currency: 'TRY' as 'TRY' | 'USD' | 'EUR',
+    currency: 'TRY' as 'TRY' | 'USD' | 'EUR' | 'GR',
     start_date: '',
     end_date: '',
     status: 'active' as 'active' | 'completed' | 'cancelled' | 'on_hold',
@@ -397,10 +397,11 @@ export function Projects() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{t('projects.form.currency')}</label>
-                  <select value={formData.currency} onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'TRY' | 'USD' | 'EUR' })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                  <select value={formData.currency} onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'TRY' | 'USD' | 'EUR' | 'GR' })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
                     <option value="TRY">TRY</option>
                     <option value="USD">USD</option>
                     <option value="EUR">EUR</option>
+                    <option value="GR">Altın (gr)</option>
                   </select>
                 </div>
               </div>
@@ -411,7 +412,7 @@ export function Projects() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{t('projects.form.endDate')}</label>
-                  <input type="date" value={formData.end_date} onChange={(e) => setFormData({ ...formData, end_date: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
+                  <input type="date" value={formData.end_date} onChange={(e) => setFormData({ ...formData, end_date: e.target.value })} disabled={formData.status === 'active'} className={`w-full px-3 py-2 border border-gray-300 rounded-md ${formData.status === 'active' ? 'bg-gray-100 cursor-not-allowed' : ''}`} />
                 </div>
               </div>
               <div>

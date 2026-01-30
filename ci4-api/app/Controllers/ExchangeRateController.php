@@ -202,14 +202,14 @@ class ExchangeRateController extends BaseController
     }
 
     /**
-     * Fetch gold prices
+     * Fetch gold prices (gram gold)
      * POST /api/exchange-rates/fetch-gold
      */
     public function fetchGold()
     {
         try {
-            // Use a simple gold price API or hardcoded for now
-            // In production, use a proper API like goldapi.io
+            // TCMB provides XAU (ounce gold) price
+            // 1 ounce = 31.1035 grams
             $url = 'https://www.tcmb.gov.tr/kurlar/today.xml';
             $context = stream_context_create([
                 'http' => ['timeout' => 10],
@@ -227,22 +227,25 @@ class ExchangeRateController extends BaseController
             }
 
             $date = date('Y-m-d');
-            $goldRate = null;
+            $ounceRate = null;
 
             foreach ($data->Currency as $currency) {
                 $code = (string)$currency['Kod'];
                 if ($code === 'XAU') {
-                    $goldRate = (float)$currency->ForexSelling;
+                    $ounceRate = (float)$currency->ForexSelling;
                     break;
                 }
             }
 
-            if ($goldRate && $goldRate > 0) {
-                $this->exchangeRateModel->upsertRate('GOLD', $goldRate, $date, 'tcmb');
+            if ($ounceRate && $ounceRate > 0) {
+                // Convert ounce to gram (1 ounce = 31.1035 grams)
+                $gramRate = round($ounceRate / 31.1035, 2);
+                $this->exchangeRateModel->upsertRate('GR', $gramRate, $date, 'tcmb');
 
                 return $this->success('Altın fiyatı güncellendi', [
                     'date' => $date,
-                    'rate' => $goldRate
+                    'rate' => $gramRate,
+                    'ounce_rate' => $ounceRate
                 ]);
             }
 
@@ -251,5 +254,25 @@ class ExchangeRateController extends BaseController
         } catch (\Exception $e) {
             return $this->error('Altın fiyatı alınamadı: ' . $e->getMessage(), 500);
         }
+    }
+
+    /**
+     * Get rate for currency on date
+     * GET /api/exchange-rates/rate/{currency}/{date}
+     */
+    public function getRate(string $currency, string $date)
+    {
+        $rate = $this->exchangeRateModel->getRateForDate($currency, $date);
+
+        if (!$rate) {
+            // Try to get the most recent rate before this date
+            $rate = $this->exchangeRateModel->getLatestRateForCurrency($currency);
+        }
+
+        return $this->success('Kur bilgisi', [
+            'currency' => $currency,
+            'date' => $date,
+            'rate' => $rate ? (float)$rate['rate'] : null
+        ]);
     }
 }

@@ -34,7 +34,7 @@ export function Debts() {
     kind: 'debt' as 'debt' | 'receivable',
     party_id: '',
     principal_amount: '',
-    currency: 'TRY' as 'TRY' | 'USD' | 'EUR',
+    currency: 'TRY' as 'TRY' | 'USD' | 'EUR' | 'GR',
     vat_rate: '0',
     start_date: getToday(),
     due_date: '',
@@ -432,10 +432,11 @@ export function Debts() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{t('debts.form.currency')}</label>
-                  <select value={formData.currency} onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'TRY' | 'USD' | 'EUR' })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                  <select value={formData.currency} onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'TRY' | 'USD' | 'EUR' | 'GR' })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
                     <option value="TRY">TRY</option>
                     <option value="USD">USD</option>
                     <option value="EUR">EUR</option>
+                    <option value="GR">Altın (gr)</option>
                   </select>
                 </div>
               </div>

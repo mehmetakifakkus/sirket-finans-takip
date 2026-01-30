@@ -78,7 +78,7 @@ export function Transactions() {
     milestone_id: '',
     date: getToday(),
     amount: '',
-    currency: 'TRY' as 'TRY' | 'USD' | 'EUR',
+    currency: 'TRY' as 'TRY' | 'USD' | 'EUR' | 'GR',
     vat_rate: '20',
     vat_included: true,
     withholding_rate: '0',
@@ -1479,10 +1479,11 @@ export function Transactions() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-0.5">{t('common.currency')}</label>
-                  <select value={formData.currency} onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'TRY' | 'USD' | 'EUR' })} className="w-full px-3 py-1.5 border border-gray-300 rounded-md">
+                  <select value={formData.currency} onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'TRY' | 'USD' | 'EUR' | 'GR' })} className="w-full px-3 py-1.5 border border-gray-300 rounded-md">
                     <option value="TRY">TRY</option>
                     <option value="USD">USD</option>
                     <option value="EUR">EUR</option>
+                    <option value="GR">Altın (gr)</option>
                   </select>
                 </div>
               </div>

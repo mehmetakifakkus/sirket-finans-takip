@@ -442,6 +442,7 @@ export function TemplateModal({ isOpen, onClose, onTransactionCreated, presetTyp
                     <option value="TRY">TRY</option>
                     <option value="USD">USD</option>
                     <option value="EUR">EUR</option>
+                    <option value="GR">Altın (gr)</option>
                   </select>
                 </div>
               </div>

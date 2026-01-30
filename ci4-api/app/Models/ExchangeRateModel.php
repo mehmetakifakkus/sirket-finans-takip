@@ -48,7 +48,7 @@ class ExchangeRateModel extends BaseModel
      */
     public function getLatest(): array
     {
-        $currencies = ['USD', 'EUR', 'GBP', 'GOLD'];
+        $currencies = ['USD', 'EUR', 'GBP', 'GR'];
         $rates = [];
 
         foreach ($currencies as $currency) {
@@ -62,6 +62,28 @@ class ExchangeRateModel extends BaseModel
         }
 
         return $rates;
+    }
+
+    /**
+     * Get rate for currency on specific date
+     */
+    public function getRateForDate(string $currency, string $date): ?array
+    {
+        return Database::queryOne(
+            "SELECT * FROM exchange_rates WHERE quote_currency = ? AND rate_date = ?",
+            [$currency, $date]
+        );
+    }
+
+    /**
+     * Get latest rate for a specific currency
+     */
+    public function getLatestRateForCurrency(string $currency): ?array
+    {
+        return Database::queryOne(
+            "SELECT * FROM exchange_rates WHERE quote_currency = ? ORDER BY rate_date DESC LIMIT 1",
+            [$currency]
+        );
     }
 
     /**

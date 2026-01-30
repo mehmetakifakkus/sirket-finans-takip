@@ -24,7 +24,7 @@ export function ProjectDetail() {
     title: '',
     expected_date: '',
     expected_amount: '',
-    currency: 'TRY' as 'TRY' | 'USD' | 'EUR',
+    currency: 'TRY' as 'TRY' | 'USD' | 'EUR' | 'GR',
     status: 'pending' as 'pending' | 'completed' | 'cancelled',
     notes: ''
   })
@@ -38,7 +38,7 @@ export function ProjectDetail() {
   const [transactionFormData, setTransactionFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     amount: '',
-    currency: 'TRY' as 'TRY' | 'USD' | 'EUR',
+    currency: 'TRY' as 'TRY' | 'USD' | 'EUR' | 'GR',
     party_id: '',
     category_id: '',
     vat_rate: '0',
@@ -902,10 +902,11 @@ export function ProjectDetail() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectDetail.form.currency')}</label>
-                  <select value={formData.currency} onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'TRY' | 'USD' | 'EUR' })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                  <select value={formData.currency} onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'TRY' | 'USD' | 'EUR' | 'GR' })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
                     <option value="TRY">TRY</option>
                     <option value="USD">USD</option>
                     <option value="EUR">EUR</option>
+                    <option value="GR">Altın (gr)</option>
                   </select>
                 </div>
               </div>
@@ -996,12 +997,13 @@ export function ProjectDetail() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectDetail.transactionForm.currency')}</label>
                   <select
                     value={transactionFormData.currency}
-                    onChange={(e) => setTransactionFormData({ ...transactionFormData, currency: e.target.value as 'TRY' | 'USD' | 'EUR' })}
+                    onChange={(e) => setTransactionFormData({ ...transactionFormData, currency: e.target.value as 'TRY' | 'USD' | 'EUR' | 'GR' })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   >
                     <option value="TRY">TRY</option>
                     <option value="USD">USD</option>
                     <option value="EUR">EUR</option>
+                    <option value="GR">Altın (gr)</option>
                   </select>
                 </div>
               </div>
@@ -1389,6 +1391,7 @@ export function ProjectDetail() {
                     <option value="TRY">TRY</option>
                     <option value="USD">USD</option>
                     <option value="EUR">EUR</option>
+                    <option value="GR">Altın (gr)</option>
                   </select>
                 </div>
                 <div>
