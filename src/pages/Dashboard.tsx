@@ -39,11 +39,15 @@ export function Dashboard() {
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([])
   const [categoryData, setCategoryData] = useState<CategoryData[]>([])
   const [debtSummary, setDebtSummary] = useState<DebtSummary | null>(null)
+  const [chartPeriod, setChartPeriod] = useState(12)
 
   useEffect(() => {
     loadDashboardData()
-    loadChartData()
   }, [])
+
+  useEffect(() => {
+    loadChartData(chartPeriod)
+  }, [chartPeriod])
 
   const loadDashboardData = async () => {
     try {
@@ -56,11 +60,11 @@ export function Dashboard() {
     }
   }
 
-  const loadChartData = async () => {
+  const loadChartData = async (months: number) => {
     try {
       const [monthly, category, debt] = await Promise.all([
-        api.getMonthlyChartData(6),
-        api.getCategoryChartData('expense', 6),
+        api.getMonthlyChartData(months),
+        api.getCategoryChartData('expense', months),
         api.getDebtSummaryChartData()
       ])
       setMonthlyData(monthly as MonthlyData[])
@@ -178,8 +182,38 @@ export function Dashboard() {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Monthly Income/Expense Chart */}
-        <MonthlyIncomeExpenseChart data={monthlyData} />
+        {/* Monthly Income/Expense Chart with Period Selector */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">{t('dashboard.monthlyIncomeExpense')}</h3>
+            <div className="flex gap-1">
+              {[3, 6, 12].map((period) => (
+                <button
+                  key={period}
+                  onClick={() => setChartPeriod(period)}
+                  className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                    chartPeriod === period
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {period} {t('dashboard.monthsShort')}
+                </button>
+              ))}
+              <button
+                onClick={() => setChartPeriod(0)}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  chartPeriod === 0
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {t('dashboard.allTime')}
+              </button>
+            </div>
+          </div>
+          <MonthlyIncomeExpenseChart data={monthlyData} hideTitle />
+        </div>
 
         {/* Category Distribution Pie Chart */}
         <CategoryPieChart data={categoryData} />

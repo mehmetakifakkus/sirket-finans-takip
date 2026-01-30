@@ -130,7 +130,10 @@
     "activeProjects": "Aktif Projeler",
     "noActiveProjects": "Aktif proje yok",
     "viewAllProjects": "Tüm projeleri gör",
-    "dueDate": "Vade"
+    "dueDate": "Vade",
+    "monthlyIncomeExpense": "Aylık Gelir/Gider",
+    "monthsShort": "Ay",
+    "allTime": "Tümü"
   },
   "charts": {
     "monthlyIncomeExpense": "Aylık Gelir/Gider",

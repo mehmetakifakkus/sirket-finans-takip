@@ -61,8 +61,23 @@ class ChartController extends BaseController
      */
     public function monthly()
     {
-        $months = (int)$this->getQueryParam('months', 12);
-        if ($months < 1 || $months > 24) {
+        $monthsParam = $this->getQueryParam('months', '12');
+        $months = (int)$monthsParam;
+
+        // months=0 means "all time" - calculate from first transaction
+        if ($months === 0) {
+            $firstTransaction = Database::queryOne(
+                "SELECT MIN(date) as first_date FROM transactions"
+            );
+            if ($firstTransaction && $firstTransaction['first_date']) {
+                $firstDate = new \DateTime($firstTransaction['first_date']);
+                $today = new \DateTime();
+                $interval = $firstDate->diff($today);
+                $months = ($interval->y * 12) + $interval->m + 1; // +1 to include current month
+            } else {
+                $months = 12; // Default if no transactions
+            }
+        } elseif ($months < 1 || $months > 120) {
             $months = 12;
         }
 
@@ -120,20 +135,31 @@ class ChartController extends BaseController
     public function category()
     {
         $type = $this->getQueryParam('type', 'expense');
-        $months = (int)$this->getQueryParam('months', 6);
+        $monthsParam = $this->getQueryParam('months', '6');
+        $months = (int)$monthsParam;
 
         if (!in_array($type, ['income', 'expense'])) {
             $type = 'expense';
-        }
-        if ($months < 1 || $months > 12) {
-            $months = 6;
         }
 
         $rates = $this->getLatestRates();
 
         // Calculate date range
         $endDate = date('Y-m-d');
-        $startDate = date('Y-m-d', strtotime("-$months months"));
+
+        // months=0 means "all time"
+        if ($months === 0) {
+            $firstTransaction = Database::queryOne(
+                "SELECT MIN(date) as first_date FROM transactions"
+            );
+            $startDate = $firstTransaction && $firstTransaction['first_date']
+                ? $firstTransaction['first_date']
+                : date('Y-m-d', strtotime("-12 months"));
+        } elseif ($months < 1 || $months > 120) {
+            $startDate = date('Y-m-d', strtotime("-6 months"));
+        } else {
+            $startDate = date('Y-m-d', strtotime("-$months months"));
+        }
 
         // Get transactions grouped by category
         $transactions = Database::query(

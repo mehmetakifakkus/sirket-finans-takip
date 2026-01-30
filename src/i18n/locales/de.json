@@ -111,7 +111,10 @@
     "activeProjects": "Aktive Projekte",
     "noActiveProjects": "Keine aktiven Projekte",
     "viewAllProjects": "Alle Projekte anzeigen",
-    "dueDate": "Fälligkeitsdatum"
+    "dueDate": "Fälligkeitsdatum",
+    "monthlyIncomeExpense": "Monatliche Einnahmen/Ausgaben",
+    "monthsShort": "Mo",
+    "allTime": "Alle"
   },
   "transactions": {
     "title": "Einnahmen / Ausgaben Transaktionen",

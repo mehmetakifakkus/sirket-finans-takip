@@ -20,9 +20,10 @@ interface MonthlyData {
 
 interface Props {
   data: MonthlyData[]
+  hideTitle?: boolean
 }
 
-export function MonthlyIncomeExpenseChart({ data }: Props) {
+export function MonthlyIncomeExpenseChart({ data, hideTitle }: Props) {
   const { t } = useTranslation()
 
   const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; dataKey: string; color: string }>; label?: string }) => {
@@ -42,48 +43,56 @@ export function MonthlyIncomeExpenseChart({ data }: Props) {
     return null
   }
 
+  const chartContent = (
+    <div className="h-80">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <XAxis
+            dataKey="month_label"
+            tick={{ fill: '#6b7280', fontSize: 12 }}
+            tickLine={{ stroke: '#d1d5db' }}
+          />
+          <YAxis
+            tick={{ fill: '#6b7280', fontSize: 12 }}
+            tickLine={{ stroke: '#d1d5db' }}
+            tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <Legend
+            formatter={(value) => value === 'income' ? t('transactions.income') : t('transactions.expense')}
+          />
+          <Line
+            type="monotone"
+            dataKey="income"
+            stroke="#10b981"
+            strokeWidth={2}
+            dot={{ fill: '#10b981', strokeWidth: 2 }}
+            activeDot={{ r: 6, fill: '#10b981' }}
+          />
+          <Line
+            type="monotone"
+            dataKey="expense"
+            stroke="#ef4444"
+            strokeWidth={2}
+            dot={{ fill: '#ef4444', strokeWidth: 2 }}
+            activeDot={{ r: 6, fill: '#ef4444' }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  )
+
+  if (hideTitle) {
+    return chartContent
+  }
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
         {t('charts.monthlyIncomeExpense')}
       </h3>
-      <div className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-            <XAxis
-              dataKey="month_label"
-              tick={{ fill: '#6b7280', fontSize: 12 }}
-              tickLine={{ stroke: '#d1d5db' }}
-            />
-            <YAxis
-              tick={{ fill: '#6b7280', fontSize: 12 }}
-              tickLine={{ stroke: '#d1d5db' }}
-              tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend
-              formatter={(value) => value === 'income' ? t('transactions.income') : t('transactions.expense')}
-            />
-            <Line
-              type="monotone"
-              dataKey="income"
-              stroke="#10b981"
-              strokeWidth={2}
-              dot={{ fill: '#10b981', strokeWidth: 2 }}
-              activeDot={{ r: 6, fill: '#10b981' }}
-            />
-            <Line
-              type="monotone"
-              dataKey="expense"
-              stroke="#ef4444"
-              strokeWidth={2}
-              dot={{ fill: '#ef4444', strokeWidth: 2 }}
-              activeDot={{ r: 6, fill: '#ef4444' }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+      {chartContent}
     </div>
   )
 }

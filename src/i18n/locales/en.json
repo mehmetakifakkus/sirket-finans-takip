@@ -130,7 +130,10 @@
     "activeProjects": "Active Projects",
     "noActiveProjects": "No active projects",
     "viewAllProjects": "View all projects",
-    "dueDate": "Due Date"
+    "dueDate": "Due Date",
+    "monthlyIncomeExpense": "Monthly Income/Expense",
+    "monthsShort": "Mo",
+    "allTime": "All"
   },
   "charts": {
     "monthlyIncomeExpense": "Monthly Income/Expense",
