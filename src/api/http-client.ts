@@ -20,13 +20,16 @@ class HttpClient implements IApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
+    // Always read token from localStorage to ensure it's fresh
+    const token = this.token || localStorage.getItem('auth_token')
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
     }
 
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
     }
 
     const response = await fetch(`${API_URL}${endpoint}`, {

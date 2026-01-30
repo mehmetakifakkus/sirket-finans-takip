@@ -89,16 +89,20 @@ class PartyController extends BaseController
             'vat_included' => $data['vat_included'] ?? $grantDefaults['vat_included']
         ];
 
-        $id = $this->partyModel->insert($insertData);
-        if (!$id) {
-            return $this->error('Taraf oluşturulamadı', 500);
+        try {
+            $id = $this->partyModel->insert($insertData);
+            if (!$id) {
+                return $this->error('Taraf oluşturulamadı', 500);
+            }
+
+            $party = $this->partyModel->getWithDetails($id);
+
+            return $this->created('Taraf oluşturuldu', [
+                'party' => $party
+            ]);
+        } catch (\Exception $e) {
+            return $this->error('Veritabanı hatası: ' . $e->getMessage(), 500);
         }
-
-        $party = $this->partyModel->getWithDetails($id);
-
-        return $this->created('Taraf oluşturuldu', [
-            'party' => $party
-        ]);
     }
 
     /**
