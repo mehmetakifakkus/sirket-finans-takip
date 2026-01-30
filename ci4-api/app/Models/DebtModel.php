@@ -21,7 +21,15 @@ class DebtModel extends BaseModel
         $sql = "SELECT d.*, p.name as party_name,
                 (SELECT COUNT(*) FROM installments WHERE debt_id = d.id) as installment_count,
                 (SELECT COUNT(*) FROM installments WHERE debt_id = d.id AND status = 'paid') as paid_installment_count,
-                (SELECT COALESCE(SUM(paid_amount), 0) FROM installments WHERE debt_id = d.id) as paid_amount
+                (
+                    COALESCE((SELECT SUM(paid_amount) FROM installments WHERE debt_id = d.id), 0) +
+                    COALESCE((SELECT SUM(amount) FROM payments WHERE related_type = 'debt' AND related_id = d.id), 0)
+                ) as total_paid,
+                (
+                    d.principal_amount * (1 + d.vat_rate / 100) -
+                    COALESCE((SELECT SUM(paid_amount) FROM installments WHERE debt_id = d.id), 0) -
+                    COALESCE((SELECT SUM(amount) FROM payments WHERE related_type = 'debt' AND related_id = d.id), 0)
+                ) as remaining_amount
                 FROM debts d
                 LEFT JOIN parties p ON p.id = d.party_id
                 WHERE 1=1";
@@ -88,6 +96,29 @@ class DebtModel extends BaseModel
                 "SELECT * FROM installments WHERE debt_id = ? ORDER BY due_date ASC",
                 [$id]
             );
+
+            // Calculate total paid (installments + direct payments)
+            $installmentPaid = Database::queryOne(
+                "SELECT COALESCE(SUM(paid_amount), 0) as total FROM installments WHERE debt_id = ?",
+                [$id]
+            );
+            $directPaid = Database::queryOne(
+                "SELECT COALESCE(SUM(amount), 0) as total FROM payments WHERE related_type = 'debt' AND related_id = ?",
+                [$id]
+            );
+
+            $totalPaid = (float)($installmentPaid['total'] ?? 0) + (float)($directPaid['total'] ?? 0);
+            $vatAmount = (float)$debt['principal_amount'] * ((float)$debt['vat_rate'] / 100);
+            $totalAmount = (float)$debt['principal_amount'] + $vatAmount;
+
+            $debt['total_paid'] = $totalPaid;
+            $debt['remaining_amount'] = max(0, $totalAmount - $totalPaid);
+
+            // Get direct payments for display
+            $debt['direct_payments'] = Database::query(
+                "SELECT * FROM payments WHERE related_type = 'debt' AND related_id = ? ORDER BY payment_date DESC",
+                [$id]
+            );
         }
 
         return $debt;
@@ -104,18 +135,27 @@ class DebtModel extends BaseModel
         }
 
         // Get total paid from installments
-        $paidResult = Database::queryOne(
+        $installmentPaid = Database::queryOne(
             "SELECT COALESCE(SUM(paid_amount), 0) as total FROM installments WHERE debt_id = ?",
             [$id]
         );
-        $paid = (float)($paidResult['total'] ?? 0);
+        $paidFromInstallments = (float)($installmentPaid['total'] ?? 0);
+
+        // Get total paid from direct payments
+        $directPaid = Database::queryOne(
+            "SELECT COALESCE(SUM(amount), 0) as total FROM payments WHERE related_type = 'debt' AND related_id = ?",
+            [$id]
+        );
+        $paidDirectly = (float)($directPaid['total'] ?? 0);
+
+        $totalPaid = $paidFromInstallments + $paidDirectly;
 
         // Calculate VAT
         $vatAmount = (float)$debt['principal_amount'] * ((float)$debt['vat_rate'] / 100);
         $totalAmount = (float)$debt['principal_amount'] + $vatAmount;
 
         // Determine status
-        $status = ($paid >= $totalAmount) ? 'closed' : 'open';
+        $status = ($totalPaid >= $totalAmount) ? 'closed' : 'open';
 
         return Database::execute(
             "UPDATE debts SET status = ?, updated_at = ? WHERE id = ?",

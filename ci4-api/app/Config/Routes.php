@@ -39,6 +39,7 @@ $routes->group('api', function ($routes) {
     $routes->post('setup/add-transaction-description', 'SetupController::addTransactionDescription');
     $routes->post('setup/update-vat-20', 'SetupController::updateVat20');
     $routes->post('setup/migrate-base-amount', 'SetupController::migrateBaseAmount');
+    $routes->post('setup/fix-project-party', 'SetupController::fixProjectParty');
 
     // ========================================
     // Auth Routes (Protected)
@@ -71,6 +72,7 @@ $routes->group('api', function ($routes) {
         $routes->put('debts/(:num)', 'DebtController::update/$1');
         $routes->delete('debts/(:num)', 'DebtController::delete/$1');
         $routes->post('debts/(:num)/installments', 'DebtController::createInstallments/$1');
+        $routes->post('debts/(:num)/pay', 'DebtController::addPayment/$1');
 
         // Installments
         $routes->get('installments/(:num)', 'InstallmentController::show/$1');

@@ -174,6 +174,57 @@ class DebtController extends BaseController
     }
 
     /**
+     * Add direct payment to debt
+     * POST /api/debts/{id}/pay
+     */
+    public function addPayment(int $id)
+    {
+        $debt = $this->debtModel->find($id);
+        if (!$debt) {
+            return $this->notFound('Borç/alacak bulunamadı');
+        }
+
+        $data = $this->getJsonInput();
+
+        // Validate required fields
+        $errors = $this->validateRequired($data, ['amount']);
+        if (!empty($errors)) {
+            return $this->validationError($errors);
+        }
+
+        $amount = (float)$data['amount'];
+        $date = $data['date'] ?? date('Y-m-d');
+        $method = $data['method'] ?? 'bank';
+        $notes = $data['notes'] ?? null;
+
+        // Create payment record
+        $paymentModel = new \App\Models\PaymentModel();
+        $paymentId = $paymentModel->insert([
+            'related_type' => 'debt',
+            'related_id' => $id,
+            'amount' => $amount,
+            'currency' => $debt['currency'],
+            'payment_date' => $date,
+            'payment_method' => $method,
+            'notes' => $notes
+        ]);
+
+        if (!$paymentId) {
+            return $this->error('Ödeme kaydedilemedi', 500);
+        }
+
+        // Update debt paid amount
+        $this->debtModel->updatePaidAmount($id);
+
+        $updatedDebt = $this->debtModel->getWithInstallments($id);
+
+        return $this->success('Ödeme kaydedildi', [
+            'debt' => $updatedDebt,
+            'payment_id' => $paymentId
+        ]);
+    }
+
+    /**
      * Export debts to CSV
      * GET /api/debts/export/csv
      */
