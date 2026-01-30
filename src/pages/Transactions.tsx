@@ -85,6 +85,7 @@ export function Transactions() {
     description: '',
     ref_no: ''
   })
+  const [continueAdding, setContinueAdding] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -241,14 +242,25 @@ export function Transactions() {
         if (result.success) {
           addAlert('success', result.message)
           loadTransactions()
-          // Open edit mode for the newly created transaction so user can add documents
-          if (result.id) {
-            const newTransaction = await api.getTransaction(result.id)
-            if (newTransaction) {
-              setEditingTransaction(newTransaction as Transaction)
-            }
+
+          if (continueAdding) {
+            // Keep form open, reset only amount, description, ref_no
+            setFormData(prev => ({
+              ...prev,
+              amount: '',
+              description: '',
+              ref_no: ''
+            }))
           } else {
-            closeForm()
+            // Open edit mode for the newly created transaction so user can add documents
+            if (result.id) {
+              const newTransaction = await api.getTransaction(result.id)
+              if (newTransaction) {
+                setEditingTransaction(newTransaction as Transaction)
+              }
+            } else {
+              closeForm()
+            }
           }
         } else {
           addAlert('error', result.message)
@@ -1580,9 +1592,24 @@ export function Transactions() {
                 <DocumentUpload transactionId={editingTransaction?.id || null} />
               </div>
 
-              <div className="flex justify-end space-x-3 pt-3">
-                <button type="button" onClick={closeForm} className="px-4 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">{t('common.cancel')}</button>
-                <button type="submit" className="px-4 py-1.5 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">{editingTransaction ? t('common.update') : t('common.save')}</button>
+              <div className="flex items-center justify-between pt-3">
+                {/* Continue adding checkbox - only show for new transactions */}
+                {!editingTransaction && (
+                  <label className="flex items-center text-sm text-gray-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={continueAdding}
+                      onChange={(e) => setContinueAdding(e.target.checked)}
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded mr-2"
+                    />
+                    {t('transactions.continueAdding')}
+                  </label>
+                )}
+                {editingTransaction && <div />}
+                <div className="flex space-x-3">
+                  <button type="button" onClick={closeForm} className="px-4 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">{t('common.cancel')}</button>
+                  <button type="submit" className="px-4 py-1.5 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">{editingTransaction ? t('common.update') : t('common.save')}</button>
+                </div>
               </div>
             </form>
           </div>

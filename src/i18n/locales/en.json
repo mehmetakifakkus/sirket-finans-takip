@@ -49,7 +49,7 @@
   },
   "app": {
     "title": "BurnWise",
-    "subtitle": "Company Finance Management",
+    "subtitle": "Startup Finance Manager",
     "version": "BurnWise v1.0"
   },
   "auth": {
@@ -207,6 +207,7 @@
     "searchParty": "Search party...",
     "searchCategory": "Search category...",
     "searchProject": "Search project...",
+    "continueAdding": "Save and continue",
     "documents": {
       "title": "Documents",
       "addDocument": "Add File",
