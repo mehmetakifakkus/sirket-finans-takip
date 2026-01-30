@@ -439,6 +439,8 @@
     "installments": "Taksitler",
     "createInstallments": "Taksit Oluştur",
     "createInstallment": "Taksit Oluştur",
+    "addPayment": "Ödeme Ekle",
+    "directPayments": "Doğrudan Ödemeler",
     "installmentCount": "Taksit Sayısı",
     "monthlyInstallment": "Aylık taksit tutarı",
     "monthlyAmount": "Aylık Tutar",

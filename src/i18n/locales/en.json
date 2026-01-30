@@ -439,6 +439,8 @@
     "installments": "Installments",
     "createInstallments": "Create Installments",
     "createInstallment": "Create Installment",
+    "addPayment": "Add Payment",
+    "directPayments": "Direct Payments",
     "installmentCount": "Number of Installments",
     "monthlyInstallment": "Monthly installment amount",
     "monthlyAmount": "Monthly Amount",

@@ -377,6 +377,8 @@
     "installments": "Raten",
     "createInstallments": "Raten erstellen",
     "createInstallment": "Rate erstellen",
+    "addPayment": "Zahlung hinzufügen",
+    "directPayments": "Direktzahlungen",
     "installmentCount": "Anzahl der Raten",
     "monthlyInstallment": "Monatliche Rate",
     "monthlyAmount": "Monatlicher Betrag",
