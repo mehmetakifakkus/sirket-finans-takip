@@ -366,7 +366,7 @@ class HttpClient implements IApiClient {
 
   // Charts
   getMonthlyChartData = async (months?: number) => {
-    const result = await this.request<{ data: object[] }>(`/charts/monthly${months ? `?months=${months}` : ''}`)
+    const result = await this.request<{ data: object[] }>(`/charts/monthly${months !== undefined ? `?months=${months}` : ''}`)
     return result.data || []
   }
   getCategoryChartData = async (type?: string, months?: number) => {

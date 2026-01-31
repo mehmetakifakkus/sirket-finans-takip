@@ -86,12 +86,18 @@ class ChartController extends BaseController
 
         $monthNames = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
 
-        $today = new \DateTime();
+        // Start from first day of current month to avoid day-of-month issues
+        $startDate = new \DateTime('first day of this month');
+        $startDate->modify('-' . ($months - 1) . ' months');
 
-        for ($i = $months - 1; $i >= 0; $i--) {
-            $date = new \DateTime();
-            $date->modify("-$i months");
-            $date->modify('first day of this month');
+        $endDate = new \DateTime('first day of this month');
+        $endDate->modify('+1 month');
+
+        // Use DatePeriod for reliable month iteration
+        $interval = new \DateInterval('P1M');
+        $period = new \DatePeriod($startDate, $interval, $endDate);
+
+        foreach ($period as $date) {
             $firstDay = $date->format('Y-m-d');
             $lastDay = $this->getLastDayOfMonth($firstDay);
 

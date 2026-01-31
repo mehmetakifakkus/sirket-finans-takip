@@ -50,8 +50,12 @@ export function MonthlyIncomeExpenseChart({ data, hideTitle }: Props) {
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
           <XAxis
             dataKey="month_label"
-            tick={{ fill: '#6b7280', fontSize: 12 }}
+            tick={{ fill: '#6b7280', fontSize: 11 }}
             tickLine={{ stroke: '#d1d5db' }}
+            interval={data.length > 12 ? Math.floor(data.length / 12) : 0}
+            angle={data.length > 6 ? -45 : 0}
+            textAnchor={data.length > 6 ? 'end' : 'middle'}
+            height={data.length > 6 ? 60 : 30}
           />
           <YAxis
             tick={{ fill: '#6b7280', fontSize: 12 }}

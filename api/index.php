@@ -97,6 +97,11 @@ switch ($resource) {
         handleReports($db, $requestMethod, $id, $action);
         break;
 
+    case 'charts':
+        require_once __DIR__ . '/routes/charts.php';
+        handleCharts($db, $requestMethod, $id, $action);
+        break;
+
     case 'documents':
         require_once __DIR__ . '/routes/documents.php';
         handleDocuments($db, $requestMethod, $id, $action);

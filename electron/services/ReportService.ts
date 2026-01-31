@@ -367,10 +367,33 @@ export class ReportService {
   getMonthlyChartData(months: number = 12): object[] {
     const today = new Date()
     const result: object[] = []
+    const monthNames = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
 
-    for (let i = months - 1; i >= 0; i--) {
-      const date = new Date(today.getFullYear(), today.getMonth() - i, 1)
-      const firstDay = formatDate(date)
+    // Determine start date based on months parameter
+    let startDate: Date
+    if (months === 0) {
+      // All time: find earliest transaction date
+      const earliest = this.db.prepare(`
+        SELECT MIN(date) as min_date FROM transactions
+      `).get() as { min_date: string | null }
+
+      if (!earliest?.min_date) {
+        return result // No transactions yet
+      }
+
+      const earliestDate = new Date(earliest.min_date)
+      startDate = new Date(earliestDate.getFullYear(), earliestDate.getMonth(), 1)
+    } else {
+      // Specific number of months back
+      startDate = new Date(today.getFullYear(), today.getMonth() - months + 1, 1)
+    }
+
+    // Iterate from start date to current month
+    const currentDate = new Date(startDate)
+    const endMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+
+    while (currentDate <= endMonth) {
+      const firstDay = formatDate(currentDate)
       const lastDay = this.getLastDayOfMonth(firstDay)
 
       const transactions = this.db.prepare(`
@@ -390,14 +413,15 @@ export class ReportService {
         }
       }
 
-      const monthNames = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
-
       result.push({
         month: firstDay.substring(0, 7),
-        month_label: `${monthNames[date.getMonth()]} ${date.getFullYear().toString().slice(-2)}`,
+        month_label: `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear().toString().slice(-2)}`,
         income: Math.round(income * 100) / 100,
         expense: Math.round(expense * 100) / 100
       })
+
+      // Move to next month
+      currentDate.setMonth(currentDate.getMonth() + 1)
     }
 
     return result
@@ -405,9 +429,16 @@ export class ReportService {
 
   getCategoryChartData(type: 'income' | 'expense' = 'expense', months: number = 6): object[] {
     const today = new Date()
-    const startDate = new Date(today.getFullYear(), today.getMonth() - months + 1, 1)
-    const start = formatDate(startDate)
     const end = formatDate(today)
+
+    let start: string
+    if (months === 0) {
+      // All time: no date filter
+      start = '1900-01-01'
+    } else {
+      const startDate = new Date(today.getFullYear(), today.getMonth() - months + 1, 1)
+      start = formatDate(startDate)
+    }
 
     const transactions = this.db.prepare(`
       SELECT t.category_id, c.name as category_name, t.net_amount, t.currency, t.date
