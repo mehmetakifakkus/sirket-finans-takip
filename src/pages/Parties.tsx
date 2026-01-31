@@ -21,6 +21,7 @@ export function Parties() {
   const partyTypes: Record<PartyType, string> = {
     customer: t('parties.types.customer'),
     vendor: t('parties.types.vendor'),
+    employee: t('parties.types.employee'),
     tubitak: t('parties.types.tubitak'),
     kosgeb: t('parties.types.kosgeb'),
     individual: t('parties.types.individual'),
@@ -280,6 +281,7 @@ export function Parties() {
             <option value="">{t('common.all')}</option>
             <option value="customer">{t('parties.types.customer')}</option>
             <option value="vendor">{t('parties.types.vendor')}</option>
+            <option value="employee">{t('parties.types.employee')}</option>
             <option value="tubitak">{t('parties.types.tubitak')}</option>
             <option value="kosgeb">{t('parties.types.kosgeb')}</option>
             <option value="individual">{t('parties.types.individual')}</option>
@@ -327,6 +329,7 @@ export function Parties() {
                       party.type === 'vendor' ? 'bg-orange-100 text-orange-800' :
                       party.type === 'tubitak' ? 'bg-green-100 text-green-800' :
                       party.type === 'kosgeb' ? 'bg-purple-100 text-purple-800' :
+                      party.type === 'employee' ? 'bg-teal-100 text-teal-800' :
                       party.type === 'individual' ? 'bg-cyan-100 text-cyan-800' :
                       'bg-gray-100 text-gray-800'
                     }`}>
@@ -411,6 +414,7 @@ export function Parties() {
                 >
                   <option value="customer">{t('parties.types.customer')}</option>
                   <option value="vendor">{t('parties.types.vendor')}</option>
+                  <option value="employee">{t('parties.types.employee')}</option>
                   <option value="tubitak">{t('parties.types.tubitak')}</option>
                   <option value="kosgeb">{t('parties.types.kosgeb')}</option>
                   <option value="individual">{t('parties.types.individual')}</option>

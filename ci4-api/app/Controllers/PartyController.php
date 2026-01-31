@@ -55,6 +55,7 @@ class PartyController extends BaseController
             'tubitak' => ['grant_rate' => 0.75, 'grant_limit' => 2333000, 'vat_included' => 0],
             'kosgeb' => ['grant_rate' => 0.80, 'grant_limit' => 1456000, 'vat_included' => 0],
             'individual' => ['grant_rate' => 1.00, 'grant_limit' => null, 'vat_included' => 1],
+            'employee' => ['grant_rate' => null, 'grant_limit' => null, 'vat_included' => 1],
             default => ['grant_rate' => null, 'grant_limit' => null, 'vat_included' => 1]
         };
     }

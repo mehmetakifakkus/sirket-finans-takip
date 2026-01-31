@@ -331,10 +331,12 @@
     "partyType": "Party Type",
     "customer": "Customer",
     "vendor": "Vendor",
+    "employee": "Employee",
     "other": "Other",
     "types": {
       "customer": "Customer",
       "vendor": "Vendor",
+      "employee": "Employee",
       "tubitak": "TUBITAK",
       "kosgeb": "KOSGEB",
       "individual": "Individual",

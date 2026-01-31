@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- Parties table (customers, vendors, others)
 CREATE TABLE IF NOT EXISTS parties (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    type ENUM('customer', 'vendor', 'other') NOT NULL DEFAULT 'customer',
+    type ENUM('customer', 'vendor', 'employee', 'tubitak', 'kosgeb', 'individual', 'other') NOT NULL DEFAULT 'customer',
     name VARCHAR(255) NOT NULL,
     tax_no VARCHAR(50),
     phone VARCHAR(50),

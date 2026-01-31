@@ -13,7 +13,7 @@ export interface User {
 }
 
 // Party types
-export type PartyType = 'customer' | 'vendor' | 'tubitak' | 'kosgeb' | 'individual' | 'other';
+export type PartyType = 'customer' | 'vendor' | 'employee' | 'tubitak' | 'kosgeb' | 'individual' | 'other';
 
 export interface Party {
   id: number;

@@ -270,10 +270,12 @@
     "partyType": "Parteityp",
     "customer": "Kunde",
     "vendor": "Lieferant",
+    "employee": "Mitarbeiter",
     "other": "Sonstige",
     "types": {
       "customer": "Kunde",
       "vendor": "Lieferant",
+      "employee": "Mitarbeiter",
       "tubitak": "TUBITAK",
       "kosgeb": "KOSGEB",
       "individual": "Einzelperson",

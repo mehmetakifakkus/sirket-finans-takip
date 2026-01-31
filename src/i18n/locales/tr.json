@@ -331,10 +331,12 @@
     "partyType": "Taraf Tipi",
     "customer": "Müşteri",
     "vendor": "Tedarikçi",
+    "employee": "Çalışan",
     "other": "Diğer",
     "types": {
       "customer": "Müşteri",
       "vendor": "Tedarikçi",
+      "employee": "Çalışan",
       "tubitak": "TÜBİTAK",
       "kosgeb": "KOSGEB",
       "individual": "Şahıs",
