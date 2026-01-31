@@ -112,7 +112,13 @@ function getProject($db, $id) {
 }
 
 function getIncompleteCount($db) {
-    $stmt = $db->prepare("SELECT COUNT(*) as count FROM projects WHERE status NOT IN ('completed', 'cancelled')");
+    // Count external projects (has party_id) with missing start_date or end_date
+    $stmt = $db->prepare("
+        SELECT COUNT(*) as count FROM projects
+        WHERE status NOT IN ('completed', 'cancelled')
+        AND party_id IS NOT NULL
+        AND (start_date IS NULL OR end_date IS NULL)
+    ");
     $stmt->execute();
     $result = $stmt->fetch();
     jsonResponse((int)$result['count']);

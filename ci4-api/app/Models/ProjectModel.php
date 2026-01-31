@@ -73,12 +73,16 @@ class ProjectModel extends BaseModel
     }
 
     /**
-     * Get count of incomplete projects
+     * Get count of external projects with missing required information
+     * External projects (party_id IS NOT NULL) missing start_date or end_date
      */
     public function getIncompleteCount(): int
     {
         $result = Database::queryOne(
-            "SELECT COUNT(*) as cnt FROM projects WHERE status NOT IN ('completed', 'cancelled')"
+            "SELECT COUNT(*) as cnt FROM projects
+             WHERE status NOT IN ('completed', 'cancelled')
+             AND party_id IS NOT NULL
+             AND (start_date IS NULL OR end_date IS NULL)"
         );
         return (int)($result['cnt'] ?? 0);
     }
