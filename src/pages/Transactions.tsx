@@ -78,6 +78,7 @@ export function Transactions() {
     milestone_id: '',
     date: getToday(),
     amount: '',
+    insurance_amount: '',
     currency: 'TRY' as 'TRY' | 'USD' | 'EUR' | 'GR',
     vat_rate: '20',
     vat_included: true,
@@ -210,6 +211,17 @@ export function Transactions() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Check if selected party is an employee
+    const selectedParty = parties.find(p => p.id.toString() === formData.party_id)
+    const selectedCategory = categories.find(c => c.id.toString() === formData.category_id)
+    const isEmployeeExpense = formData.type === 'expense' && selectedParty?.type === 'employee'
+
+    // KDV sadece belirli kategorilerde geçerli
+    const vatCategories = ['teçhizat', 'yazılım', 'hizmet alımı', 'ofis malzemesi', 'equipment', 'software', 'service', 'office supplies']
+    const categoryName = selectedCategory?.name?.toLowerCase() || ''
+    const categoryRequiresVat = formData.type === 'income' || vatCategories.some(vc => categoryName.includes(vc))
+    const shouldApplyVat = !isEmployeeExpense && categoryRequiresVat
+
     const data = {
       type: formData.type,
       party_id: formData.party_id ? parseInt(formData.party_id) : null,
@@ -218,9 +230,10 @@ export function Transactions() {
       milestone_id: formData.milestone_id ? parseInt(formData.milestone_id) : null,
       date: formData.date,
       amount: parseFloat(formData.amount),
+      insurance_amount: isEmployeeExpense && formData.insurance_amount ? parseFloat(formData.insurance_amount) : null,
       currency: formData.currency,
-      vat_rate: parseFloat(formData.vat_rate) || 0,
-      vat_included: formData.vat_included,
+      vat_rate: shouldApplyVat ? (parseFloat(formData.vat_rate) || 0) : 0,
+      vat_included: shouldApplyVat ? formData.vat_included : false,
       withholding_rate: parseFloat(formData.withholding_rate) || 0,
       description: formData.description,
       ref_no: formData.ref_no,
@@ -244,10 +257,11 @@ export function Transactions() {
           loadTransactions()
 
           if (continueAdding) {
-            // Keep form open, reset only amount, description, ref_no
+            // Keep form open, reset only amount, insurance_amount, description, ref_no
             setFormData(prev => ({
               ...prev,
               amount: '',
+              insurance_amount: '',
               description: '',
               ref_no: ''
             }))
@@ -415,6 +429,7 @@ export function Transactions() {
       milestone_id: '',
       date: getToday(),
       amount: '',
+      insurance_amount: '',
       currency: 'TRY',
       vat_rate: '20',
       vat_included: true,
@@ -434,7 +449,8 @@ export function Transactions() {
       project_id: transaction.project_id?.toString() || '',
       milestone_id: transaction.milestone_id?.toString() || '',
       date: transaction.date,
-      amount: transaction.amount.toString(),
+      amount: transaction.insurance_amount ? (transaction.amount - transaction.insurance_amount).toString() : transaction.amount.toString(),
+      insurance_amount: transaction.insurance_amount?.toString() || '',
       currency: transaction.currency as 'TRY' | 'USD' | 'EUR',
       vat_rate: transaction.vat_rate.toString(),
       vat_included: true,
@@ -1488,29 +1504,83 @@ export function Transactions() {
                 </div>
               </div>
 
-              {/* Row 2: Tutar + KDV (50/50) */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-0.5">{t('common.amount')} *</label>
-                  <input type="number" step="0.01" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} className="w-full px-3 py-1.5 border border-gray-300 rounded-md" required />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-0.5">{t('transactions.vatRate')}</label>
-                  <div className="flex items-center gap-2">
-                    <input type="number" step="0.01" value={formData.vat_rate} onChange={(e) => setFormData({ ...formData, vat_rate: e.target.value })} className="w-20 px-3 py-1.5 border border-gray-300 rounded-md" />
-                    <span className="text-gray-500">%</span>
-                    <label className="flex items-center gap-1.5 ml-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.vat_included}
-                        onChange={(e) => setFormData({ ...formData, vat_included: e.target.checked })}
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">{t('transactions.vatIncluded')}</span>
-                    </label>
+              {/* Row 2: Tutar + KDV veya SGK Primi (çalışan gideri için) */}
+              {(() => {
+                const selectedParty = parties.find(p => p.id.toString() === formData.party_id)
+                const selectedCategory = categories.find(c => c.id.toString() === formData.category_id)
+                const isEmployeeExpense = formData.type === 'expense' && selectedParty?.type === 'employee'
+
+                // KDV sadece belirli kategorilerde gösterilecek
+                const vatCategories = ['teçhizat', 'yazılım', 'hizmet alımı', 'ofis malzemesi', 'equipment', 'software', 'service', 'office supplies']
+                const categoryName = selectedCategory?.name?.toLowerCase() || ''
+                const showVat = formData.type === 'income' || vatCategories.some(vc => categoryName.includes(vc))
+
+                if (isEmployeeExpense) {
+                  return (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-0.5">{t('transactions.salaryAmount')} *</label>
+                        <input type="number" step="0.01" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} className="w-full px-3 py-1.5 border border-gray-300 rounded-md" required />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-0.5">{t('transactions.insuranceAmount')}</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={formData.insurance_amount}
+                          onChange={(e) => setFormData({ ...formData, insurance_amount: e.target.value })}
+                          className="w-full px-3 py-1.5 border border-gray-300 rounded-md"
+                          placeholder="SGK primi"
+                        />
+                      </div>
+                    </div>
+                  )
+                }
+
+                if (showVat) {
+                  return (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-0.5">{t('common.amount')} *</label>
+                        <input type="number" step="0.01" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} className="w-full px-3 py-1.5 border border-gray-300 rounded-md" required />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-0.5">{t('transactions.vatRate')}</label>
+                        <div className="flex items-center gap-2">
+                          <input type="number" step="0.01" value={formData.vat_rate} onChange={(e) => setFormData({ ...formData, vat_rate: e.target.value })} className="w-20 px-3 py-1.5 border border-gray-300 rounded-md" />
+                          <span className="text-gray-500">%</span>
+                          <label className="flex items-center gap-1.5 ml-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={formData.vat_included}
+                              onChange={(e) => setFormData({ ...formData, vat_included: e.target.checked })}
+                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-gray-700">{t('transactions.vatIncluded')}</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                }
+
+                // KDV gösterilmeyen kategoriler için sadece tutar
+                return (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-0.5">{t('common.amount')} *</label>
+                    <input type="number" step="0.01" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} className="w-full px-3 py-1.5 border border-gray-300 rounded-md" required />
                   </div>
+                )
+              })()}
+
+              {/* Toplam (çalışan gideri için) */}
+              {formData.type === 'expense' && parties.find(p => p.id.toString() === formData.party_id)?.type === 'employee' && (parseFloat(formData.insurance_amount) > 0) && (
+                <div className="px-3 py-2 bg-teal-50 border border-teal-200 rounded-md text-sm text-teal-700">
+                  {t('transactions.totalWithInsurance')}: <span className="font-semibold">
+                    {((parseFloat(formData.amount) || 0) + (parseFloat(formData.insurance_amount) || 0)).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} {formData.currency}
+                  </span>
                 </div>
-              </div>
+              )}
 
               {/* Row 3: Stopaj + Belge No (50/50) for income, Belge No (full) for expense */}
               {formData.type === 'income' ? (
