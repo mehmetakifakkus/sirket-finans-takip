@@ -631,7 +631,40 @@ class HttpClient implements IApiClient {
   }
 
   exportDatabaseSQL = async () => {
-    window.open(`${API_URL}/database/export?format=sql`, '_blank')
+    const token = this.token || localStorage.getItem('auth_token')
+
+    const response = await fetch(`${API_URL}/database/export?format=sql`, {
+      method: 'GET',
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+      credentials: 'include',
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Export failed' }))
+      throw new Error(error.message || `HTTP ${response.status}`)
+    }
+
+    // Get filename from Content-Disposition header or generate one
+    const contentDisposition = response.headers.get('Content-Disposition')
+    let filename = 'sirket_finans_export.sql'
+    if (contentDisposition) {
+      const match = contentDisposition.match(/filename="?([^";\n]+)"?/)
+      if (match) filename = match[1]
+    }
+
+    // Download as blob
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+
     return { success: true, message: 'Download started' }
   }
 
