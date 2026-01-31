@@ -327,7 +327,10 @@ class HttpClient implements IApiClient {
       '/exchange-rates/fetch-gold',
       { method: 'POST' }
     )
-  getLatestRates = () => this.request<object>('/exchange-rates/latest')
+  getLatestRates = async () => {
+    const result = await this.request<{ rates: Record<string, { rate: number; rate_date: string; date?: string }> }>('/exchange-rates/latest')
+    return result.rates || {}
+  }
 
   // Users
   getUsers = async () => {

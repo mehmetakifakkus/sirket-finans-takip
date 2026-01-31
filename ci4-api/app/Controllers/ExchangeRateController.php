@@ -207,53 +207,9 @@ class ExchangeRateController extends BaseController
      */
     public function fetchGold()
     {
-        try {
-            // TCMB provides XAU (ounce gold) price
-            // 1 ounce = 31.1035 grams
-            $url = 'https://www.tcmb.gov.tr/kurlar/today.xml';
-            $context = stream_context_create([
-                'http' => ['timeout' => 10],
-                'ssl' => ['verify_peer' => false, 'verify_peer_name' => false]
-            ]);
-
-            $xml = @file_get_contents($url, false, $context);
-            if (!$xml) {
-                return $this->error('Altın fiyatı alınamadı', 500);
-            }
-
-            $data = simplexml_load_string($xml);
-            if (!$data) {
-                return $this->error('Veri okunamadı', 500);
-            }
-
-            $date = date('Y-m-d');
-            $ounceRate = null;
-
-            foreach ($data->Currency as $currency) {
-                $code = (string)$currency['Kod'];
-                if ($code === 'XAU') {
-                    $ounceRate = (float)$currency->ForexSelling;
-                    break;
-                }
-            }
-
-            if ($ounceRate && $ounceRate > 0) {
-                // Convert ounce to gram (1 ounce = 31.1035 grams)
-                $gramRate = round($ounceRate / 31.1035, 2);
-                $this->exchangeRateModel->upsertRate('GR', $gramRate, $date, 'tcmb');
-
-                return $this->success('Altın fiyatı güncellendi', [
-                    'date' => $date,
-                    'rate' => $gramRate,
-                    'ounce_rate' => $ounceRate
-                ]);
-            }
-
-            return $this->jsonResponse(['success' => false, 'message' => 'Altın fiyatı TCMB verisinde bulunamadı'], 200);
-
-        } catch (\Exception $e) {
-            return $this->error('Altın fiyatı alınamadı: ' . $e->getMessage(), 500);
-        }
+        // Gold prices are not available from TCMB daily XML
+        // User needs to enter gold prices manually
+        return $this->error('Altın fiyatı otomatik olarak alınamıyor. Lütfen "Yeni Kur Ekle" butonu ile manuel olarak GR (gram altın) kuru girin.', 400);
     }
 
     /**
