@@ -122,6 +122,7 @@ export interface Transaction {
   milestone_id: number | null;
   date: string;
   amount: number;
+  insurance_amount: number | null;
   currency: Currency;
   vat_rate: number;
   vat_amount: number;
@@ -340,6 +341,7 @@ export interface TransactionFormData {
   milestone_id: number | null;
   date: string;
   amount: number;
+  insurance_amount: number | null;
   currency: Currency;
   vat_rate: number;
   withholding_rate: number;

@@ -115,6 +115,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     milestone_id INT,
     date DATE NOT NULL,
     amount DECIMAL(15,2) NOT NULL,
+    insurance_amount DECIMAL(15,2) DEFAULT NULL,
     currency VARCHAR(10) NOT NULL DEFAULT 'TRY',
     vat_rate DECIMAL(5,2) NOT NULL DEFAULT 0,
     vat_amount DECIMAL(15,2) NOT NULL DEFAULT 0,
