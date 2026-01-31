@@ -180,13 +180,52 @@ function getTransactionsByProject($db, $projectId) {
 function createTransaction($db, $user) {
     $data = getRequestBody();
 
+    // Handle insurance amount for employee expenses
+    $amount = (float)$data['amount'];
+    $insuranceAmount = isset($data['insurance_amount']) ? (float)$data['insurance_amount'] : null;
+    $totalAmount = $insuranceAmount ? $amount + $insuranceAmount : $amount;
+
+    // Check if this is an employee expense (no VAT for employee payments)
+    $isEmployeeExpense = false;
+    if ($data['type'] === 'expense' && !empty($data['party_id'])) {
+        $stmt = $db->prepare("SELECT type FROM parties WHERE id = ?");
+        $stmt->execute([$data['party_id']]);
+        $party = $stmt->fetch();
+        $isEmployeeExpense = $party && $party['type'] === 'employee';
+    }
+
+    // Check if category requires VAT (only specific categories)
+    $categoryRequiresVat = true;
+    if ($data['type'] === 'expense' && !empty($data['category_id'])) {
+        $stmt = $db->prepare("SELECT name FROM categories WHERE id = ?");
+        $stmt->execute([$data['category_id']]);
+        $category = $stmt->fetch();
+        if ($category) {
+            $categoryName = strtolower($category['name']);
+            $vatCategories = ['teçhizat', 'yazılım', 'hizmet alımı', 'ofis malzemesi', 'equipment', 'software', 'service', 'office supplies'];
+            $categoryRequiresVat = false;
+            foreach ($vatCategories as $vc) {
+                if (strpos($categoryName, $vc) !== false) {
+                    $categoryRequiresVat = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    // Set VAT to 0 for employee expenses or non-VAT categories
+    if ($isEmployeeExpense || !$categoryRequiresVat) {
+        $data['vat_rate'] = 0;
+        $data['vat_amount'] = 0;
+    }
+
     $stmt = $db->prepare("
         INSERT INTO transactions (
             type, party_id, category_id, project_id, milestone_id, date,
-            amount, currency, vat_rate, vat_amount, withholding_rate,
+            amount, insurance_amount, currency, vat_rate, vat_amount, withholding_rate,
             withholding_amount, net_amount, description, ref_no, document_path,
             created_by, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
     ");
 
     $stmt->execute([
@@ -196,7 +235,8 @@ function createTransaction($db, $user) {
         $data['project_id'] ?? null,
         $data['milestone_id'] ?? null,
         $data['date'],
-        $data['amount'],
+        $totalAmount,
+        $insuranceAmount,
         $data['currency'] ?? 'TRY',
         $data['vat_rate'] ?? 0,
         $data['vat_amount'] ?? 0,
@@ -219,10 +259,49 @@ function createTransaction($db, $user) {
 function updateTransaction($db, $id) {
     $data = getRequestBody();
 
+    // Handle insurance amount for employee expenses
+    $amount = (float)$data['amount'];
+    $insuranceAmount = isset($data['insurance_amount']) ? (float)$data['insurance_amount'] : null;
+    $totalAmount = $insuranceAmount ? $amount + $insuranceAmount : $amount;
+
+    // Check if this is an employee expense (no VAT for employee payments)
+    $isEmployeeExpense = false;
+    if ($data['type'] === 'expense' && !empty($data['party_id'])) {
+        $stmt = $db->prepare("SELECT type FROM parties WHERE id = ?");
+        $stmt->execute([$data['party_id']]);
+        $party = $stmt->fetch();
+        $isEmployeeExpense = $party && $party['type'] === 'employee';
+    }
+
+    // Check if category requires VAT (only specific categories)
+    $categoryRequiresVat = true;
+    if ($data['type'] === 'expense' && !empty($data['category_id'])) {
+        $stmt = $db->prepare("SELECT name FROM categories WHERE id = ?");
+        $stmt->execute([$data['category_id']]);
+        $category = $stmt->fetch();
+        if ($category) {
+            $categoryName = strtolower($category['name']);
+            $vatCategories = ['teçhizat', 'yazılım', 'hizmet alımı', 'ofis malzemesi', 'equipment', 'software', 'service', 'office supplies'];
+            $categoryRequiresVat = false;
+            foreach ($vatCategories as $vc) {
+                if (strpos($categoryName, $vc) !== false) {
+                    $categoryRequiresVat = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    // Set VAT to 0 for employee expenses or non-VAT categories
+    if ($isEmployeeExpense || !$categoryRequiresVat) {
+        $data['vat_rate'] = 0;
+        $data['vat_amount'] = 0;
+    }
+
     $stmt = $db->prepare("
         UPDATE transactions SET
             type = ?, party_id = ?, category_id = ?, project_id = ?,
-            milestone_id = ?, date = ?, amount = ?, currency = ?,
+            milestone_id = ?, date = ?, amount = ?, insurance_amount = ?, currency = ?,
             vat_rate = ?, vat_amount = ?, withholding_rate = ?,
             withholding_amount = ?, net_amount = ?, description = ?,
             ref_no = ?, document_path = ?, updated_at = NOW()
@@ -236,7 +315,8 @@ function updateTransaction($db, $id) {
         $data['project_id'] ?? null,
         $data['milestone_id'] ?? null,
         $data['date'],
-        $data['amount'],
+        $totalAmount,
+        $insuranceAmount,
         $data['currency'] ?? 'TRY',
         $data['vat_rate'] ?? 0,
         $data['vat_amount'] ?? 0,
@@ -287,7 +367,7 @@ function exportTransactions($db) {
     $startDate = $_GET['startDate'] ?? null;
     $endDate = $_GET['endDate'] ?? null;
 
-    $sql = "SELECT t.date, t.type, t.amount, t.currency, t.vat_rate, t.vat_amount,
+    $sql = "SELECT t.date, t.type, t.amount, t.insurance_amount, t.currency, t.vat_rate, t.vat_amount,
                    t.withholding_rate, t.withholding_amount, t.net_amount,
                    t.description, t.ref_no, p.name as party_name, c.name as category_name
             FROM transactions t
@@ -317,14 +397,15 @@ function exportTransactions($db) {
 
     // Generate CSV
     $csv = "\xEF\xBB\xBF"; // UTF-8 BOM
-    $csv .= "Tarih,Tür,Tutar,Para Birimi,KDV Oranı,KDV Tutarı,Stopaj Oranı,Stopaj Tutarı,Net Tutar,Açıklama,Referans No,Cari,Kategori\n";
+    $csv .= "Tarih,Tür,Tutar,SGK Primi,Para Birimi,KDV Oranı,KDV Tutarı,Stopaj Oranı,Stopaj Tutarı,Net Tutar,Açıklama,Referans No,Cari,Kategori\n";
 
     foreach ($transactions as $t) {
         $csv .= sprintf(
-            '"%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s"' . "\n",
+            '"%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s"' . "\n",
             $t['date'],
             $t['type'] === 'income' ? 'Gelir' : 'Gider',
             $t['amount'],
+            $t['insurance_amount'] ?? '',
             $t['currency'],
             $t['vat_rate'],
             $t['vat_amount'],

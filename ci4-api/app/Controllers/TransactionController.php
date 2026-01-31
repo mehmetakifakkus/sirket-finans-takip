@@ -81,24 +81,54 @@ class TransactionController extends BaseController
 
         // Calculate VAT and withholding
         $amount = (float)$data['amount'];
-        $vatRate = (float)($data['vat_rate'] ?? 0);
+        $insuranceAmount = isset($data['insurance_amount']) ? (float)$data['insurance_amount'] : null;
+
+        // If insurance is provided, add it to amount for total calculation
+        $totalAmount = $insuranceAmount ? $amount + $insuranceAmount : $amount;
+
+        // Check if this is an employee expense (no VAT for employee payments)
+        $isEmployeeExpense = false;
+        if ($data['type'] === 'expense' && !empty($data['party_id'])) {
+            $party = Database::queryOne("SELECT type FROM parties WHERE id = ?", [$data['party_id']]);
+            $isEmployeeExpense = $party && $party['type'] === 'employee';
+        }
+
+        // Check if category requires VAT (only specific categories)
+        $categoryRequiresVat = true;
+        if ($data['type'] === 'expense' && !empty($data['category_id'])) {
+            $category = Database::queryOne("SELECT name FROM categories WHERE id = ?", [$data['category_id']]);
+            if ($category) {
+                $categoryName = strtolower($category['name']);
+                $vatCategories = ['teçhizat', 'yazılım', 'hizmet alımı', 'ofis malzemesi', 'equipment', 'software', 'service', 'office supplies'];
+                $categoryRequiresVat = false;
+                foreach ($vatCategories as $vc) {
+                    if (strpos($categoryName, $vc) !== false) {
+                        $categoryRequiresVat = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        $shouldApplyVat = !$isEmployeeExpense && $categoryRequiresVat;
+        $vatRate = $shouldApplyVat ? (float)($data['vat_rate'] ?? 0) : 0;
         $withholdingRate = (float)($data['withholding_rate'] ?? 0);
-        $vatIncluded = !empty($data['vat_included']);
+        $vatIncluded = $shouldApplyVat ? !empty($data['vat_included']) : false;
 
         if ($vatIncluded && $vatRate > 0) {
             // KDV dahil: amount already includes VAT
             // baseAmount = amount / (1 + vatRate/100)
             // vatAmount = amount - baseAmount
-            $vatAmount = $amount * $vatRate / (100 + $vatRate);
-            $baseAmount = $amount - $vatAmount;
+            $vatAmount = $totalAmount * $vatRate / (100 + $vatRate);
+            $baseAmount = $totalAmount - $vatAmount;
             $withholdingAmount = $baseAmount * ($withholdingRate / 100);
-            $netAmount = $amount - $withholdingAmount;
+            $netAmount = $totalAmount - $withholdingAmount;
         } else {
             // KDV hariç: add VAT to amount
-            $baseAmount = $amount; // Amount is already VAT-excluded
-            $vatAmount = $amount * ($vatRate / 100);
-            $withholdingAmount = $amount * ($withholdingRate / 100);
-            $netAmount = $amount + $vatAmount - $withholdingAmount;
+            $baseAmount = $totalAmount; // Amount is already VAT-excluded
+            $vatAmount = $totalAmount * ($vatRate / 100);
+            $withholdingAmount = $totalAmount * ($withholdingRate / 100);
+            $netAmount = $totalAmount + $vatAmount - $withholdingAmount;
         }
 
         $insertData = [
@@ -108,7 +138,8 @@ class TransactionController extends BaseController
             'project_id' => $data['project_id'] ?? null,
             'milestone_id' => $data['milestone_id'] ?? null,
             'date' => $data['date'],
-            'amount' => $amount,
+            'amount' => $totalAmount,
+            'insurance_amount' => $insuranceAmount,
             'currency' => $data['currency'],
             'vat_rate' => $vatRate,
             'vat_amount' => $vatAmount,
@@ -149,25 +180,60 @@ class TransactionController extends BaseController
         // Calculate VAT and withholding if amount changed
         if (isset($data['amount'])) {
             $amount = (float)$data['amount'];
-            $vatRate = (float)($data['vat_rate'] ?? $transaction['vat_rate'] ?? 0);
+            $insuranceAmount = isset($data['insurance_amount']) ? (float)$data['insurance_amount'] : null;
+
+            // If insurance is provided, add it to amount for total calculation
+            $totalAmount = $insuranceAmount ? $amount + $insuranceAmount : $amount;
+
+            // Check if this is an employee expense (no VAT for employee payments)
+            $partyId = $data['party_id'] ?? $transaction['party_id'] ?? null;
+            $type = $data['type'] ?? $transaction['type'] ?? null;
+            $categoryId = $data['category_id'] ?? $transaction['category_id'] ?? null;
+            $isEmployeeExpense = false;
+            if ($type === 'expense' && $partyId) {
+                $party = Database::queryOne("SELECT type FROM parties WHERE id = ?", [$partyId]);
+                $isEmployeeExpense = $party && $party['type'] === 'employee';
+            }
+
+            // Check if category requires VAT (only specific categories)
+            $categoryRequiresVat = true;
+            if ($type === 'expense' && $categoryId) {
+                $category = Database::queryOne("SELECT name FROM categories WHERE id = ?", [$categoryId]);
+                if ($category) {
+                    $categoryName = strtolower($category['name']);
+                    $vatCategories = ['teçhizat', 'yazılım', 'hizmet alımı', 'ofis malzemesi', 'equipment', 'software', 'service', 'office supplies'];
+                    $categoryRequiresVat = false;
+                    foreach ($vatCategories as $vc) {
+                        if (strpos($categoryName, $vc) !== false) {
+                            $categoryRequiresVat = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            $shouldApplyVat = !$isEmployeeExpense && $categoryRequiresVat;
+            $vatRate = $shouldApplyVat ? (float)($data['vat_rate'] ?? $transaction['vat_rate'] ?? 0) : 0;
             $withholdingRate = (float)($data['withholding_rate'] ?? $transaction['withholding_rate'] ?? 0);
-            $vatIncluded = !empty($data['vat_included']);
+            $vatIncluded = $shouldApplyVat ? !empty($data['vat_included']) : false;
 
             if ($vatIncluded && $vatRate > 0) {
                 // KDV dahil: amount already includes VAT
-                $data['vat_amount'] = $amount * $vatRate / (100 + $vatRate);
-                $baseAmount = $amount - $data['vat_amount'];
+                $data['vat_amount'] = $totalAmount * $vatRate / (100 + $vatRate);
+                $baseAmount = $totalAmount - $data['vat_amount'];
                 $data['withholding_amount'] = $baseAmount * ($withholdingRate / 100);
-                $data['net_amount'] = $amount - $data['withholding_amount'];
+                $data['net_amount'] = $totalAmount - $data['withholding_amount'];
                 $data['base_amount'] = $baseAmount;
             } else {
                 // KDV hariç: add VAT to amount
-                $baseAmount = $amount; // Amount is already VAT-excluded
-                $data['vat_amount'] = $amount * ($vatRate / 100);
-                $data['withholding_amount'] = $amount * ($withholdingRate / 100);
-                $data['net_amount'] = $amount + $data['vat_amount'] - $data['withholding_amount'];
+                $baseAmount = $totalAmount; // Amount is already VAT-excluded
+                $data['vat_amount'] = $totalAmount * ($vatRate / 100);
+                $data['withholding_amount'] = $totalAmount * ($withholdingRate / 100);
+                $data['net_amount'] = $totalAmount + $data['vat_amount'] - $data['withholding_amount'];
                 $data['base_amount'] = $baseAmount;
             }
+            $data['amount'] = $totalAmount;
+            $data['insurance_amount'] = $insuranceAmount;
             $data['vat_rate'] = $vatRate;
             $data['withholding_rate'] = $withholdingRate;
         }
