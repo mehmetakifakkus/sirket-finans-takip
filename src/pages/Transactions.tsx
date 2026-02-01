@@ -10,6 +10,7 @@ import { DocumentUpload } from '../components/DocumentUpload'
 import { SearchableSelect } from '../components/SearchableSelect'
 import { DateRangePicker, detectPreset, detectSelectedMonth } from '../components/DateRangePicker'
 import { TemplateModal } from '../components/TemplateModal'
+import { BurnWiseLogo } from '../components/BurnWiseLogo'
 import * as pdfjsLib from 'pdfjs-dist'
 import type { Transaction, Party, Category, Project, ImportRow, ImportPreview, TransactionDocument, ProjectGrant } from '../types'
 
@@ -1431,7 +1432,7 @@ export function Transactions() {
                 <tr>
                   <td colSpan={10} className="px-6 py-16 text-center">
                     <div className="flex flex-col items-center justify-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-3"></div>
+                      <BurnWiseLogo size={48} animated className="mb-3" />
                       <span className="text-sm text-gray-500">{t('common.loading')}</span>
                     </div>
                   </td>
