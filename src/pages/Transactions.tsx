@@ -1404,28 +1404,17 @@ export function Transactions() {
                         }`}>
                           {tr.type === 'income' ? t('transactions.income') : t('transactions.expense')}
                         </span>
-                        {tr.tubitak_supported && tr.grant_provider_type === 'tubitak' && (
+                        {tr.tubitak_supported && (
                           <span
-                            className="inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded bg-blue-600 text-white"
-                            title={`${t('transactions.tubitakSupported')} - ${tr.grant_provider_name || 'TÜBİTAK'}`}
+                            className={`inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded text-white ${
+                              tr.grant_provider_type === 'kosgeb' ? 'bg-orange-500' :
+                              tr.grant_provider_type === 'tubitak' || !tr.grant_provider_type ? 'bg-blue-600' :
+                              'bg-purple-600'
+                            }`}
+                            title={tr.grant_provider_name || (tr.grant_provider_type === 'kosgeb' ? 'KOSGEB' : 'TÜBİTAK')}
                           >
-                            TB
-                          </span>
-                        )}
-                        {tr.tubitak_supported && tr.grant_provider_type === 'kosgeb' && (
-                          <span
-                            className="inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded bg-orange-500 text-white"
-                            title={`${t('transactions.kosgebSupported')} - ${tr.grant_provider_name || 'KOSGEB'}`}
-                          >
-                            K
-                          </span>
-                        )}
-                        {tr.tubitak_supported && tr.grant_provider_type && !['tubitak', 'kosgeb'].includes(tr.grant_provider_type) && (
-                          <span
-                            className="inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded bg-purple-600 text-white"
-                            title={`${t('transactions.grantSupported')} - ${tr.grant_provider_name || 'Hibe'}`}
-                          >
-                            H
+                            {tr.grant_provider_type === 'kosgeb' ? 'K' :
+                             tr.grant_provider_type === 'tubitak' || !tr.grant_provider_type ? 'TB' : 'H'}
                           </span>
                         )}
                       </div>
