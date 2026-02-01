@@ -142,6 +142,9 @@ export function Transactions() {
 
   const loadTransactions = async () => {
     setLoading(true)
+    const startTime = Date.now()
+    const MIN_LOADING_TIME = 500
+
     try {
       const filterParams: Record<string, string | number | undefined> = {}
       if (filters.type) filterParams.type = filters.type
@@ -156,6 +159,10 @@ export function Transactions() {
     } catch {
       addAlert('error', t('common.dataNotLoaded'))
     } finally {
+      const elapsed = Date.now() - startTime
+      if (elapsed < MIN_LOADING_TIME) {
+        await new Promise(resolve => setTimeout(resolve, MIN_LOADING_TIME - elapsed))
+      }
       setLoading(false)
     }
   }
