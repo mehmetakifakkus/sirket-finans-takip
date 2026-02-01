@@ -1404,7 +1404,7 @@ export function Transactions() {
                         }`}>
                           {tr.type === 'income' ? t('transactions.income') : t('transactions.expense')}
                         </span>
-                        {tr.tubitak_supported && (
+                        {!!tr.tubitak_supported && (
                           <span
                             className={`inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded text-white ${
                               tr.grant_provider_type === 'kosgeb' ? 'bg-orange-500' :
