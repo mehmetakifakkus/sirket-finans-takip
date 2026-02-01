@@ -1420,7 +1420,16 @@ export function Transactions() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {transactions.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={10} className="px-6 py-16 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-3"></div>
+                      <span className="text-sm text-gray-500">{t('common.loading')}</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : transactions.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="px-6 py-12 text-center text-gray-500">
                     {t('transactions.noTransactions')}
