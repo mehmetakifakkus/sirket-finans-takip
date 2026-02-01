@@ -148,8 +148,8 @@ export function Transactions() {
       if (filters.party_id) filterParams.party_id = parseInt(filters.party_id)
       if (filters.category_id) filterParams.category_id = parseInt(filters.category_id)
       if (filters.project_id) filterParams.project_id = parseInt(filters.project_id)
-      if (filters.date_from) filterParams.date_from = filters.date_from
-      if (filters.date_to) filterParams.date_to = filters.date_to
+      if (filters.date_from) filterParams.start_date = filters.date_from
+      if (filters.date_to) filterParams.end_date = filters.date_to
 
       const result = await api.getTransactions(filterParams)
       setTransactions(result as Transaction[])
