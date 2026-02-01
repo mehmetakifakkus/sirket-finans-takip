@@ -190,6 +190,12 @@ export function Transactions() {
     const months = t('dateRange.months', { returnObjects: true }) as string[]
     const safeMonths = Array.isArray(months) ? months : ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
 
+    // Check for specific month first (higher priority)
+    const selectedMonth = detectSelectedMonth(filters.date_from, filters.date_to)
+    if (selectedMonth) {
+      return `${safeMonths[selectedMonth.month]} ${selectedMonth.year}`
+    }
+
     // Check for preset
     const preset = detectPreset(filters.date_from, filters.date_to)
     if (preset && preset !== 'all') {
@@ -199,12 +205,6 @@ export function Transactions() {
         'lastYear': t('dateRange.last1Year')
       }
       return presetLabels[preset] || null
-    }
-
-    // Check for specific month
-    const selectedMonth = detectSelectedMonth(filters.date_from, filters.date_to)
-    if (selectedMonth) {
-      return `${safeMonths[selectedMonth.month]} ${selectedMonth.year}`
     }
 
     // Custom range - show dates

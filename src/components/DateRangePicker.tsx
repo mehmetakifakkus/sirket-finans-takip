@@ -233,14 +233,30 @@ function getLast12Months(): { year: number; month: number }[] {
 export function detectPreset(dateFrom: string, dateTo: string): PresetKey | null {
   if (!dateFrom && !dateTo) return 'all'
 
+  // First try exact match (for same-day detection)
   const presets: PresetKey[] = ['last7Days', 'lastMonth', 'lastYear']
-
   for (const preset of presets) {
     const { from, to } = getPresetDates(preset)
     if (from === dateFrom && to === dateTo) {
       return preset
     }
   }
+
+  // If no exact match, try approximate detection based on day difference
+  const fromDate = parseDate(dateFrom)
+  const toDate = parseDate(dateTo)
+  if (!fromDate || !toDate) return null
+
+  const diffDays = Math.round((toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24))
+
+  // ~7 days = last7Days (allow 6-7 days)
+  if (diffDays >= 6 && diffDays <= 7) return 'last7Days'
+
+  // ~30 days = lastMonth (allow 28-31 days)
+  if (diffDays >= 28 && diffDays <= 31) return 'lastMonth'
+
+  // ~365 days = lastYear (allow 364-366 days)
+  if (diffDays >= 364 && diffDays <= 366) return 'lastYear'
 
   return null // Custom range
 }
@@ -332,14 +348,20 @@ export function DateRangePicker({
   const safeMonths = Array.isArray(months) ? months : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
   const getDisplayValue = (): string => {
+    // Check for "all" preset first
+    if (currentPreset === 'all') {
+      return t('dateRange.all')
+    }
+
+    // Check if a specific month is selected (higher priority than presets)
+    if (selectedMonth) {
+      return `${safeMonths[selectedMonth.month]} ${selectedMonth.year}`
+    }
+
+    // Check for other presets
     if (currentPreset) {
       const preset = presets.find(p => p.key === currentPreset)
       return preset?.label || t('dateRange.all')
-    }
-
-    // Check if a specific month is selected
-    if (selectedMonth) {
-      return `${safeMonths[selectedMonth.month]} ${selectedMonth.year}`
     }
 
     if (dateFrom && dateTo) {
