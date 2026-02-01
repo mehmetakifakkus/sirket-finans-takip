@@ -150,6 +150,7 @@ export interface Transaction {
   document_count?: number;
   // Grant related joined fields
   grant_provider_name?: string;
+  grant_provider_type?: 'tubitak' | 'kosgeb' | 'sponsor' | 'other';
   grant_funding_rate?: number;
 }
 

@@ -28,7 +28,7 @@ class TransactionModel extends BaseModel
         if ($hasGrantsTable && $hasGrantColumns) {
             $sql = "SELECT t.*, p.name as party_name, c.name as category_name,
                     pr.title as project_name,
-                    pg.provider_name as grant_provider_name, pg.funding_rate as grant_funding_rate,
+                    pg.provider_name as grant_provider_name, pg.provider_type as grant_provider_type, pg.funding_rate as grant_funding_rate,
                     (SELECT COUNT(*) FROM transaction_documents td WHERE td.transaction_id = t.id) as document_count
                     FROM transactions t
                     LEFT JOIN parties p ON p.id = t.party_id
@@ -122,7 +122,7 @@ class TransactionModel extends BaseModel
         if ($hasGrantsTable && $hasGrantColumns) {
             $sql = "SELECT t.*, p.name as party_name, c.name as category_name,
                     pr.title as project_name, m.title as milestone_name,
-                    pg.provider_name as grant_provider_name, pg.funding_rate as grant_funding_rate,
+                    pg.provider_name as grant_provider_name, pg.provider_type as grant_provider_type, pg.funding_rate as grant_funding_rate,
                     (SELECT COUNT(*) FROM transaction_documents td WHERE td.transaction_id = t.id) as document_count
                     FROM transactions t
                     LEFT JOIN parties p ON p.id = t.party_id

@@ -1404,12 +1404,28 @@ export function Transactions() {
                         }`}>
                           {tr.type === 'income' ? t('transactions.income') : t('transactions.expense')}
                         </span>
-                        {tr.tubitak_supported && (
+                        {tr.tubitak_supported && tr.grant_provider_type === 'tubitak' && (
                           <span
                             className="inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded bg-blue-600 text-white"
                             title={`${t('transactions.tubitakSupported')} - ${tr.grant_provider_name || 'TÜBİTAK'}`}
                           >
                             TB
+                          </span>
+                        )}
+                        {tr.tubitak_supported && tr.grant_provider_type === 'kosgeb' && (
+                          <span
+                            className="inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded bg-orange-500 text-white"
+                            title={`${t('transactions.kosgebSupported')} - ${tr.grant_provider_name || 'KOSGEB'}`}
+                          >
+                            K
+                          </span>
+                        )}
+                        {tr.tubitak_supported && tr.grant_provider_type && !['tubitak', 'kosgeb'].includes(tr.grant_provider_type) && (
+                          <span
+                            className="inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded bg-purple-600 text-white"
+                            title={`${t('transactions.grantSupported')} - ${tr.grant_provider_name || 'Hibe'}`}
+                          >
+                            H
                           </span>
                         )}
                       </div>
@@ -1696,7 +1712,7 @@ export function Transactions() {
                 />
               </div>
 
-              {/* Row 5.5: TÜBİTAK Support (only for expense with project) */}
+              {/* Row 5.5: Grant Support (only for expense with project) */}
               {formData.type === 'expense' && formData.project_id && projectGrants.length > 0 && (
                 <div className="p-3 bg-blue-50 border border-blue-200 rounded-md space-y-2">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -1705,17 +1721,17 @@ export function Transactions() {
                       checked={formData.tubitak_supported}
                       onChange={(e) => {
                         const checked = e.target.checked
-                        // Auto-select first TÜBİTAK grant if checking
-                        const tubitakGrant = projectGrants.find(g => g.provider_type === 'tubitak')
+                        // Auto-select first available grant if checking
+                        const firstGrant = projectGrants[0]
                         setFormData({
                           ...formData,
                           tubitak_supported: checked,
-                          grant_id: checked && tubitakGrant ? tubitakGrant.id.toString() : ''
+                          grant_id: checked && firstGrant ? firstGrant.id.toString() : ''
                         })
                       }}
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
-                    <span className="text-sm font-medium text-blue-700">{t('transactions.tubitakSupported')}</span>
+                    <span className="text-sm font-medium text-blue-700">{t('transactions.grantSupported')}</span>
                   </label>
 
                   {formData.tubitak_supported && (
