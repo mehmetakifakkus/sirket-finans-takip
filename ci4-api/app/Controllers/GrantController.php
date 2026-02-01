@@ -143,15 +143,29 @@ class GrantController extends BaseController
     }
 
     /**
-     * Calculate grant amount
+     * Calculate grant amount for existing grant
      * POST /api/grants/calculate
      */
     public function calculate()
     {
         $data = $this->getJsonInput();
 
+        // If project_id is provided, calculate preview amount (for new grants)
+        if (!empty($data['project_id'])) {
+            $projectId = (int)$data['project_id'];
+            $rate = (float)($data['rate'] ?? 0);
+            $vatExcluded = $data['vat_excluded'] ?? true;
+
+            $amount = $this->grantModel->calculateAmountForProject($projectId, $rate, $vatExcluded);
+
+            return $this->success('Hibe tutarı hesaplandı', [
+                'amount' => $amount
+            ]);
+        }
+
+        // If grant_id is provided, recalculate existing grant
         if (empty($data['grant_id'])) {
-            return $this->validationError(['message' => 'grant_id zorunludur']);
+            return $this->validationError(['message' => 'grant_id veya project_id zorunludur']);
         }
 
         $grant = $this->grantModel->find($data['grant_id']);

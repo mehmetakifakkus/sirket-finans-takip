@@ -130,6 +130,10 @@ export interface Transaction {
   withholding_amount: number;
   net_amount: number;
   base_amount?: number;
+  tubitak_supported: boolean;
+  grant_amount: number | null;
+  grant_id: number | null;
+  linked_transaction_id: number | null;
   description: string | null;
   ref_no: string | null;
   document_path: string | null;
@@ -144,6 +148,9 @@ export interface Transaction {
   created_by_name?: string;
   amount_try?: number;
   document_count?: number;
+  // Grant related joined fields
+  grant_provider_name?: string;
+  grant_funding_rate?: number;
 }
 
 // Transaction Document types
@@ -345,6 +352,8 @@ export interface TransactionFormData {
   currency: Currency;
   vat_rate: number;
   withholding_rate: number;
+  tubitak_supported: boolean;
+  grant_id: number | null;
   description: string;
   ref_no: string;
 }

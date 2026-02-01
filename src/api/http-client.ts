@@ -228,7 +228,10 @@ class HttpClient implements IApiClient {
     const result = await this.request<{ projects: object[] }>(`/projects${this.buildQueryString(filters)}`)
     return result.projects || []
   }
-  getProject = (id: number) => this.request<object | null>(`/projects/${id}`)
+  getProject = async (id: number) => {
+    const result = await this.request<{ project: object | null }>(`/projects/${id}`)
+    return result.project || null
+  }
   createProject = (data: object) =>
     this.request<{ success: boolean; message: string; id?: number }>('/projects', {
       method: 'POST',
@@ -281,7 +284,11 @@ class HttpClient implements IApiClient {
     this.request<{ success: boolean; message: string }>(`/grants/${id}`, { method: 'DELETE' })
   calculateGrantAmount = async (projectId: number, rate: number, vatExcluded: boolean) => {
     const result = await this.request<{ amount: number }>(
-      `/grants/calculate?projectId=${projectId}&rate=${rate}&vatExcluded=${vatExcluded}`
+      `/grants/calculate`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ project_id: projectId, rate, vat_excluded: vatExcluded })
+      }
     )
     return result.amount
   }

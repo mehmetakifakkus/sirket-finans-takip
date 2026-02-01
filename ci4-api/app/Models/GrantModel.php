@@ -85,6 +85,24 @@ class GrantModel extends BaseModel
     }
 
     /**
+     * Calculate grant amount for a project (preview before creating grant)
+     */
+    public function calculateAmountForProject(int $projectId, float $rate, bool $vatExcluded = true): float
+    {
+        // Get total expenses for the project
+        // If vatExcluded, use base_amount (without VAT), otherwise use net_amount
+        $amountField = $vatExcluded ? 'COALESCE(base_amount, amount)' : 'net_amount';
+
+        $expenses = Database::queryOne(
+            "SELECT SUM($amountField) as total FROM transactions WHERE project_id = ? AND type = 'expense'",
+            [$projectId]
+        );
+
+        $totalExpenses = (float)($expenses['total'] ?? 0);
+        return $totalExpenses * ($rate / 100);
+    }
+
+    /**
      * Get grant totals by provider type
      */
     public function getTotals(): array

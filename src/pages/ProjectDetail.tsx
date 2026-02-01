@@ -145,6 +145,35 @@ export function ProjectDetail() {
     other: { name: '', rate: 0, vatExcluded: false }
   }
 
+  // KOSGEB program types
+  const kosgebPrograms: Record<string, { name: string; rate: number }> = {
+    default: { name: 'KOSGEB', rate: 80 },
+    isgem: { name: 'KOSGEB İş Geliştirme Desteği', rate: 80 }
+  }
+
+  const handleKosgebProgramChange = async (programKey: string) => {
+    const program = kosgebPrograms[programKey] || kosgebPrograms.default
+    setGrantFormData(prev => ({
+      ...prev,
+      provider_name: program.name,
+      funding_rate: program.rate.toString()
+    }))
+
+    // Calculate amount with new rate
+    if (project) {
+      try {
+        const amount = await api.calculateGrantAmount(project.id, program.rate, true)
+        setCalculatedGrantAmount(amount)
+        setGrantFormData(prev => ({
+          ...prev,
+          approved_amount: amount.toString()
+        }))
+      } catch {
+        // Silent fail
+      }
+    }
+  }
+
   const handleGrantTypeChange = async (type: 'tubitak' | 'kosgeb' | 'sponsor' | 'other') => {
     const preset = grantPresets[type]
     setGrantFormData(prev => ({
@@ -612,6 +641,16 @@ export function ProjectDetail() {
 
   const progress = project.contract_amount > 0 ? ((project.collected_amount || 0) / project.contract_amount) * 100 : 0
 
+  // Calculate TÜBİTAK grant summary from transactions
+  const tubitakSummary = transactions.reduce((acc, t) => {
+    if (t.tubitak_supported && t.type === 'expense') {
+      acc.expenseCount++
+      acc.totalExpense += t.base_amount || t.amount
+      acc.totalGrant += t.grant_amount || 0
+    }
+    return acc
+  }, { expenseCount: 0, totalExpense: 0, totalGrant: 0 })
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -750,6 +789,30 @@ export function ProjectDetail() {
           )}
         </div>
       </div>
+
+      {/* TÜBİTAK Grant Summary from Expenses */}
+      {tubitakSummary.expenseCount > 0 && (
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg shadow-sm border border-blue-200 p-6">
+          <h3 className="text-lg font-semibold text-blue-900 mb-4">{t('projectDetail.grantSummary')}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white rounded-lg p-4 border border-blue-100">
+              <p className="text-sm text-gray-500">{t('projectDetail.tubitakExpenses')}</p>
+              <p className="text-xl font-bold text-gray-900">{tubitakSummary.expenseCount}</p>
+              <p className="text-sm text-blue-600">{formatCurrency(tubitakSummary.totalExpense, project.currency as 'TRY' | 'USD' | 'EUR')}</p>
+            </div>
+            <div className="bg-white rounded-lg p-4 border border-purple-100">
+              <p className="text-sm text-gray-500">{t('projectDetail.totalGrantAmount')}</p>
+              <p className="text-xl font-bold text-purple-600">{formatCurrency(tubitakSummary.totalGrant, project.currency as 'TRY' | 'USD' | 'EUR')}</p>
+            </div>
+            <div className="bg-white rounded-lg p-4 border border-green-100">
+              <p className="text-sm text-gray-500">{t('projectDetail.pendingGrant')}</p>
+              <p className="text-xl font-bold text-orange-600">
+                {formatCurrency(Math.max(0, tubitakSummary.totalGrant - grantTotals.total_received), project.currency as 'TRY' | 'USD' | 'EUR')}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Transactions */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -1266,6 +1329,19 @@ export function ProjectDetail() {
                   <option value="other">{t('grants.types.other')}</option>
                 </select>
               </div>
+              {grantFormData.provider_type === 'kosgeb' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('grants.kosgebProgram')}</label>
+                  <select
+                    value={Object.keys(kosgebPrograms).find(key => kosgebPrograms[key].name === grantFormData.provider_name) || 'default'}
+                    onChange={(e) => handleKosgebProgramChange(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  >
+                    <option value="default">KOSGEB (%80)</option>
+                    <option value="isgem">İş Geliştirme Desteği (%80)</option>
+                  </select>
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('grants.providerName')} *</label>
                 <input

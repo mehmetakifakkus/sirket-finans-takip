@@ -555,6 +555,7 @@
     "addGrant": "Forderung/Finanzierung hinzufugen",
     "editGrant": "Forderung/Finanzierung bearbeiten",
     "providerType": "Anbietertyp",
+    "kosgebProgram": "KOSGEB Programm",
     "providerName": "Anbietername",
     "fundingRate": "Satz (%)",
     "fundingAmount": "Betrag",

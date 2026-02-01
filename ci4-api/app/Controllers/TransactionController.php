@@ -131,6 +131,20 @@ class TransactionController extends BaseController
             $netAmount = $totalAmount + $vatAmount - $withholdingAmount;
         }
 
+        // TÜBİTAK support handling
+        $tubitakSupported = !empty($data['tubitak_supported']) && $data['type'] === 'expense';
+        $grantId = isset($data['grant_id']) ? (int)$data['grant_id'] : null;
+        $grantAmount = null;
+
+        // Calculate grant amount if TÜBİTAK supported
+        if ($tubitakSupported && $grantId) {
+            $grant = Database::queryOne("SELECT funding_rate, vat_excluded FROM project_grants WHERE id = ?", [$grantId]);
+            if ($grant && $grant['funding_rate'] > 0) {
+                // Grant is calculated on VAT-excluded amount (base_amount)
+                $grantAmount = $baseAmount * ($grant['funding_rate'] / 100);
+            }
+        }
+
         $insertData = [
             'type' => $data['type'],
             'party_id' => $data['party_id'] ?? null,
@@ -147,6 +161,9 @@ class TransactionController extends BaseController
             'withholding_amount' => $withholdingAmount,
             'net_amount' => $netAmount,
             'base_amount' => $baseAmount,
+            'tubitak_supported' => $tubitakSupported ? 1 : 0,
+            'grant_amount' => $grantAmount,
+            'grant_id' => $grantId,
             'description' => $data['description'] ?? null,
             'ref_no' => $data['ref_no'] ?? null,
             'created_by' => $this->getUserId()
@@ -157,11 +174,65 @@ class TransactionController extends BaseController
             return $this->error('İşlem oluşturulamadı', 500);
         }
 
+        // Create automatic grant income if TÜBİTAK supported
+        $linkedIncomeId = null;
+        if ($tubitakSupported && $grantAmount > 0) {
+            $linkedIncomeId = $this->createGrantIncome($id, $data, $grantAmount, $grantId);
+            if ($linkedIncomeId) {
+                // Update expense with linked transaction id
+                $this->transactionModel->update($id, ['linked_transaction_id' => $linkedIncomeId]);
+            }
+        }
+
         $transaction = $this->transactionModel->getWithDetails($id);
 
         return $this->created('İşlem oluşturuldu', [
-            'transaction' => $transaction
+            'transaction' => $transaction,
+            'linked_income_id' => $linkedIncomeId
         ]);
+    }
+
+    /**
+     * Create automatic grant income transaction
+     */
+    private function createGrantIncome(int $expenseId, array $expenseData, float $grantAmount, ?int $grantId): ?int
+    {
+        // Get grant provider name for description
+        $grantProviderName = 'TÜBİTAK';
+        if ($grantId) {
+            $grant = Database::queryOne("SELECT provider_name FROM project_grants WHERE id = ?", [$grantId]);
+            if ($grant) {
+                $grantProviderName = $grant['provider_name'];
+            }
+        }
+
+        $description = $grantProviderName . ' Hibe - ' . ($expenseData['description'] ?? 'Gider #' . $expenseId);
+
+        $incomeData = [
+            'type' => 'income',
+            'party_id' => null, // Could link to TÜBİTAK party if exists
+            'category_id' => null, // Could create/use a "Hibe Geliri" category
+            'project_id' => $expenseData['project_id'] ?? null,
+            'milestone_id' => $expenseData['milestone_id'] ?? null,
+            'date' => $expenseData['date'],
+            'amount' => $grantAmount,
+            'currency' => $expenseData['currency'],
+            'vat_rate' => 0,
+            'vat_amount' => 0,
+            'withholding_rate' => 0,
+            'withholding_amount' => 0,
+            'net_amount' => $grantAmount,
+            'base_amount' => $grantAmount,
+            'tubitak_supported' => 0,
+            'grant_amount' => null,
+            'grant_id' => $grantId,
+            'linked_transaction_id' => $expenseId,
+            'description' => $description,
+            'ref_no' => null,
+            'created_by' => $this->getUserId()
+        ];
+
+        return $this->transactionModel->insert($incomeData);
     }
 
     /**
@@ -241,16 +312,88 @@ class TransactionController extends BaseController
         // Remove vat_included from data as it's not a database field
         unset($data['vat_included']);
 
+        // Handle TÜBİTAK support changes
+        $type = $data['type'] ?? $transaction['type'];
+        $tubitakSupported = !empty($data['tubitak_supported']) && $type === 'expense';
+        $grantId = isset($data['grant_id']) ? (int)$data['grant_id'] : ($transaction['grant_id'] ?? null);
+        $oldTubitakSupported = !empty($transaction['tubitak_supported']);
+        $oldLinkedTransactionId = $transaction['linked_transaction_id'] ?? null;
+
+        // Calculate base_amount if not already calculated
+        $baseAmount = $data['base_amount'] ?? $transaction['base_amount'] ?? $transaction['amount'];
+
+        // Calculate grant amount if TÜBİTAK supported
+        $grantAmount = null;
+        if ($tubitakSupported && $grantId) {
+            $grant = Database::queryOne("SELECT funding_rate FROM project_grants WHERE id = ?", [$grantId]);
+            if ($grant && $grant['funding_rate'] > 0) {
+                $grantAmount = $baseAmount * ($grant['funding_rate'] / 100);
+            }
+        }
+
+        $data['tubitak_supported'] = $tubitakSupported ? 1 : 0;
+        $data['grant_amount'] = $grantAmount;
+        $data['grant_id'] = $grantId;
+
         // Remove fields that shouldn't be updated
         unset($data['id'], $data['created_at'], $data['created_by']);
 
         $this->transactionModel->update($id, $data);
+
+        // Handle linked grant income
+        if ($tubitakSupported && $grantAmount > 0) {
+            if ($oldLinkedTransactionId) {
+                // Update existing linked income
+                $this->updateLinkedGrantIncome($oldLinkedTransactionId, $id, array_merge($transaction, $data), $grantAmount, $grantId);
+            } else {
+                // Create new linked income
+                $linkedIncomeId = $this->createGrantIncome($id, array_merge($transaction, $data), $grantAmount, $grantId);
+                if ($linkedIncomeId) {
+                    $this->transactionModel->update($id, ['linked_transaction_id' => $linkedIncomeId]);
+                }
+            }
+        } elseif (!$tubitakSupported && $oldLinkedTransactionId) {
+            // Remove linked income if TÜBİTAK support was disabled
+            $this->transactionModel->delete($oldLinkedTransactionId);
+            $this->transactionModel->update($id, ['linked_transaction_id' => null]);
+        }
 
         $transaction = $this->transactionModel->getWithDetails($id);
 
         return $this->success('İşlem güncellendi', [
             'transaction' => $transaction
         ]);
+    }
+
+    /**
+     * Update linked grant income transaction
+     */
+    private function updateLinkedGrantIncome(int $incomeId, int $expenseId, array $expenseData, float $grantAmount, ?int $grantId): void
+    {
+        // Get grant provider name for description
+        $grantProviderName = 'TÜBİTAK';
+        if ($grantId) {
+            $grant = Database::queryOne("SELECT provider_name FROM project_grants WHERE id = ?", [$grantId]);
+            if ($grant) {
+                $grantProviderName = $grant['provider_name'];
+            }
+        }
+
+        $description = $grantProviderName . ' Hibe - ' . ($expenseData['description'] ?? 'Gider #' . $expenseId);
+
+        $updateData = [
+            'project_id' => $expenseData['project_id'] ?? null,
+            'milestone_id' => $expenseData['milestone_id'] ?? null,
+            'date' => $expenseData['date'],
+            'amount' => $grantAmount,
+            'currency' => $expenseData['currency'],
+            'net_amount' => $grantAmount,
+            'base_amount' => $grantAmount,
+            'grant_id' => $grantId,
+            'description' => $description
+        ];
+
+        $this->transactionModel->update($incomeId, $updateData);
     }
 
     /**
@@ -272,6 +415,36 @@ class TransactionController extends BaseController
                 unlink($filePath);
             }
             $this->documentModel->delete($doc['id']);
+        }
+
+        // Delete linked grant income if exists
+        if (!empty($transaction['linked_transaction_id'])) {
+            $linkedTransaction = $this->transactionModel->find($transaction['linked_transaction_id']);
+            if ($linkedTransaction) {
+                // Delete documents of linked transaction
+                $linkedDocs = $this->documentModel->getByTransaction($transaction['linked_transaction_id']);
+                foreach ($linkedDocs as $doc) {
+                    $filePath = $this->getUploadPath() . $doc['file_path'];
+                    if (file_exists($filePath)) {
+                        unlink($filePath);
+                    }
+                    $this->documentModel->delete($doc['id']);
+                }
+                $this->transactionModel->delete($transaction['linked_transaction_id']);
+            }
+        }
+
+        // Also check if this transaction is a linked income (delete the link from expense)
+        $linkedExpense = Database::queryOne(
+            "SELECT id FROM transactions WHERE linked_transaction_id = ?",
+            [$id]
+        );
+        if ($linkedExpense) {
+            $this->transactionModel->update($linkedExpense['id'], [
+                'linked_transaction_id' => null,
+                'tubitak_supported' => 0,
+                'grant_amount' => null
+            ]);
         }
 
         $this->transactionModel->delete($id);

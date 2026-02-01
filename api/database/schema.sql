@@ -122,6 +122,10 @@ CREATE TABLE IF NOT EXISTS transactions (
     withholding_rate DECIMAL(5,2) NOT NULL DEFAULT 0,
     withholding_amount DECIMAL(15,2) NOT NULL DEFAULT 0,
     net_amount DECIMAL(15,2) NOT NULL,
+    tubitak_supported TINYINT(1) DEFAULT 0,
+    grant_amount DECIMAL(15,2) DEFAULT NULL,
+    grant_id INT DEFAULT NULL,
+    linked_transaction_id INT DEFAULT NULL,
     description TEXT,
     ref_no VARCHAR(100),
     document_path VARCHAR(500),
@@ -133,11 +137,14 @@ CREATE TABLE IF NOT EXISTS transactions (
     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL,
     FOREIGN KEY (milestone_id) REFERENCES project_milestones(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (grant_id) REFERENCES project_grants(id) ON DELETE SET NULL,
     INDEX idx_transactions_date (date),
     INDEX idx_transactions_type (type),
     INDEX idx_transactions_party (party_id),
     INDEX idx_transactions_category (category_id),
-    INDEX idx_transactions_project (project_id)
+    INDEX idx_transactions_project (project_id),
+    INDEX idx_transactions_tubitak (tubitak_supported),
+    INDEX idx_transactions_linked (linked_transaction_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Debts table (debts and receivables)
