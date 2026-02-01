@@ -1529,27 +1529,27 @@ export function Transactions() {
                 ))
               )}
             </tbody>
-            {transactions.length > 0 && (
-              <tfoot className="bg-gray-100 border-t-2 border-gray-300">
-                <tr>
-                  <td colSpan={5} className="px-3 py-3 text-sm font-semibold text-gray-700 text-right">
-                    {t('common.total')} ({transactions.length} {t('transactions.transaction')}):
-                  </td>
-                  <td className="px-3 py-3 text-sm text-right">
-                    <span className="text-green-600 font-medium">{formatCurrency(totals.income, 'TRY')}</span>
-                    {' / '}
-                    <span className="text-red-600 font-medium">{formatCurrency(totals.expense, 'TRY')}</span>
-                  </td>
-                  <td className="px-3"></td>
-                  <td className="px-3 py-3 text-sm text-right font-bold text-gray-900">
-                    {formatCurrency(totals.income - totals.expense, 'TRY')}
-                  </td>
-                  <td className="px-2"></td>
-                  <td className="px-2"></td>
-                </tr>
-              </tfoot>
-            )}
           </table>
+          </div>
+        )}
+        {/* Fixed Footer - Totals */}
+        {!loading && transactions.length > 0 && (
+          <div className="flex-shrink-0 bg-gray-100 border-t-2 border-gray-300 px-3 py-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-gray-700">
+                {t('common.total')} ({transactions.length} {t('transactions.transaction')}):
+              </span>
+              <div className="flex items-center gap-6">
+                <div className="text-sm">
+                  <span className="text-green-600 font-medium">{formatCurrency(totals.income, 'TRY')}</span>
+                  {' / '}
+                  <span className="text-red-600 font-medium">{formatCurrency(totals.expense, 'TRY')}</span>
+                </div>
+                <div className="text-sm font-bold text-gray-900">
+                  {formatCurrency(totals.income - totals.expense, 'TRY')}
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
