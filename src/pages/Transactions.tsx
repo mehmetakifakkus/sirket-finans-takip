@@ -11,7 +11,7 @@ import { SearchableSelect } from '../components/SearchableSelect'
 import { DateRangePicker } from '../components/DateRangePicker'
 import { TemplateModal } from '../components/TemplateModal'
 import * as pdfjsLib from 'pdfjs-dist'
-import type { Transaction, Party, Category, Project, ImportRow, ImportPreview, TransactionDocument } from '../types'
+import type { Transaction, Party, Category, Project, ImportRow, ImportPreview, TransactionDocument, ProjectGrant } from '../types'
 
 // Set up PDF.js worker using CDN (works in Electron with nodeIntegration)
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -83,9 +83,12 @@ export function Transactions() {
     vat_rate: '20',
     vat_included: true,
     withholding_rate: '0',
+    tubitak_supported: false,
+    grant_id: '',
     description: '',
     ref_no: ''
   })
+  const [projectGrants, setProjectGrants] = useState<ProjectGrant[]>([])
   const [continueAdding, setContinueAdding] = useState(false)
 
   useEffect(() => {
@@ -235,6 +238,8 @@ export function Transactions() {
       vat_rate: shouldApplyVat ? (parseFloat(formData.vat_rate) || 0) : 0,
       vat_included: shouldApplyVat ? formData.vat_included : false,
       withholding_rate: parseFloat(formData.withholding_rate) || 0,
+      tubitak_supported: formData.tubitak_supported && formData.type === 'expense',
+      grant_id: formData.tubitak_supported && formData.grant_id ? parseInt(formData.grant_id) : null,
       description: formData.description,
       ref_no: formData.ref_no,
       created_by: user?.id
@@ -434,13 +439,16 @@ export function Transactions() {
       vat_rate: '20',
       vat_included: true,
       withholding_rate: '0',
+      tubitak_supported: false,
+      grant_id: '',
       description: '',
       ref_no: ''
     })
+    setProjectGrants([])
     setShowForm(true)
   }
 
-  const openEditForm = (transaction: Transaction) => {
+  const openEditForm = async (transaction: Transaction) => {
     setEditingTransaction(transaction)
     setFormData({
       type: transaction.type,
@@ -455,9 +463,22 @@ export function Transactions() {
       vat_rate: transaction.vat_rate.toString(),
       vat_included: true,
       withholding_rate: transaction.withholding_rate.toString(),
+      tubitak_supported: transaction.tubitak_supported || false,
+      grant_id: transaction.grant_id?.toString() || '',
       description: transaction.description || '',
       ref_no: transaction.ref_no || ''
     })
+    // Load grants for the project
+    if (transaction.project_id) {
+      try {
+        const grants = await api.getProjectGrants(transaction.project_id)
+        setProjectGrants(grants as ProjectGrant[])
+      } catch {
+        setProjectGrants([])
+      }
+    } else {
+      setProjectGrants([])
+    }
     setShowForm(true)
   }
 
@@ -1377,11 +1398,21 @@ export function Transactions() {
                       <span className="block truncate">{tr.description || '-'}</span>
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
-                        tr.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {tr.type === 'income' ? t('transactions.income') : t('transactions.expense')}
-                      </span>
+                      <div className="flex items-center gap-1">
+                        <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
+                          tr.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {tr.type === 'income' ? t('transactions.income') : t('transactions.expense')}
+                        </span>
+                        {tr.tubitak_supported && (
+                          <span
+                            className="inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded bg-blue-600 text-white"
+                            title={`${t('transactions.tubitakSupported')} - ${tr.grant_provider_name || 'TÜBİTAK'}`}
+                          >
+                            TB
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">{tr.category_name || '-'}</td>
                     <td className="px-3 py-3 text-sm max-w-[120px]">
@@ -1637,7 +1668,20 @@ export function Transactions() {
                 <SearchableSelect
                   options={projects.map(p => ({ value: p.id.toString(), label: p.title }))}
                   value={formData.project_id}
-                  onChange={(value) => setFormData({ ...formData, project_id: value })}
+                  onChange={async (value) => {
+                    setFormData({ ...formData, project_id: value, tubitak_supported: false, grant_id: '' })
+                    // Load grants for the selected project
+                    if (value) {
+                      try {
+                        const grants = await api.getProjectGrants(parseInt(value))
+                        setProjectGrants(grants as ProjectGrant[])
+                      } catch {
+                        setProjectGrants([])
+                      }
+                    } else {
+                      setProjectGrants([])
+                    }
+                  }}
                   placeholder={t('transactions.searchProject')}
                   allLabel={t('common.select')}
                   showAllOption={false}
@@ -1651,6 +1695,74 @@ export function Transactions() {
                   addNewLabel={t('transactions.addNewProject')}
                 />
               </div>
+
+              {/* Row 5.5: TÜBİTAK Support (only for expense with project) */}
+              {formData.type === 'expense' && formData.project_id && projectGrants.length > 0 && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-md space-y-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.tubitak_supported}
+                      onChange={(e) => {
+                        const checked = e.target.checked
+                        // Auto-select first TÜBİTAK grant if checking
+                        const tubitakGrant = projectGrants.find(g => g.provider_type === 'tubitak')
+                        setFormData({
+                          ...formData,
+                          tubitak_supported: checked,
+                          grant_id: checked && tubitakGrant ? tubitakGrant.id.toString() : ''
+                        })
+                      }}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-medium text-blue-700">{t('transactions.tubitakSupported')}</span>
+                  </label>
+
+                  {formData.tubitak_supported && (
+                    <>
+                      <div>
+                        <label className="block text-xs font-medium text-blue-600 mb-1">{t('transactions.selectGrant')}</label>
+                        <select
+                          value={formData.grant_id}
+                          onChange={(e) => setFormData({ ...formData, grant_id: e.target.value })}
+                          className="w-full px-3 py-1.5 border border-blue-300 rounded-md text-sm bg-white"
+                        >
+                          <option value="">{t('common.select')}</option>
+                          {projectGrants.map(g => (
+                            <option key={g.id} value={g.id}>
+                              {g.provider_name} ({g.funding_rate}%)
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {formData.grant_id && formData.amount && (() => {
+                        const selectedGrant = projectGrants.find(g => g.id.toString() === formData.grant_id)
+                        if (!selectedGrant) return null
+                        const amount = parseFloat(formData.amount) || 0
+                        const vatRate = parseFloat(formData.vat_rate) || 0
+                        // Calculate base amount (VAT excluded)
+                        let baseAmount = amount
+                        if (formData.vat_included && vatRate > 0) {
+                          baseAmount = amount - (amount * vatRate / (100 + vatRate))
+                        }
+                        const grantAmount = baseAmount * (selectedGrant.funding_rate || 0) / 100
+                        return (
+                          <div className="text-sm text-blue-700 bg-blue-100 px-3 py-2 rounded">
+                            <span className="font-medium">{t('transactions.calculatedGrant')}:</span>{' '}
+                            <span className="font-bold">
+                              {grantAmount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} {formData.currency}
+                            </span>
+                            <span className="text-blue-500 ml-2">
+                              ({t('transactions.grantRate')}: %{selectedGrant.funding_rate})
+                            </span>
+                          </div>
+                        )
+                      })()}
+                    </>
+                  )}
+                </div>
+              )}
 
               {/* Row 6: Açıklama (1 satır) */}
               <div>

@@ -12,6 +12,7 @@ class TransactionModel extends BaseModel
         'type', 'party_id', 'category_id', 'project_id', 'milestone_id',
         'date', 'amount', 'insurance_amount', 'currency', 'vat_rate', 'vat_amount',
         'withholding_rate', 'withholding_amount', 'net_amount', 'base_amount',
+        'tubitak_supported', 'grant_amount', 'grant_id', 'linked_transaction_id',
         'description', 'ref_no', 'document_path', 'created_by'
     ];
 
@@ -20,14 +21,36 @@ class TransactionModel extends BaseModel
      */
     public function getFiltered(array $filters = []): array
     {
-        $sql = "SELECT t.*, p.name as party_name, c.name as category_name,
-                pr.title as project_name,
-                (SELECT COUNT(*) FROM transaction_documents td WHERE td.transaction_id = t.id) as document_count
-                FROM transactions t
-                LEFT JOIN parties p ON p.id = t.party_id
-                LEFT JOIN categories c ON c.id = t.category_id
-                LEFT JOIN projects pr ON pr.id = t.project_id
-                WHERE 1=1";
+        // Check if project_grants table exists
+        $hasGrantsTable = $this->tableExists('project_grants');
+        $hasGrantColumns = $this->columnExists('transactions', 'grant_id');
+
+        if ($hasGrantsTable && $hasGrantColumns) {
+            $sql = "SELECT t.*, p.name as party_name, c.name as category_name,
+                    pr.title as project_name,
+                    pg.provider_name as grant_provider_name, pg.funding_rate as grant_funding_rate,
+                    (SELECT COUNT(*) FROM transaction_documents td WHERE td.transaction_id = t.id) as document_count
+                    FROM transactions t
+                    LEFT JOIN parties p ON p.id = t.party_id
+                    LEFT JOIN categories c ON c.id = t.category_id
+                    LEFT JOIN projects pr ON pr.id = t.project_id
+                    LEFT JOIN project_grants pg ON pg.id = t.grant_id
+                    WHERE 1=1";
+        } else {
+            $sql = "SELECT t.*, p.name as party_name, c.name as category_name,
+                    pr.title as project_name,
+                    (SELECT COUNT(*) FROM transaction_documents td WHERE td.transaction_id = t.id) as document_count
+                    FROM transactions t
+                    LEFT JOIN parties p ON p.id = t.party_id
+                    LEFT JOIN categories c ON c.id = t.category_id
+                    LEFT JOIN projects pr ON pr.id = t.project_id
+                    WHERE 1=1";
+        }
+
+        // Otomatik hibe gelirlerini listeden hariç tut (linked_transaction_id olan gelirler)
+        if ($hasGrantColumns) {
+            $sql .= " AND NOT (t.type = 'income' AND t.linked_transaction_id IS NOT NULL)";
+        }
 
         $params = [];
 
@@ -92,15 +115,33 @@ class TransactionModel extends BaseModel
      */
     public function getWithDetails(int $id): ?array
     {
-        $sql = "SELECT t.*, p.name as party_name, c.name as category_name,
-                pr.title as project_name, m.title as milestone_name,
-                (SELECT COUNT(*) FROM transaction_documents td WHERE td.transaction_id = t.id) as document_count
-                FROM transactions t
-                LEFT JOIN parties p ON p.id = t.party_id
-                LEFT JOIN categories c ON c.id = t.category_id
-                LEFT JOIN projects pr ON pr.id = t.project_id
-                LEFT JOIN project_milestones m ON m.id = t.milestone_id
-                WHERE t.id = ?";
+        // Check if project_grants table exists
+        $hasGrantsTable = $this->tableExists('project_grants');
+        $hasGrantColumns = $this->columnExists('transactions', 'grant_id');
+
+        if ($hasGrantsTable && $hasGrantColumns) {
+            $sql = "SELECT t.*, p.name as party_name, c.name as category_name,
+                    pr.title as project_name, m.title as milestone_name,
+                    pg.provider_name as grant_provider_name, pg.funding_rate as grant_funding_rate,
+                    (SELECT COUNT(*) FROM transaction_documents td WHERE td.transaction_id = t.id) as document_count
+                    FROM transactions t
+                    LEFT JOIN parties p ON p.id = t.party_id
+                    LEFT JOIN categories c ON c.id = t.category_id
+                    LEFT JOIN projects pr ON pr.id = t.project_id
+                    LEFT JOIN project_milestones m ON m.id = t.milestone_id
+                    LEFT JOIN project_grants pg ON pg.id = t.grant_id
+                    WHERE t.id = ?";
+        } else {
+            $sql = "SELECT t.*, p.name as party_name, c.name as category_name,
+                    pr.title as project_name, m.title as milestone_name,
+                    (SELECT COUNT(*) FROM transaction_documents td WHERE td.transaction_id = t.id) as document_count
+                    FROM transactions t
+                    LEFT JOIN parties p ON p.id = t.party_id
+                    LEFT JOIN categories c ON c.id = t.category_id
+                    LEFT JOIN projects pr ON pr.id = t.project_id
+                    LEFT JOIN project_milestones m ON m.id = t.milestone_id
+                    WHERE t.id = ?";
+        }
 
         $transaction = Database::queryOne($sql, [$id]);
 
@@ -112,6 +153,35 @@ class TransactionModel extends BaseModel
         }
 
         return $transaction;
+    }
+
+    /**
+     * Check if a table exists in the database
+     */
+    private function tableExists(string $tableName): bool
+    {
+        try {
+            $result = Database::queryOne("SHOW TABLES LIKE ?", [$tableName]);
+            return $result !== null;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Check if a column exists in a table
+     */
+    private function columnExists(string $tableName, string $columnName): bool
+    {
+        try {
+            $result = Database::queryOne(
+                "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ? AND COLUMN_NAME = ?",
+                [$tableName, $columnName]
+            );
+            return $result !== null;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     /**
@@ -203,8 +273,15 @@ class TransactionModel extends BaseModel
      */
     public function getCount(array $filters = []): int
     {
+        $hasGrantColumns = $this->columnExists('transactions', 'linked_transaction_id');
+
         $sql = "SELECT COUNT(*) as cnt FROM transactions WHERE 1=1";
         $params = [];
+
+        // Otomatik hibe gelirlerini sayımdan hariç tut
+        if ($hasGrantColumns) {
+            $sql .= " AND NOT (type = 'income' AND linked_transaction_id IS NOT NULL)";
+        }
 
         if (!empty($filters['type'])) {
             $sql .= " AND type = ?";
