@@ -551,7 +551,9 @@ export function Reports() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col h-full">
+      {/* Header Section - Fixed */}
+      <div className="flex-shrink-0 space-y-6 pb-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">{t('reports.title')}</h1>
       </div>
@@ -604,8 +606,10 @@ export function Reports() {
 
       {/* Filters */}
       {renderFilters()}
+      </div>
 
-      {/* Report Content */}
+      {/* Report Content - Scrollable */}
+      <div className="flex-1 min-h-0 overflow-auto">
       {loading ? (
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -618,6 +622,7 @@ export function Reports() {
           {activeReport === 'projects' && renderProjectReport()}
         </>
       )}
+      </div>
     </div>
   )
 }

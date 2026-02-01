@@ -237,7 +237,9 @@ export function Projects() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col h-full">
+      {/* Header Section - Fixed */}
+      <div className="flex-shrink-0 space-y-6 pb-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">{t('projects.title')}</h1>
         <button onClick={openCreateForm} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
@@ -277,8 +279,10 @@ export function Projects() {
         filters={activeFiltersList}
         onClearAll={resetFilters}
       />
+      </div>
 
-      {/* Project Cards */}
+      {/* Project Cards - Scrollable */}
+      <div className="flex-1 min-h-0 overflow-auto">
       {loading ? (
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -361,6 +365,7 @@ export function Projects() {
           ))}
         </div>
       )}
+      </div>
 
       {/* Form Modal */}
       {showForm && (

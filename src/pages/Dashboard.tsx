@@ -92,7 +92,8 @@ export function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col h-full overflow-auto">
+      <div className="space-y-6">
       {/* Page Title */}
       <h1 className="text-2xl font-bold text-gray-900">{t('dashboard.title')}</h1>
 
@@ -368,6 +369,7 @@ export function Dashboard() {
             </Link>
           </div>
         </div>
+      </div>
       </div>
     </div>
   )
