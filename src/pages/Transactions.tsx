@@ -1367,7 +1367,7 @@ export function Transactions() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
         {loading ? (
           <div className="flex flex-col items-center justify-center h-64">
-            <BurnWiseLogo size={48} animated className="mb-3" />
+            <BurnWiseLogo size={64} animated className="mb-3" />
             <span className="text-sm text-gray-500">{t('common.loading')}</span>
           </div>
         ) : (
