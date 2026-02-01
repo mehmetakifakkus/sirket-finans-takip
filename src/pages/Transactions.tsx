@@ -1100,7 +1100,9 @@ export function Transactions() {
   }, { income: 0, expense: 0 })
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col h-full">
+      {/* Header Section - Fixed */}
+      <div className="flex-shrink-0 space-y-6 pb-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">{t('transactions.title')}</h1>
@@ -1362,17 +1364,19 @@ export function Transactions() {
           </p>
         </div>
       </div>
+      </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
+      {/* Table - Scrollable */}
+      <div className="flex-1 min-h-0 bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col">
         {loading ? (
           <div className="flex flex-col items-center justify-center h-64">
             <BurnWiseLogo size={64} animated className="mb-3" />
             <span className="text-sm text-gray-500">{t('common.loading')}</span>
           </div>
         ) : (
+          <div className="flex-1 overflow-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>
                 <th
                   className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none"
@@ -1546,6 +1550,7 @@ export function Transactions() {
               </tfoot>
             )}
           </table>
+          </div>
         )}
       </div>
 
