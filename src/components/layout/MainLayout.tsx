@@ -13,20 +13,20 @@ export function MainLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="h-screen bg-gray-100 overflow-hidden">
       {/* Sidebar - Fixed */}
       <Sidebar />
 
       {/* Main Content - With left margin for sidebar on desktop */}
-      <div className="ml-0 md:ml-64 flex flex-col min-h-screen">
+      <div className="ml-0 md:ml-64 flex flex-col h-screen overflow-hidden">
         {/* Topbar */}
         <Topbar />
 
         {/* Page Content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 overflow-hidden flex flex-col">
           {/* Alerts */}
           {alerts.length > 0 && (
-            <div className="mb-4 space-y-2">
+            <div className="mb-4 space-y-2 flex-shrink-0">
               {alerts.map((alert) => (
                 <div
                   key={alert.id}
@@ -67,7 +67,9 @@ export function MainLayout() {
           )}
 
           {/* Page content */}
-          <Outlet />
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
