@@ -8,7 +8,7 @@ interface DateRangePickerProps {
   className?: string
 }
 
-type PresetKey = 'all' | 'last7Days' | 'lastMonth' | 'lastYear'
+export type PresetKey = 'all' | 'last7Days' | 'lastMonth' | 'lastYear'
 
 function formatDate(date: Date): string {
   return date.toISOString().split('T')[0]
@@ -179,7 +179,7 @@ function CalendarMonth({ label, selectedDate, onDateSelect, weekdays, months }: 
   )
 }
 
-function getPresetDates(preset: PresetKey): { from: string; to: string } {
+export function getPresetDates(preset: PresetKey): { from: string; to: string } {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
@@ -230,7 +230,7 @@ function getLast12Months(): { year: number; month: number }[] {
   return months
 }
 
-function detectPreset(dateFrom: string, dateTo: string): PresetKey | null {
+export function detectPreset(dateFrom: string, dateTo: string): PresetKey | null {
   if (!dateFrom && !dateTo) return 'all'
 
   const presets: PresetKey[] = ['last7Days', 'lastMonth', 'lastYear']
@@ -246,7 +246,7 @@ function detectPreset(dateFrom: string, dateTo: string): PresetKey | null {
 }
 
 // Detect if a specific month is selected
-function detectSelectedMonth(dateFrom: string, dateTo: string): { year: number; month: number } | null {
+export function detectSelectedMonth(dateFrom: string, dateTo: string): { year: number; month: number } | null {
   if (!dateFrom || !dateTo) return null
 
   const fromDate = parseDate(dateFrom)

@@ -8,7 +8,7 @@ import { formatCurrency } from '../utils/currency'
 import { formatDate, getToday } from '../utils/date'
 import { DocumentUpload } from '../components/DocumentUpload'
 import { SearchableSelect } from '../components/SearchableSelect'
-import { DateRangePicker } from '../components/DateRangePicker'
+import { DateRangePicker, detectPreset, detectSelectedMonth } from '../components/DateRangePicker'
 import { TemplateModal } from '../components/TemplateModal'
 import * as pdfjsLib from 'pdfjs-dist'
 import type { Transaction, Party, Category, Project, ImportRow, ImportPreview, TransactionDocument, ProjectGrant } from '../types'
@@ -182,6 +182,44 @@ export function Transactions() {
       return sortDirection === 'asc' ? aNum - bNum : bNum - aNum
     })
   }, [transactions, sortField, sortDirection])
+
+  // Get readable date filter label
+  const dateFilterLabel = useMemo(() => {
+    if (!filters.date_from && !filters.date_to) return null
+
+    const months = t('dateRange.months', { returnObjects: true }) as string[]
+    const safeMonths = Array.isArray(months) ? months : ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
+
+    // Check for preset
+    const preset = detectPreset(filters.date_from, filters.date_to)
+    if (preset && preset !== 'all') {
+      const presetLabels: Record<string, string> = {
+        'last7Days': t('dateRange.last7Days'),
+        'lastMonth': t('dateRange.last1Month'),
+        'lastYear': t('dateRange.last1Year')
+      }
+      return presetLabels[preset] || null
+    }
+
+    // Check for specific month
+    const selectedMonth = detectSelectedMonth(filters.date_from, filters.date_to)
+    if (selectedMonth) {
+      return `${safeMonths[selectedMonth.month]} ${selectedMonth.year}`
+    }
+
+    // Custom range - show dates
+    if (filters.date_from && filters.date_to) {
+      return `${formatDate(filters.date_from)} - ${formatDate(filters.date_to)}`
+    }
+    if (filters.date_from) {
+      return `${t('dateRange.from')}: ${formatDate(filters.date_from)}`
+    }
+    if (filters.date_to) {
+      return `${t('dateRange.to')}: ${formatDate(filters.date_to)}`
+    }
+
+    return null
+  }, [filters.date_from, filters.date_to, t])
 
   const handleSort = (field: typeof sortField) => {
     if (sortField === field) {
@@ -1268,14 +1306,12 @@ export function Transactions() {
                 </span>
               )}
 
-              {(filters.date_from || filters.date_to) && (
+              {dateFilterLabel && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-white border border-blue-300 rounded-full text-sm text-blue-800">
                   <svg className="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  {filters.date_from && formatDate(filters.date_from)}
-                  {filters.date_from && filters.date_to && ' - '}
-                  {filters.date_to && formatDate(filters.date_to)}
+                  {dateFilterLabel}
                   <button
                     onClick={() => setFilters({ ...filters, date_from: '', date_to: '' })}
                     className="ml-1 text-blue-500 hover:text-blue-700"
