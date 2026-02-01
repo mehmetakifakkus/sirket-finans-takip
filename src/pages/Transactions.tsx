@@ -1366,8 +1366,9 @@ export function Transactions() {
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
         {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="flex flex-col items-center justify-center h-64">
+            <BurnWiseLogo size={48} animated className="mb-3" />
+            <span className="text-sm text-gray-500">{t('common.loading')}</span>
           </div>
         ) : (
           <table className="min-w-full divide-y divide-gray-200">
@@ -1428,16 +1429,7 @@ export function Transactions() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {loading ? (
-                <tr>
-                  <td colSpan={10} className="px-6 py-16 text-center">
-                    <div className="flex flex-col items-center justify-center">
-                      <BurnWiseLogo size={48} animated className="mb-3" />
-                      <span className="text-sm text-gray-500">{t('common.loading')}</span>
-                    </div>
-                  </td>
-                </tr>
-              ) : transactions.length === 0 ? (
+              {transactions.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="px-6 py-12 text-center text-gray-500">
                     {t('transactions.noTransactions')}
