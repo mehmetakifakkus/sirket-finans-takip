@@ -624,11 +624,15 @@
     "last30Days": "Last 30 Days",
     "last90Days": "Last 90 Days",
     "allTime": "All Time",
-    "grantSummary": "Grant Summary",
+    "grantSummary": "Grant Supported Expenses",
     "tubitakExpenses": "TUBITAK Supported Expenses",
-    "totalGrantAmount": "Total Grant Amount",
+    "totalGrantAmount": "Total Grant",
     "pendingGrant": "Pending Grant",
-    "receivedGrant": "Received Grant"
+    "receivedGrant": "Received Grant",
+    "supportedExpenses": "Supported Expenses",
+    "expenseAmount": "Expense Amount",
+    "grantAmount": "Grant Amount",
+    "totalExpenseAmount": "Total Expenses"
   },
   "grants": {
     "title": "Grants and Funding",
@@ -664,7 +668,8 @@
     "rateType": {
       "percentage": "Percentage Rate",
       "fixed": "Fixed Amount"
-    }
+    },
+    "support": "support"
   },
   "payments": {
     "title": "Payments",

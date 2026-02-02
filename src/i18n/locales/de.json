@@ -562,11 +562,15 @@
     "last30Days": "Letzte 30 Tage",
     "last90Days": "Letzte 90 Tage",
     "allTime": "Gesamter Zeitraum",
-    "grantSummary": "Förderübersicht",
+    "grantSummary": "Geförderte Ausgaben",
     "tubitakExpenses": "TÜBİTAK/KOSGEB Unterstützte Ausgaben",
-    "totalGrantAmount": "Gesamtförderbetrag",
+    "totalGrantAmount": "Gesamtförderung",
     "pendingGrant": "Ausstehende Förderung",
-    "receivedGrant": "Erhaltene Förderung"
+    "receivedGrant": "Erhaltene Förderung",
+    "supportedExpenses": "Geförderte Ausgaben",
+    "expenseAmount": "Ausgabenbetrag",
+    "grantAmount": "Förderbetrag",
+    "totalExpenseAmount": "Gesamtausgaben"
   },
   "grants": {
     "title": "Forderungen und Finanzierungen",
@@ -602,7 +606,8 @@
     "rateType": {
       "percentage": "Prozentsatz",
       "fixed": "Festbetrag"
-    }
+    },
+    "support": "Förderung"
   },
   "payments": {
     "title": "Zahlungen",

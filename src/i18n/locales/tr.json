@@ -624,11 +624,15 @@
     "last30Days": "Son 30 Gün",
     "last90Days": "Son 90 Gün",
     "allTime": "Tüm Zamanlar",
-    "grantSummary": "Hibe Özeti",
+    "grantSummary": "Hibe Destekli Giderler",
     "tubitakExpenses": "TÜBİTAK Destekli Giderler",
-    "totalGrantAmount": "Toplam Hibe Tutarı",
+    "totalGrantAmount": "Toplam Hibe",
     "pendingGrant": "Bekleyen Hibe",
-    "receivedGrant": "Alınan Hibe"
+    "receivedGrant": "Alınan Hibe",
+    "supportedExpenses": "Destekli Giderler",
+    "expenseAmount": "Gider Tutarı",
+    "grantAmount": "Hibe Tutarı",
+    "totalExpenseAmount": "Toplam Gider"
   },
   "grants": {
     "title": "Hibe ve Destekler",
@@ -664,7 +668,8 @@
     "rateType": {
       "percentage": "Yüzdelik Oran",
       "fixed": "Sabit Tutar"
-    }
+    },
+    "support": "destek"
   },
   "payments": {
     "title": "Ödemeler",

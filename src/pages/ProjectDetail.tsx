@@ -641,15 +641,37 @@ export function ProjectDetail() {
 
   const progress = project.contract_amount > 0 ? ((project.collected_amount || 0) / project.contract_amount) * 100 : 0
 
-  // Calculate TÜBİTAK grant summary from transactions
-  const tubitakSummary = transactions.reduce((acc, t) => {
-    if (t.tubitak_supported && t.type === 'expense') {
-      acc.expenseCount++
-      acc.totalExpense += t.base_amount || t.amount
-      acc.totalGrant += t.grant_amount || 0
+  // Group supported expenses by grant provider
+  const grantSupportedExpenses = transactions.reduce((acc, t) => {
+    if (t.tubitak_supported && t.type === 'expense' && t.grant_id) {
+      const key = t.grant_id.toString()
+      if (!acc[key]) {
+        acc[key] = {
+          grantId: t.grant_id,
+          providerName: t.grant_provider_name || 'Bilinmeyen',
+          providerType: t.grant_provider_type || 'other',
+          fundingRate: t.grant_funding_rate || 0,
+          expenses: [],
+          totalExpense: 0,
+          totalGrant: 0
+        }
+      }
+      acc[key].expenses.push(t)
+      acc[key].totalExpense += t.base_amount || t.amount
+      acc[key].totalGrant += t.grant_amount || 0
     }
     return acc
-  }, { expenseCount: 0, totalExpense: 0, totalGrant: 0 })
+  }, {} as Record<string, {
+    grantId: number
+    providerName: string
+    providerType: string
+    fundingRate: number
+    expenses: Transaction[]
+    totalExpense: number
+    totalGrant: number
+  }>)
+
+  const hasGrantSupportedExpenses = Object.keys(grantSupportedExpenses).length > 0
 
   return (
     <div className="h-full overflow-auto">
@@ -791,27 +813,75 @@ export function ProjectDetail() {
         </div>
       </div>
 
-      {/* TÜBİTAK Grant Summary from Expenses */}
-      {tubitakSummary.expenseCount > 0 && (
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg shadow-sm border border-blue-200 p-6">
-          <h3 className="text-lg font-semibold text-blue-900 mb-4">{t('projectDetail.grantSummary')}</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-lg p-4 border border-blue-100">
-              <p className="text-sm text-gray-500">{t('projectDetail.tubitakExpenses')}</p>
-              <p className="text-xl font-bold text-gray-900">{tubitakSummary.expenseCount}</p>
-              <p className="text-sm text-blue-600">{formatCurrency(tubitakSummary.totalExpense, project.currency as 'TRY' | 'USD' | 'EUR')}</p>
-            </div>
-            <div className="bg-white rounded-lg p-4 border border-purple-100">
-              <p className="text-sm text-gray-500">{t('projectDetail.totalGrantAmount')}</p>
-              <p className="text-xl font-bold text-purple-600">{formatCurrency(tubitakSummary.totalGrant, project.currency as 'TRY' | 'USD' | 'EUR')}</p>
-            </div>
-            <div className="bg-white rounded-lg p-4 border border-green-100">
-              <p className="text-sm text-gray-500">{t('projectDetail.pendingGrant')}</p>
-              <p className="text-xl font-bold text-orange-600">
-                {formatCurrency(Math.max(0, tubitakSummary.totalGrant - grantTotals.total_received), project.currency as 'TRY' | 'USD' | 'EUR')}
-              </p>
-            </div>
-          </div>
+      {/* Grant Supported Expenses by Provider */}
+      {hasGrantSupportedExpenses && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900">{t('projectDetail.grantSummary')}</h3>
+          {Object.values(grantSupportedExpenses).map((grantGroup) => {
+            const bgGradient = grantGroup.providerType === 'tubitak'
+              ? 'from-blue-50 to-indigo-50 border-blue-200'
+              : grantGroup.providerType === 'kosgeb'
+              ? 'from-green-50 to-teal-50 border-green-200'
+              : 'from-purple-50 to-pink-50 border-purple-200'
+            const headerColor = grantGroup.providerType === 'tubitak'
+              ? 'text-blue-900'
+              : grantGroup.providerType === 'kosgeb'
+              ? 'text-green-900'
+              : 'text-purple-900'
+
+            return (
+              <div key={grantGroup.grantId} className={`bg-gradient-to-r ${bgGradient} rounded-lg shadow-sm border p-6`}>
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className={`text-md font-semibold ${headerColor}`}>
+                    {grantGroup.providerName} {t('projectDetail.supportedExpenses')}
+                  </h4>
+                  <span className="text-sm text-gray-500">
+                    %{grantGroup.fundingRate} {t('grants.support')}
+                  </span>
+                </div>
+
+                {/* Expense Items Table */}
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-4">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('common.date')}</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('common.description')}</th>
+                        <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">{t('projectDetail.expenseAmount')}</th>
+                        <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">{t('projectDetail.grantAmount')}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {grantGroup.expenses.map((expense) => (
+                        <tr key={expense.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-2 text-sm text-gray-900">{formatDate(expense.date)}</td>
+                          <td className="px-4 py-2 text-sm text-gray-600">{expense.description || expense.category_name || '-'}</td>
+                          <td className="px-4 py-2 text-sm text-right text-gray-900">
+                            {formatCurrency(expense.base_amount || expense.amount, expense.currency as 'TRY' | 'USD' | 'EUR')}
+                          </td>
+                          <td className="px-4 py-2 text-sm text-right font-medium text-purple-600">
+                            {formatCurrency(expense.grant_amount || 0, expense.currency as 'TRY' | 'USD' | 'EUR')}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Totals */}
+                <div className="flex justify-end space-x-6">
+                  <div className="text-sm">
+                    <span className="text-gray-500">{t('projectDetail.totalExpenseAmount')}: </span>
+                    <span className="font-semibold text-gray-900">{formatCurrency(grantGroup.totalExpense, project.currency as 'TRY' | 'USD' | 'EUR')}</span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-gray-500">{t('projectDetail.totalGrantAmount')}: </span>
+                    <span className="font-semibold text-purple-600">{formatCurrency(grantGroup.totalGrant, project.currency as 'TRY' | 'USD' | 'EUR')}</span>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
         </div>
       )}
 
