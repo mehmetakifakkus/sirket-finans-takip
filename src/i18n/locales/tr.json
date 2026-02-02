@@ -404,6 +404,10 @@
   },
   "debts": {
     "title": "Borç / Alacak",
+    "tabs": {
+      "list": "Borçlar / Alacaklar",
+      "reminders": "Ödeme Hatırlatıcıları"
+    },
     "debt": "Borç",
     "receivable": "Alacak",
     "newDebt": "Yeni Borç",

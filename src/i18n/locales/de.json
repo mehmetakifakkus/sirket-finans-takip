@@ -342,6 +342,10 @@
   },
   "debts": {
     "title": "Schulden / Forderungen",
+    "tabs": {
+      "list": "Schulden / Forderungen",
+      "reminders": "Zahlungserinnerungen"
+    },
     "debt": "Schuld",
     "receivable": "Forderung",
     "newDebt": "Neue Schuld",

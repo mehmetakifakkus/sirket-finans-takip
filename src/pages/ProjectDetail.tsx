@@ -652,7 +652,8 @@ export function ProjectDetail() {
   }, { expenseCount: 0, totalExpense: 0, totalGrant: 0 })
 
   return (
-    <div className="space-y-6">
+    <div className="h-full overflow-auto">
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -1515,6 +1516,7 @@ export function ProjectDetail() {
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }

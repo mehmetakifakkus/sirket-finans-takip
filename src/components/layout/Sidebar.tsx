@@ -235,7 +235,6 @@ export function Sidebar() {
 
         <NavSection title={t('nav.reports')}>
           <NavItem path="/reports" icon={icons.reports} title={t('nav.reports')} onClick={closeSidebarOnMobile} />
-          <NavItem path="/reminders" icon={icons.reminders} title={t('nav.reminders')} onClick={closeSidebarOnMobile} />
         </NavSection>
 
         {isAdmin && (

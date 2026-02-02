@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { api } from '@/api'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { useAuthStore } from '../store/authStore'
@@ -9,10 +9,15 @@ import { formatDate, getToday, isOverdue } from '../utils/date'
 import { FilterBar, SelectFilter, ActiveFiltersDisplay } from '../components/filters'
 import { SearchableSelect } from '../components/SearchableSelect'
 import { DateRangePicker } from '../components/DateRangePicker'
+import { PaymentRemindersContent } from './PaymentReminders'
 import type { Debt, Party } from '../types'
+
+type TabType = 'debts' | 'reminders'
 
 export function Debts() {
   const { t } = useTranslation()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [activeTab, setActiveTab] = useState<TabType>((searchParams.get('tab') as TabType) || 'debts')
   const [debts, setDebts] = useState<Debt[]>([])
   const [parties, setParties] = useState<Party[]>([])
   const [loading, setLoading] = useState(true)
@@ -21,6 +26,11 @@ export function Debts() {
   const { addAlert } = useAppStore()
   const { user } = useAuthStore()
   const isAdmin = user?.role === 'admin'
+
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab)
+    setSearchParams(tab === 'debts' ? {} : { tab })
+  }
 
   const [filters, setFilters] = useState({
     kind: '',
@@ -261,31 +271,69 @@ export function Debts() {
   return (
     <div className="flex flex-col h-full">
       {/* Header Section - Fixed */}
-      <div className="flex-shrink-0 space-y-6 pb-4">
+      <div className="flex-shrink-0 space-y-4 pb-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">{t('debts.title')}</h1>
-        <div className="flex space-x-3">
-          <button onClick={handleExport} className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            CSV
-          </button>
-          <button onClick={() => openCreateForm('receivable')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            {t('debts.receivable')}
-          </button>
-          <button onClick={() => openCreateForm('debt')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700">
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            {t('debts.debt')}
-          </button>
-        </div>
+        {activeTab === 'debts' && (
+          <div className="flex space-x-3">
+            <button onClick={handleExport} className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              CSV
+            </button>
+            <button onClick={() => openCreateForm('receivable')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              {t('debts.receivable')}
+            </button>
+            <button onClick={() => openCreateForm('debt')} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              {t('debts.debt')}
+            </button>
+          </div>
+        )}
       </div>
 
+      {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8">
+          <button
+            onClick={() => handleTabChange('debts')}
+            className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'debts'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            {t('debts.tabs.list')}
+          </button>
+          <button
+            onClick={() => handleTabChange('reminders')}
+            className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'reminders'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            {t('debts.tabs.reminders')}
+          </button>
+        </nav>
+      </div>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'reminders' ? (
+        <div className="flex-1 min-h-0 overflow-auto">
+          <PaymentRemindersContent />
+        </div>
+      ) : (
+      <>
+      {/* Header for Debts Tab - Fixed */}
+      <div className="flex-shrink-0 space-y-6 pb-4">
       {/* Filters */}
       <FilterBar columns={4}>
         <SelectFilter
@@ -405,6 +453,8 @@ export function Debts() {
           </div>
         )}
       </div>
+      </>
+      )}
 
       {/* Form Modal */}
       {showForm && (

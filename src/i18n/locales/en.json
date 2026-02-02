@@ -404,6 +404,10 @@
   },
   "debts": {
     "title": "Debt / Receivable",
+    "tabs": {
+      "list": "Debts / Receivables",
+      "reminders": "Payment Reminders"
+    },
     "debt": "Debt",
     "receivable": "Receivable",
     "newDebt": "New Debt",

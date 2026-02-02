@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { api } from '../api'
 import { useSettingsStore } from '../store/settingsStore'
 import { formatCurrency } from '../utils/currency'
-import { formatDate, isOverdue } from '../utils/date'
+import { formatDate } from '../utils/date'
 
 interface UpcomingPayment {
   id: number
@@ -25,7 +25,8 @@ interface PaymentSummary {
 
 const REMINDER_OPTIONS = [1, 3, 7, 14, 30]
 
-export function PaymentReminders() {
+// Content component for embedding in Debts page
+export function PaymentRemindersContent() {
   const { t } = useTranslation()
   const { notifications, setNotificationEnabled, setReminderDays, setShowOverdue } = useSettingsStore()
 
@@ -82,8 +83,6 @@ export function PaymentReminders() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">{t('reminders.title')}</h1>
-
       {/* Summary Cards */}
       {summary && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -343,6 +342,17 @@ export function PaymentReminders() {
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+// Standalone page wrapper (for backwards compatibility)
+export function PaymentReminders() {
+  const { t } = useTranslation()
+  return (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-gray-900">{t('reminders.title')}</h1>
+      <PaymentRemindersContent />
     </div>
   )
 }
