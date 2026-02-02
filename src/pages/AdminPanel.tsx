@@ -4,8 +4,9 @@ import { CategoriesContent } from './Categories'
 import { ExchangeRatesContent } from './ExchangeRates'
 import { UsersContent } from './Users'
 import { DatabaseContent } from './DatabaseOperations'
+import { SettingsContent } from './Settings'
 
-type TabType = 'categories' | 'exchangeRates' | 'users' | 'database'
+type TabType = 'categories' | 'exchangeRates' | 'users' | 'database' | 'settings'
 
 interface TabButtonProps {
   active: boolean
@@ -65,6 +66,12 @@ export function AdminPanel() {
           >
             {t('nav.databaseOperations')}
           </TabButton>
+          <TabButton
+            active={activeTab === 'settings'}
+            onClick={() => setActiveTab('settings')}
+          >
+            {t('settings.language')}
+          </TabButton>
         </nav>
       </div>
 
@@ -74,6 +81,7 @@ export function AdminPanel() {
         {activeTab === 'exchangeRates' && <ExchangeRatesContent />}
         {activeTab === 'users' && <UsersContent />}
         {activeTab === 'database' && <DatabaseContent />}
+        {activeTab === 'settings' && <SettingsContent />}
       </div>
     </div>
   )

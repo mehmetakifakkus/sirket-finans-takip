@@ -249,9 +249,6 @@ export function Sidebar() {
           </NavSection>
         )}
 
-        <NavSection title={t('nav.settings')}>
-          <NavItem path="/settings" icon={icons.language} title={t('nav.languages')} onClick={closeSidebarOnMobile} />
-        </NavSection>
       </nav>
 
         {/* User Section */}
