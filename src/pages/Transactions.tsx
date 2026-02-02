@@ -1468,12 +1468,14 @@ export function Transactions() {
                         )}
                       </div>
                     </td>
-                    <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">{tr.category_name || '-'}</td>
-                    <td className="px-3 py-3 text-sm max-w-[120px]">
+                    <td className="px-3 py-3 text-sm text-gray-500 max-w-[120px] overflow-hidden">
+                      <span className="truncate block" title={tr.category_name}>{tr.category_name || '-'}</span>
+                    </td>
+                    <td className="px-3 py-3 text-sm max-w-[150px] overflow-hidden">
                       {tr.party_id ? (
                         <button
                           onClick={() => setFilters({ ...filters, party_id: tr.party_id!.toString() })}
-                          className="text-blue-600 hover:text-blue-800 hover:underline truncate block"
+                          className="text-blue-600 hover:text-blue-800 hover:underline truncate block max-w-full text-left"
                           title={tr.party_name}
                         >
                           {tr.party_name}

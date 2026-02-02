@@ -2,21 +2,21 @@ import { Currency, CURRENCY_SYMBOLS, CURRENCY_NAMES } from '../types'
 
 export function formatCurrency(amount: number | string | undefined | null, currency: Currency = 'TRY'): string {
   const symbol = CURRENCY_SYMBOLS[currency] || currency
-  // Parse string values and round to 2 decimal places
+  // Parse string values and round to nearest integer
   let value = typeof amount === 'string' ? parseFloat(amount) : (amount ?? 0)
-  value = Math.round(value * 100) / 100
+  value = Math.round(value)
   const formatted = value.toLocaleString('tr-TR', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
   })
   return `${formatted} ${symbol}`
 }
 
 export function formatNumber(amount: number | undefined | null): string {
-  const value = amount ?? 0
+  const value = Math.round(amount ?? 0)
   return value.toLocaleString('tr-TR', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
   })
 }
 
