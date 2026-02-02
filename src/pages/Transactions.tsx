@@ -1791,11 +1791,13 @@ export function Transactions() {
                         const selectedGrant = projectGrants.find(g => g.id.toString() === formData.grant_id)
                         if (!selectedGrant) return null
                         const amount = parseFloat(formData.amount) || 0
+                        const insuranceAmount = parseFloat(formData.insurance_amount) || 0
+                        const totalAmount = amount + insuranceAmount
                         const vatRate = parseFloat(formData.vat_rate) || 0
-                        // Calculate base amount (VAT excluded)
-                        let baseAmount = amount
+                        // Calculate base amount (VAT excluded) - for employees, totalAmount includes SGK
+                        let baseAmount = totalAmount
                         if (formData.vat_included && vatRate > 0) {
-                          baseAmount = amount - (amount * vatRate / (100 + vatRate))
+                          baseAmount = totalAmount - (totalAmount * vatRate / (100 + vatRate))
                         }
                         const grantAmount = baseAmount * (selectedGrant.funding_rate || 0) / 100
                         return (
