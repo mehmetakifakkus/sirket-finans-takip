@@ -75,6 +75,7 @@ export function ProjectDetail() {
   })
   const [calculatedGrantAmount, setCalculatedGrantAmount] = useState<number>(0)
   const [grantTotals, setGrantTotals] = useState({ total_approved: 0, total_received: 0 })
+  const [activeGrantTab, setActiveGrantTab] = useState<string>('')
 
   useEffect(() => {
     loadProject()
@@ -826,34 +827,65 @@ export function ProjectDetail() {
       </div>
 
       {/* Grant Supported Expenses by Provider */}
-      {hasGrantSupportedExpenses && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900">{t('projectDetail.grantSummary')}</h3>
-          {Object.values(grantSupportedExpenses).map((grantGroup) => {
-            const bgGradient = grantGroup.providerType === 'tubitak'
-              ? 'from-blue-50 to-indigo-50 border-blue-200'
-              : grantGroup.providerType === 'kosgeb'
-              ? 'from-green-50 to-teal-50 border-green-200'
-              : 'from-purple-50 to-pink-50 border-purple-200'
-            const headerColor = grantGroup.providerType === 'tubitak'
-              ? 'text-blue-900'
-              : grantGroup.providerType === 'kosgeb'
-              ? 'text-green-900'
-              : 'text-purple-900'
+      {hasGrantSupportedExpenses && (() => {
+        const grantGroups = Object.values(grantSupportedExpenses)
+        const currentTab = activeGrantTab || grantGroups[0]?.grantId.toString() || ''
+        const currentGroup = grantGroups.find(g => g.grantId.toString() === currentTab) || grantGroups[0]
 
-            return (
-              <div key={grantGroup.grantId} className={`bg-gradient-to-r ${bgGradient} rounded-lg shadow-sm border p-6`}>
+        return (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">{t('projectDetail.grantSummary')}</h3>
+            </div>
+
+            {/* Tab Navigation */}
+            <div className="border-b border-gray-200">
+              <nav className="flex px-6 space-x-1">
+                {grantGroups.map((group) => {
+                  const isActive = group.grantId.toString() === currentTab
+                  const tabColor = group.providerType === 'tubitak'
+                    ? isActive ? 'text-blue-600 border-blue-600' : 'text-gray-500 hover:text-blue-600'
+                    : group.providerType === 'kosgeb'
+                    ? isActive ? 'text-green-600 border-green-600' : 'text-gray-500 hover:text-green-600'
+                    : isActive ? 'text-purple-600 border-purple-600' : 'text-gray-500 hover:text-purple-600'
+
+                  return (
+                    <button
+                      key={group.grantId}
+                      onClick={() => setActiveGrantTab(group.grantId.toString())}
+                      className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                        isActive ? tabColor : 'border-transparent ' + tabColor
+                      }`}
+                    >
+                      {group.providerName}
+                      <span className="ml-2 text-xs text-gray-400">({group.expenses.length})</span>
+                    </button>
+                  )
+                })}
+              </nav>
+            </div>
+
+            {/* Tab Content */}
+            {currentGroup && (
+              <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h4 className={`text-md font-semibold ${headerColor}`}>
-                    {grantGroup.providerName} {t('projectDetail.supportedExpenses')}
-                  </h4>
                   <span className="text-sm text-gray-500">
-                    %{grantGroup.fundingRate} {t('grants.support')}
+                    %{currentGroup.fundingRate} {t('grants.support')}
                   </span>
+                  <div className="flex space-x-6">
+                    <div className="text-sm">
+                      <span className="text-gray-500">{t('projectDetail.totalExpenseAmount')}: </span>
+                      <span className="font-semibold text-gray-900">{formatCurrency(currentGroup.totalExpense, project.currency as 'TRY' | 'USD' | 'EUR')}</span>
+                    </div>
+                    <div className="text-sm">
+                      <span className="text-gray-500">{t('projectDetail.totalGrantAmount')}: </span>
+                      <span className="font-semibold text-purple-600">{formatCurrency(currentGroup.totalGrant, project.currency as 'TRY' | 'USD' | 'EUR')}</span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Expense Items Table */}
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-4">
+                <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
@@ -864,7 +896,7 @@ export function ProjectDetail() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {grantGroup.expenses.map((expense) => (
+                      {currentGroup.expenses.map((expense) => (
                         <tr key={expense.id} className="hover:bg-gray-50">
                           <td className="px-4 py-2 text-sm text-gray-900">{formatDate(expense.date)}</td>
                           <td className="px-4 py-2 text-sm text-gray-600">{expense.description || expense.category_name || '-'}</td>
@@ -879,23 +911,11 @@ export function ProjectDetail() {
                     </tbody>
                   </table>
                 </div>
-
-                {/* Totals */}
-                <div className="flex justify-end space-x-6">
-                  <div className="text-sm">
-                    <span className="text-gray-500">{t('projectDetail.totalExpenseAmount')}: </span>
-                    <span className="font-semibold text-gray-900">{formatCurrency(grantGroup.totalExpense, project.currency as 'TRY' | 'USD' | 'EUR')}</span>
-                  </div>
-                  <div className="text-sm">
-                    <span className="text-gray-500">{t('projectDetail.totalGrantAmount')}: </span>
-                    <span className="font-semibold text-purple-600">{formatCurrency(grantGroup.totalGrant, project.currency as 'TRY' | 'USD' | 'EUR')}</span>
-                  </div>
-                </div>
               </div>
-            )
-          })}
-        </div>
-      )}
+            )}
+          </div>
+        )
+      })()}
 
       {/* Transactions */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
