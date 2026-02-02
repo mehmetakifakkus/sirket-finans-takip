@@ -641,24 +641,36 @@ export function ProjectDetail() {
 
   const progress = project.contract_amount > 0 ? ((project.collected_amount || 0) / project.contract_amount) * 100 : 0
 
+  // Create a map of grants by id for quick lookup
+  const grantsMap = grants.reduce((acc, g) => {
+    acc[g.id] = g
+    return acc
+  }, {} as Record<number, ProjectGrant>)
+
   // Group supported expenses by grant provider
   const grantSupportedExpenses = transactions.reduce((acc, t) => {
-    if (t.tubitak_supported && t.type === 'expense' && t.grant_id) {
-      const key = t.grant_id.toString()
+    if (t.tubitak_supported && t.type === 'expense') {
+      // Get grant info from grants array or transaction fields
+      const grant = t.grant_id ? grantsMap[t.grant_id] : null
+      const key = t.grant_id?.toString() || 'unknown'
+
       if (!acc[key]) {
         acc[key] = {
-          grantId: t.grant_id,
-          providerName: t.grant_provider_name || 'Bilinmeyen',
-          providerType: t.grant_provider_type || 'other',
-          fundingRate: t.grant_funding_rate || 0,
+          grantId: t.grant_id || 0,
+          providerName: grant?.provider_name || t.grant_provider_name || 'Bilinmeyen Hibe',
+          providerType: grant?.provider_type || t.grant_provider_type || 'other',
+          fundingRate: grant?.funding_rate || t.grant_funding_rate || 0,
           expenses: [],
           totalExpense: 0,
           totalGrant: 0
         }
       }
       acc[key].expenses.push(t)
-      acc[key].totalExpense += t.base_amount || t.amount
-      acc[key].totalGrant += t.grant_amount || 0
+      // Use base_amount for expense (VAT excluded), fallback to amount
+      const expenseAmount = Number(t.base_amount) || Number(t.amount) || 0
+      const grantAmount = Number(t.grant_amount) || 0
+      acc[key].totalExpense += expenseAmount
+      acc[key].totalGrant += grantAmount
     }
     return acc
   }, {} as Record<string, {
@@ -857,10 +869,10 @@ export function ProjectDetail() {
                           <td className="px-4 py-2 text-sm text-gray-900">{formatDate(expense.date)}</td>
                           <td className="px-4 py-2 text-sm text-gray-600">{expense.description || expense.category_name || '-'}</td>
                           <td className="px-4 py-2 text-sm text-right text-gray-900">
-                            {formatCurrency(expense.base_amount || expense.amount, expense.currency as 'TRY' | 'USD' | 'EUR')}
+                            {formatCurrency(Number(expense.base_amount) || Number(expense.amount) || 0, expense.currency as 'TRY' | 'USD' | 'EUR')}
                           </td>
                           <td className="px-4 py-2 text-sm text-right font-medium text-purple-600">
-                            {formatCurrency(expense.grant_amount || 0, expense.currency as 'TRY' | 'USD' | 'EUR')}
+                            {formatCurrency(Number(expense.grant_amount) || 0, expense.currency as 'TRY' | 'USD' | 'EUR')}
                           </td>
                         </tr>
                       ))}
