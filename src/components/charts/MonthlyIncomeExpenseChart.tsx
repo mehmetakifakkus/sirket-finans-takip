@@ -21,9 +21,10 @@ interface MonthlyData {
 interface Props {
   data: MonthlyData[]
   hideTitle?: boolean
+  onMonthHover?: (month: string | null, monthLabel: string | null) => void
 }
 
-export function MonthlyIncomeExpenseChart({ data, hideTitle }: Props) {
+export function MonthlyIncomeExpenseChart({ data, hideTitle, onMonthHover }: Props) {
   const { t } = useTranslation()
 
   const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; dataKey: string; color: string }>; label?: string }) => {
@@ -43,10 +44,29 @@ export function MonthlyIncomeExpenseChart({ data, hideTitle }: Props) {
     return null
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleMouseMove = (state: any) => {
+    if (onMonthHover && state?.activeTooltipIndex !== undefined && data[state.activeTooltipIndex]) {
+      const item = data[state.activeTooltipIndex]
+      onMonthHover(item.month, item.month_label)
+    }
+  }
+
+  const handleMouseLeave = () => {
+    if (onMonthHover) {
+      onMonthHover(null, null)
+    }
+  }
+
   const chartContent = (
     <div className="h-80">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+        <LineChart
+          data={data}
+          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+        >
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
           <XAxis
             dataKey="month_label"

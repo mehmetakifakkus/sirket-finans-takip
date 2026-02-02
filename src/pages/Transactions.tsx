@@ -24,6 +24,7 @@ export function Transactions() {
   const { t } = useTranslation()
   const [searchParams] = useSearchParams()
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [totals, setTotals] = useState<{ income: number; expense: number; balance: number }>({ income: 0, expense: 0, balance: 0 })
   const [parties, setParties] = useState<Party[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [projects, setProjects] = useState<Project[]>([])
@@ -156,7 +157,10 @@ export function Transactions() {
       if (filters.date_to) filterParams.end_date = filters.date_to
 
       const result = await api.getTransactions(filterParams)
-      setTransactions(result as Transaction[])
+      setTransactions(result.transactions as Transaction[])
+      if (result.totals) {
+        setTotals(result.totals)
+      }
     } catch {
       addAlert('error', t('common.dataNotLoaded'))
     } finally {
@@ -1088,16 +1092,6 @@ export function Transactions() {
   }
 
   const filteredCategories = categories.filter(c => c.type === formData.type && c.is_active)
-
-  // Calculate totals
-  const totals = transactions.reduce((acc, t) => {
-    if (t.type === 'income') {
-      acc.income += t.amount_try || 0
-    } else {
-      acc.expense += t.amount_try || 0
-    }
-    return acc
-  }, { income: 0, expense: 0 })
 
   return (
     <div className="flex flex-col h-full">

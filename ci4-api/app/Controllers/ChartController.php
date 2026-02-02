@@ -143,6 +143,7 @@ class ChartController extends BaseController
         $type = $this->getQueryParam('type', 'expense');
         $monthsParam = $this->getQueryParam('months', '6');
         $months = (int)$monthsParam;
+        $specificMonth = $this->getQueryParam('month'); // Format: YYYY-MM
 
         if (!in_array($type, ['income', 'expense'])) {
             $type = 'expense';
@@ -150,21 +151,27 @@ class ChartController extends BaseController
 
         $rates = $this->getLatestRates();
 
-        // Calculate date range
-        $endDate = date('Y-m-d');
-
-        // months=0 means "all time"
-        if ($months === 0) {
-            $firstTransaction = Database::queryOne(
-                "SELECT MIN(date) as first_date FROM transactions"
-            );
-            $startDate = $firstTransaction && $firstTransaction['first_date']
-                ? $firstTransaction['first_date']
-                : date('Y-m-d', strtotime("-12 months"));
-        } elseif ($months < 1 || $months > 120) {
-            $startDate = date('Y-m-d', strtotime("-6 months"));
+        // If specific month is provided, use that
+        if ($specificMonth && preg_match('/^\d{4}-\d{2}$/', $specificMonth)) {
+            $startDate = $specificMonth . '-01';
+            $endDate = $this->getLastDayOfMonth($startDate);
         } else {
-            $startDate = date('Y-m-d', strtotime("-$months months"));
+            // Calculate date range
+            $endDate = date('Y-m-d');
+
+            // months=0 means "all time"
+            if ($months === 0) {
+                $firstTransaction = Database::queryOne(
+                    "SELECT MIN(date) as first_date FROM transactions"
+                );
+                $startDate = $firstTransaction && $firstTransaction['first_date']
+                    ? $firstTransaction['first_date']
+                    : date('Y-m-d', strtotime("-12 months"));
+            } elseif ($months < 1 || $months > 120) {
+                $startDate = date('Y-m-d', strtotime("-6 months"));
+            } else {
+                $startDate = date('Y-m-d', strtotime("-$months months"));
+            }
         }
 
         // Get transactions grouped by category

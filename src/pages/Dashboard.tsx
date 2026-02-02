@@ -40,6 +40,9 @@ export function Dashboard() {
   const [categoryData, setCategoryData] = useState<CategoryData[]>([])
   const [debtSummary, setDebtSummary] = useState<DebtSummary | null>(null)
   const [chartPeriod, setChartPeriod] = useState(12)
+  const [, setHoveredMonth] = useState<string | null>(null)
+  const [hoveredMonthLabel, setHoveredMonthLabel] = useState<string | null>(null)
+  const [defaultCategoryData, setDefaultCategoryData] = useState<CategoryData[]>([])
 
   useEffect(() => {
     loadDashboardData()
@@ -69,9 +72,27 @@ export function Dashboard() {
       ])
       setMonthlyData(monthly as MonthlyData[])
       setCategoryData(category as CategoryData[])
+      setDefaultCategoryData(category as CategoryData[])
       setDebtSummary(debt as DebtSummary)
     } catch (error) {
       console.error('Chart data fetch error:', error)
+    }
+  }
+
+  const handleMonthHover = async (month: string | null, monthLabel: string | null) => {
+    setHoveredMonth(month)
+    setHoveredMonthLabel(monthLabel)
+
+    if (month) {
+      try {
+        const category = await api.getCategoryChartData('expense', undefined, month)
+        setCategoryData(category as CategoryData[])
+      } catch (error) {
+        console.error('Category data fetch error:', error)
+      }
+    } else {
+      // Reset to default data when not hovering
+      setCategoryData(defaultCategoryData)
     }
   }
 
@@ -213,11 +234,14 @@ export function Dashboard() {
               </button>
             </div>
           </div>
-          <MonthlyIncomeExpenseChart data={monthlyData} hideTitle />
+          <MonthlyIncomeExpenseChart data={monthlyData} hideTitle onMonthHover={handleMonthHover} />
         </div>
 
         {/* Category Distribution Pie Chart */}
-        <CategoryPieChart data={categoryData} />
+        <CategoryPieChart
+          data={categoryData}
+          title={hoveredMonthLabel ? `${t('charts.categoryDistribution')} - ${hoveredMonthLabel}` : undefined}
+        />
       </div>
 
       {/* Debt/Receivable Summary Chart */}

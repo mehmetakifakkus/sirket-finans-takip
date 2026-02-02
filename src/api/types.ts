@@ -10,7 +10,7 @@ export interface IApiClient {
   getCurrentUser: () => Promise<object | null>;
 
   // Transactions
-  getTransactions: (filters?: object) => Promise<object[]>;
+  getTransactions: (filters?: object) => Promise<{ transactions: object[]; totals?: { income: number; expense: number; balance: number } }>;
   getTransaction: (id: number) => Promise<object | null>;
   getTransactionsByProject: (projectId: number) => Promise<object[]>;
   createTransaction: (data: object) => Promise<{ success: boolean; message: string; id?: number }>;
@@ -106,7 +106,7 @@ export interface IApiClient {
 
   // Charts
   getMonthlyChartData: (months?: number) => Promise<object[]>;
-  getCategoryChartData: (type?: string, months?: number) => Promise<object[]>;
+  getCategoryChartData: (type?: string, months?: number, month?: string) => Promise<object[]>;
   getDebtSummaryChartData: () => Promise<object>;
 
   // Notifications

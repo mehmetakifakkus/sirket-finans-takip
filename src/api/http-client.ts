@@ -87,8 +87,8 @@ class HttpClient implements IApiClient {
 
   // Transactions
   getTransactions = async (filters?: object) => {
-    const result = await this.request<{ transactions: object[] }>(`/transactions${this.buildQueryString(filters)}`)
-    return result.transactions || []
+    const result = await this.request<{ transactions: object[]; totals?: { income: number; expense: number; balance: number } }>(`/transactions${this.buildQueryString(filters)}`)
+    return { transactions: result.transactions || [], totals: result.totals }
   }
   getTransaction = (id: number) => this.request<object | null>(`/transactions/${id}`)
   getTransactionsByProject = async (projectId: number) => {
@@ -379,8 +379,8 @@ class HttpClient implements IApiClient {
     const result = await this.request<{ data: object[] }>(`/charts/monthly${months !== undefined ? `?months=${months}` : ''}`)
     return result.data || []
   }
-  getCategoryChartData = async (type?: string, months?: number) => {
-    const params = this.buildQueryString({ type, months })
+  getCategoryChartData = async (type?: string, months?: number, month?: string) => {
+    const params = this.buildQueryString({ type, months, month })
     const result = await this.request<{ data: object[] }>(`/charts/category${params}`)
     return result.data || []
   }

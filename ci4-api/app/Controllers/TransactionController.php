@@ -42,9 +42,13 @@ class TransactionController extends BaseController
             );
         }
 
+        // Toplamları hesapla (hibe gelirleri dahil)
+        $totals = $this->calculateTotals($filters, $rates);
+
         return $this->success('İşlemler listelendi', [
             'transactions' => $transactions,
-            'count' => count($transactions)
+            'count' => count($transactions),
+            'totals' => $totals
         ]);
     }
 
@@ -506,6 +510,72 @@ class TransactionController extends BaseController
             ->setHeader('Content-Type', 'text/csv; charset=utf-8')
             ->setHeader('Content-Disposition', 'attachment; filename="islemler_' . date('Y-m-d') . '.csv"')
             ->setBody($csv);
+    }
+
+    /**
+     * Calculate totals including grant incomes
+     */
+    private function calculateTotals(array $filters, array $rates): array
+    {
+        // Build WHERE clause for filters (same as getFiltered but without grant income exclusion)
+        $where = "1=1";
+        $params = [];
+
+        if (!empty($filters['type'])) {
+            $where .= " AND type = ?";
+            $params[] = $filters['type'];
+        }
+        if (!empty($filters['party_id'])) {
+            $where .= " AND party_id = ?";
+            $params[] = $filters['party_id'];
+        }
+        if (!empty($filters['category_id'])) {
+            $where .= " AND category_id = ?";
+            $params[] = $filters['category_id'];
+        }
+        if (!empty($filters['project_id'])) {
+            $where .= " AND project_id = ?";
+            $params[] = $filters['project_id'];
+        }
+        if (!empty($filters['currency'])) {
+            $where .= " AND currency = ?";
+            $params[] = $filters['currency'];
+        }
+        if (!empty($filters['start_date'])) {
+            $where .= " AND date >= ?";
+            $params[] = $filters['start_date'];
+        }
+        if (!empty($filters['end_date'])) {
+            $where .= " AND date <= ?";
+            $params[] = $filters['end_date'];
+        }
+
+        // Get all transactions for totals (including grant incomes)
+        $sql = "SELECT type, net_amount, currency FROM transactions WHERE $where";
+        $allTransactions = Database::query($sql, $params);
+
+        $totalIncome = 0.0;
+        $totalExpense = 0.0;
+
+        foreach ($allTransactions as $t) {
+            $amountTry = $this->convertToTRY(
+                (float)($t['net_amount'] ?? 0),
+                $t['currency'] ?? 'TRY',
+                $rates
+            );
+
+            if ($t['type'] === 'income') {
+                $totalIncome += $amountTry;
+            } else {
+                $totalExpense += $amountTry;
+            }
+        }
+
+        return [
+            'income' => $totalIncome,
+            'expense' => $totalExpense,
+            'balance' => $totalIncome - $totalExpense
+        ];
     }
 
     /**
