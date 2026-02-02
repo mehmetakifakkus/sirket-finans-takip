@@ -34,13 +34,13 @@ export function AdminPanel() {
   const [activeTab, setActiveTab] = useState<TabType>('categories')
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between mb-6 flex-shrink-0">
         <h1 className="text-2xl font-bold text-gray-900">{t('nav.administration')}</h1>
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 flex-shrink-0">
         <nav className="flex space-x-1">
           <TabButton
             active={activeTab === 'categories'}
@@ -76,12 +76,14 @@ export function AdminPanel() {
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        {activeTab === 'categories' && <CategoriesContent />}
-        {activeTab === 'exchangeRates' && <ExchangeRatesContent />}
-        {activeTab === 'users' && <UsersContent />}
-        {activeTab === 'database' && <DatabaseContent />}
-        {activeTab === 'settings' && <SettingsContent />}
+      <div className="flex-1 min-h-0 overflow-auto mt-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          {activeTab === 'categories' && <CategoriesContent />}
+          {activeTab === 'exchangeRates' && <ExchangeRatesContent />}
+          {activeTab === 'users' && <UsersContent />}
+          {activeTab === 'database' && <DatabaseContent />}
+          {activeTab === 'settings' && <SettingsContent />}
+        </div>
       </div>
     </div>
   )
