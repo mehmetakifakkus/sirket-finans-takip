@@ -475,11 +475,25 @@ export function Transactions() {
   }
 
   const openCreateForm = (type: 'income' | 'expense') => {
+    // Party filtresi aktifse varsayılan kategoriyi bul
+    let defaultCategoryId = ''
+    if (filters.party_id) {
+      const defaultCategoryName = type === 'expense' ? 'teçhizat' : 'satış geliri'
+      const defaultCategory = categories.find(
+        c => c.type === type &&
+             c.is_active &&
+             c.name.toLowerCase() === defaultCategoryName
+      )
+      if (defaultCategory) {
+        defaultCategoryId = defaultCategory.id.toString()
+      }
+    }
+
     setEditingTransaction(null)
     setFormData({
       type,
-      party_id: '',
-      category_id: '',
+      party_id: filters.party_id || '',
+      category_id: defaultCategoryId,
       project_id: '',
       milestone_id: '',
       date: getToday(),
