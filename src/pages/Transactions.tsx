@@ -197,9 +197,10 @@ export function Transactions() {
   const totals = useMemo(() => {
     const result = transactions.reduce((acc, tr) => {
       // Use base_amount for KDV hariç, net_amount for KDV dahil
-      const amount = totalsCalculationBasis === 'base'
+      const rawAmount = totalsCalculationBasis === 'base'
         ? (tr.base_amount || tr.amount || 0)
         : (tr.net_amount || tr.amount || 0)
+      const amount = Number(rawAmount) || 0
 
       if (tr.type === 'income') {
         acc.income += amount
