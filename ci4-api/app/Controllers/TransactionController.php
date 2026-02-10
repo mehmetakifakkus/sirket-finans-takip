@@ -97,24 +97,8 @@ class TransactionController extends BaseController
             $isEmployeeExpense = $party && $party['type'] === 'employee';
         }
 
-        // Check if category requires VAT (only specific categories)
-        $categoryRequiresVat = true;
-        if ($data['type'] === 'expense' && !empty($data['category_id'])) {
-            $category = Database::queryOne("SELECT name FROM categories WHERE id = ?", [$data['category_id']]);
-            if ($category) {
-                $categoryName = strtolower($category['name']);
-                $vatCategories = ['teçhizat', 'yazılım', 'hizmet alımı', 'ofis malzemesi', 'equipment', 'software', 'service', 'office supplies'];
-                $categoryRequiresVat = false;
-                foreach ($vatCategories as $vc) {
-                    if (strpos($categoryName, $vc) !== false) {
-                        $categoryRequiresVat = true;
-                        break;
-                    }
-                }
-            }
-        }
-
-        $shouldApplyVat = !$isEmployeeExpense && $categoryRequiresVat;
+        // KDV tüm gelir ve gider işlemlerinde geçerli (çalışan giderleri hariç)
+        $shouldApplyVat = !$isEmployeeExpense;
         $vatRate = $shouldApplyVat ? (float)($data['vat_rate'] ?? 0) : 0;
         $withholdingRate = (float)($data['withholding_rate'] ?? 0);
         $vatIncluded = $shouldApplyVat ? !empty($data['vat_included']) : false;
@@ -270,24 +254,8 @@ class TransactionController extends BaseController
                 $isEmployeeExpense = $party && $party['type'] === 'employee';
             }
 
-            // Check if category requires VAT (only specific categories)
-            $categoryRequiresVat = true;
-            if ($type === 'expense' && $categoryId) {
-                $category = Database::queryOne("SELECT name FROM categories WHERE id = ?", [$categoryId]);
-                if ($category) {
-                    $categoryName = strtolower($category['name']);
-                    $vatCategories = ['teçhizat', 'yazılım', 'hizmet alımı', 'ofis malzemesi', 'equipment', 'software', 'service', 'office supplies'];
-                    $categoryRequiresVat = false;
-                    foreach ($vatCategories as $vc) {
-                        if (strpos($categoryName, $vc) !== false) {
-                            $categoryRequiresVat = true;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            $shouldApplyVat = !$isEmployeeExpense && $categoryRequiresVat;
+            // KDV tüm gelir ve gider işlemlerinde geçerli (çalışan giderleri hariç)
+            $shouldApplyVat = !$isEmployeeExpense;
             $vatRate = $shouldApplyVat ? (float)($data['vat_rate'] ?? $transaction['vat_rate'] ?? 0) : 0;
             $withholdingRate = (float)($data['withholding_rate'] ?? $transaction['withholding_rate'] ?? 0);
             $vatIncluded = $shouldApplyVat ? !empty($data['vat_included']) : false;
@@ -551,6 +519,7 @@ class TransactionController extends BaseController
         }
 
         // Get all transactions for totals (including grant incomes)
+        // Use net_amount (base + VAT - withholding) for accurate totals
         $sql = "SELECT type, net_amount, currency FROM transactions WHERE $where";
         $allTransactions = Database::query($sql, $params);
 

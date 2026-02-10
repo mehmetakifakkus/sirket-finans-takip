@@ -194,30 +194,19 @@ function createTransaction($db, $user) {
         $isEmployeeExpense = $party && $party['type'] === 'employee';
     }
 
-    // Check if category requires VAT (only specific categories)
-    $categoryRequiresVat = true;
-    if ($data['type'] === 'expense' && !empty($data['category_id'])) {
-        $stmt = $db->prepare("SELECT name FROM categories WHERE id = ?");
-        $stmt->execute([$data['category_id']]);
-        $category = $stmt->fetch();
-        if ($category) {
-            $categoryName = strtolower($category['name']);
-            $vatCategories = ['teçhizat', 'yazılım', 'hizmet alımı', 'ofis malzemesi', 'equipment', 'software', 'service', 'office supplies'];
-            $categoryRequiresVat = false;
-            foreach ($vatCategories as $vc) {
-                if (strpos($categoryName, $vc) !== false) {
-                    $categoryRequiresVat = true;
-                    break;
-                }
-            }
-        }
+    // Set VAT to 0 for employee expenses only
+    if ($isEmployeeExpense) {
+        $data['vat_rate'] = 0;
     }
 
-    // Set VAT to 0 for employee expenses or non-VAT categories
-    if ($isEmployeeExpense || !$categoryRequiresVat) {
-        $data['vat_rate'] = 0;
-        $data['vat_amount'] = 0;
-    }
+    // Calculate VAT, withholding and net amounts
+    $vatRate = (float)($data['vat_rate'] ?? 0);
+    $withholdingRate = (float)($data['withholding_rate'] ?? 0);
+    $vatAmount = round($totalAmount * $vatRate / 100, 2);
+    $withholdingAmount = $data['type'] === 'income' ? round($totalAmount * $withholdingRate / 100, 2) : 0;
+    $netAmount = $data['type'] === 'income'
+        ? $totalAmount + $vatAmount - $withholdingAmount
+        : $totalAmount + $vatAmount;
 
     $stmt = $db->prepare("
         INSERT INTO transactions (
@@ -238,11 +227,11 @@ function createTransaction($db, $user) {
         $totalAmount,
         $insuranceAmount,
         $data['currency'] ?? 'TRY',
-        $data['vat_rate'] ?? 0,
-        $data['vat_amount'] ?? 0,
-        $data['withholding_rate'] ?? 0,
-        $data['withholding_amount'] ?? 0,
-        $data['net_amount'],
+        $vatRate,
+        $vatAmount,
+        $withholdingRate,
+        $withholdingAmount,
+        $netAmount,
         $data['description'] ?? null,
         $data['ref_no'] ?? null,
         $data['document_path'] ?? null,
@@ -258,6 +247,7 @@ function createTransaction($db, $user) {
 
 function updateTransaction($db, $id) {
     $data = getRequestBody();
+    error_log("DEBUG updateTransaction - vat_rate from request: " . ($data['vat_rate'] ?? 'NULL'));
 
     // Handle insurance amount for employee expenses
     $amount = (float)$data['amount'];
@@ -273,30 +263,21 @@ function updateTransaction($db, $id) {
         $isEmployeeExpense = $party && $party['type'] === 'employee';
     }
 
-    // Check if category requires VAT (only specific categories)
-    $categoryRequiresVat = true;
-    if ($data['type'] === 'expense' && !empty($data['category_id'])) {
-        $stmt = $db->prepare("SELECT name FROM categories WHERE id = ?");
-        $stmt->execute([$data['category_id']]);
-        $category = $stmt->fetch();
-        if ($category) {
-            $categoryName = strtolower($category['name']);
-            $vatCategories = ['teçhizat', 'yazılım', 'hizmet alımı', 'ofis malzemesi', 'equipment', 'software', 'service', 'office supplies'];
-            $categoryRequiresVat = false;
-            foreach ($vatCategories as $vc) {
-                if (strpos($categoryName, $vc) !== false) {
-                    $categoryRequiresVat = true;
-                    break;
-                }
-            }
-        }
+    // Set VAT to 0 for employee expenses only
+    if ($isEmployeeExpense) {
+        $data['vat_rate'] = 0;
     }
 
-    // Set VAT to 0 for employee expenses or non-VAT categories
-    if ($isEmployeeExpense || !$categoryRequiresVat) {
-        $data['vat_rate'] = 0;
-        $data['vat_amount'] = 0;
-    }
+    // Calculate VAT, withholding and net amounts
+    $vatRate = (float)($data['vat_rate'] ?? 0);
+    $withholdingRate = (float)($data['withholding_rate'] ?? 0);
+    $vatAmount = round($totalAmount * $vatRate / 100, 2);
+    $withholdingAmount = $data['type'] === 'income' ? round($totalAmount * $withholdingRate / 100, 2) : 0;
+    $netAmount = $data['type'] === 'income'
+        ? $totalAmount + $vatAmount - $withholdingAmount
+        : $totalAmount + $vatAmount;
+
+    error_log("DEBUG updateTransaction - vatRate: $vatRate, vatAmount: $vatAmount, totalAmount: $totalAmount, netAmount: $netAmount");
 
     $stmt = $db->prepare("
         UPDATE transactions SET
@@ -318,18 +299,18 @@ function updateTransaction($db, $id) {
         $totalAmount,
         $insuranceAmount,
         $data['currency'] ?? 'TRY',
-        $data['vat_rate'] ?? 0,
-        $data['vat_amount'] ?? 0,
-        $data['withholding_rate'] ?? 0,
-        $data['withholding_amount'] ?? 0,
-        $data['net_amount'],
+        $vatRate,
+        $vatAmount,
+        $withholdingRate,
+        $withholdingAmount,
+        $netAmount,
         $data['description'] ?? null,
         $data['ref_no'] ?? null,
         $data['document_path'] ?? null,
         $id
     ]);
 
-    jsonResponse(['success' => true, 'message' => 'İşlem güncellendi']);
+    jsonResponse(['success' => true, 'message' => 'İşlem güncellendi', 'debug' => ['vatRate' => $vatRate, 'vatAmount' => $vatAmount, 'totalAmount' => $totalAmount]]);
 }
 
 function deleteTransaction($db, $id) {

@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/appStore'
 import { useAuthStore } from '../store/authStore'
+import { useSettingsStore } from '../store/settingsStore'
 import { formatCurrency } from '../utils/currency'
 import { formatDate, getToday } from '../utils/date'
 import { DocumentUpload } from '../components/DocumentUpload'
@@ -24,7 +25,6 @@ export function Transactions() {
   const { t } = useTranslation()
   const [searchParams] = useSearchParams()
   const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [totals, setTotals] = useState<{ income: number; expense: number; balance: number }>({ income: 0, expense: 0, balance: 0 })
   const [parties, setParties] = useState<Party[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [projects, setProjects] = useState<Project[]>([])
@@ -58,6 +58,7 @@ export function Transactions() {
   const [importSource, setImportSource] = useState<'file' | 'paste'>('file')
   const { addAlert } = useAppStore()
   const { user } = useAuthStore()
+  const { vatCalculationMode, totalsCalculationBasis } = useSettingsStore()
   const isAdmin = user?.role === 'admin'
 
   const [filters, setFilters] = useState({
@@ -69,7 +70,7 @@ export function Transactions() {
     date_to: ''
   })
 
-  const [sortField, setSortField] = useState<'date' | 'amount' | 'net_amount' | 'category_name' | 'party_name'>('date')
+  const [sortField, setSortField] = useState<'date' | 'amount' | 'category_name' | 'party_name'>('date')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
   const [formData, setFormData] = useState({
@@ -158,9 +159,6 @@ export function Transactions() {
 
       const result = await api.getTransactions(filterParams)
       setTransactions(result.transactions as Transaction[])
-      if (result.totals) {
-        setTotals(result.totals)
-      }
     } catch {
       addAlert('error', t('common.dataNotLoaded'))
     } finally {
@@ -194,6 +192,26 @@ export function Transactions() {
       return sortDirection === 'asc' ? aNum - bNum : bNum - aNum
     })
   }, [transactions, sortField, sortDirection])
+
+  // Calculate totals based on setting (base = KDV hariç, net = KDV dahil)
+  const totals = useMemo(() => {
+    const result = transactions.reduce((acc, tr) => {
+      // Use base_amount for KDV hariç, net_amount for KDV dahil
+      const amount = totalsCalculationBasis === 'base'
+        ? (tr.base_amount || tr.amount || 0)
+        : (tr.net_amount || tr.amount || 0)
+
+      if (tr.type === 'income') {
+        acc.income += amount
+      } else {
+        acc.expense += amount
+      }
+      return acc
+    }, { income: 0, expense: 0, balance: 0 })
+
+    result.balance = result.income - result.expense
+    return result
+  }, [transactions, totalsCalculationBasis])
 
   // Get readable date filter label
   const dateFilterLabel = useMemo(() => {
@@ -266,13 +284,10 @@ export function Transactions() {
 
     // Check if selected party is an employee
     const selectedParty = parties.find(p => p.id.toString() === formData.party_id)
-    const selectedCategory = categories.find(c => c.id.toString() === formData.category_id)
     const isEmployeeExpense = formData.type === 'expense' && selectedParty?.type === 'employee'
 
-    // KDV sadece belirli kategorilerde geçerli
-    const vatCategories = ['teçhizat', 'yazılım', 'hizmet alımı', 'ofis malzemesi', 'equipment', 'software', 'service', 'office supplies']
-    const categoryName = selectedCategory?.name?.toLowerCase() || ''
-    const categoryRequiresVat = formData.type === 'income' || vatCategories.some(vc => categoryName.includes(vc))
+    // KDV tüm gelir ve gider işlemlerinde geçerli (çalışan giderleri hariç)
+    const categoryRequiresVat = formData.type === 'income' || formData.type === 'expense'
     const shouldApplyVat = !isEmployeeExpense && categoryRequiresVat
 
     const data = {
@@ -294,6 +309,8 @@ export function Transactions() {
       ref_no: formData.ref_no,
       created_by: user?.id
     }
+
+    console.log('DEBUG - Submitting transaction data:', JSON.stringify(data, null, 2))
 
     try {
       if (editingTransaction) {
@@ -501,7 +518,7 @@ export function Transactions() {
       insurance_amount: '',
       currency: 'TRY',
       vat_rate: '20',
-      vat_included: true,
+      vat_included: vatCalculationMode === 'included',
       withholding_rate: '0',
       tubitak_supported: false,
       grant_id: '',
@@ -1415,25 +1432,19 @@ export function Transactions() {
                     <SortIcon field="party_name" />
                   </span>
                 </th>
+                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  {t('transactions.baseAmount')}
+                </th>
+                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  {t('transactions.vat')}
+                </th>
                 <th
                   className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none"
                   onClick={() => handleSort('amount')}
                 >
                   <span className="flex items-center justify-end gap-1">
-                    {t('common.amount')}
+                    {t('common.total')}
                     <SortIcon field="amount" />
-                  </span>
-                </th>
-                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                  {t('transactions.baseAmount')}
-                </th>
-                <th
-                  className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none"
-                  onClick={() => handleSort('net_amount')}
-                >
-                  <span className="flex items-center justify-end gap-1">
-                    {t('transactions.netAmount')}
-                    <SortIcon field="net_amount" />
                   </span>
                 </th>
                 <th className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase">{t('transactions.documents.title')}</th>
@@ -1492,9 +1503,9 @@ export function Transactions() {
                         <span className="text-gray-500">-</span>
                       )}
                     </td>
-                    <td className="px-3 py-3 whitespace-nowrap text-sm text-right">{formatCurrency(tr.amount, tr.currency as 'TRY' | 'USD' | 'EUR')}</td>
                     <td className="px-3 py-3 whitespace-nowrap text-sm text-right text-gray-600">{tr.base_amount ? formatCurrency(tr.base_amount, tr.currency as 'TRY' | 'USD' | 'EUR') : '-'}</td>
-                    <td className="px-3 py-3 whitespace-nowrap text-sm text-right font-medium">{formatCurrency(tr.net_amount, tr.currency as 'TRY' | 'USD' | 'EUR')}</td>
+                    <td className="px-3 py-3 whitespace-nowrap text-sm text-right text-gray-600">{tr.vat_amount ? formatCurrency(tr.vat_amount, tr.currency as 'TRY' | 'USD' | 'EUR') : '-'}</td>
+                    <td className="px-3 py-3 whitespace-nowrap text-sm text-right font-medium">{formatCurrency(tr.net_amount || tr.amount, tr.currency as 'TRY' | 'USD' | 'EUR')}</td>
                     <td className="px-2 py-3 whitespace-nowrap text-sm text-center">
                       {tr.document_count && tr.document_count > 0 ? (
                         <button
@@ -1603,13 +1614,10 @@ export function Transactions() {
               {/* Row 2: Tutar + KDV veya SGK Primi (çalışan gideri için) */}
               {(() => {
                 const selectedParty = parties.find(p => p.id.toString() === formData.party_id)
-                const selectedCategory = categories.find(c => c.id.toString() === formData.category_id)
                 const isEmployeeExpense = formData.type === 'expense' && selectedParty?.type === 'employee'
 
-                // KDV sadece belirli kategorilerde gösterilecek
-                const vatCategories = ['teçhizat', 'yazılım', 'hizmet alımı', 'ofis malzemesi', 'equipment', 'software', 'service', 'office supplies']
-                const categoryName = selectedCategory?.name?.toLowerCase() || ''
-                const showVat = formData.type === 'income' || vatCategories.some(vc => categoryName.includes(vc))
+                // KDV tüm gelir ve gider işlemlerinde gösterilecek (çalışan giderleri hariç)
+                const showVat = formData.type === 'income' || formData.type === 'expense'
 
                 if (isEmployeeExpense) {
                   return (
