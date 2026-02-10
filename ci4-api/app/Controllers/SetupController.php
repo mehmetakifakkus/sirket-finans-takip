@@ -581,4 +581,29 @@ class SetupController extends BaseController
             return $this->error('Migration hatası: ' . $e->getMessage(), 500);
         }
     }
+
+    /**
+     * Add settings column to users table
+     * POST /api/setup/add-user-settings
+     */
+    public function addUserSettings()
+    {
+        try {
+            $db = Database::connect();
+
+            // Check if column already exists
+            $columns = $db->query("SHOW COLUMNS FROM users")->fetchAll(\PDO::FETCH_COLUMN);
+
+            if (in_array('settings', $columns)) {
+                return $this->success('settings sütunu zaten mevcut');
+            }
+
+            $db->exec("ALTER TABLE users ADD COLUMN settings JSON DEFAULT NULL");
+
+            return $this->success('users.settings sütunu eklendi');
+
+        } catch (\Exception $e) {
+            return $this->error('Migration hatası: ' . $e->getMessage(), 500);
+        }
+    }
 }

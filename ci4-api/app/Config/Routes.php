@@ -40,6 +40,7 @@ $routes->group('api', function ($routes) {
     $routes->post('setup/update-vat-20', 'SetupController::updateVat20');
     $routes->post('setup/migrate-base-amount', 'SetupController::migrateBaseAmount');
     $routes->post('setup/fix-project-party', 'SetupController::fixProjectParty');
+    $routes->post('setup/add-user-settings', 'SetupController::addUserSettings');
 
     // ========================================
     // Auth Routes (Protected)
@@ -184,6 +185,11 @@ $routes->group('api', function ($routes) {
         // Database (stats only for regular users)
         $routes->get('database/stats', 'DatabaseController::stats');
         $routes->get('database/export', 'DatabaseController::export');
+
+        // Settings
+        $routes->get('settings', 'SettingsController::index');
+        $routes->put('settings', 'SettingsController::update');
+        $routes->get('settings/(:segment)', 'SettingsController::show/$1');
     });
 
     // ========================================

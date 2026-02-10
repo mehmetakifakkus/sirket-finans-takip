@@ -721,6 +721,29 @@ class HttpClient implements IApiClient {
       input.click()
     })
   }
+
+  // Settings
+  getSettings = async () => {
+    const result = await this.request<{
+      success: boolean
+      settings: {
+        vat_calculation_mode: 'included' | 'excluded'
+        language?: string
+      }
+    }>('/settings')
+    return result.settings || { vat_calculation_mode: 'included' }
+  }
+
+  updateSettings = async (data: { vat_calculation_mode?: 'included' | 'excluded'; language?: string }) => {
+    return this.request<{
+      success: boolean
+      message: string
+      settings?: object
+    }>('/settings', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
 }
 
 export const httpClient = new HttpClient()

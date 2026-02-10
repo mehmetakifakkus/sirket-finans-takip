@@ -214,4 +214,15 @@ export interface IApiClient {
     table: string;
     deleted_count: number;
   }>;
+
+  // Settings
+  getSettings: () => Promise<{
+    vat_calculation_mode: 'included' | 'excluded';
+    language?: string;
+  }>;
+  updateSettings: (data: { vat_calculation_mode?: 'included' | 'excluded'; language?: string }) => Promise<{
+    success: boolean;
+    message: string;
+    settings?: object;
+  }>;
 }

@@ -170,6 +170,18 @@ class IpcClient implements IApiClient {
   exportDatabaseSQL = () => this.api.exportDatabaseSQL()
   importDatabaseSQL = () => this.api.importDatabaseSQL()
   clearTable = (tableName: string) => this.api.clearTable(tableName)
+
+  // Settings - For Electron, settings are stored locally in settingsStore (localStorage)
+  // These methods provide API compatibility but use local storage
+  getSettings = async () => {
+    // In Electron, we use localStorage via settingsStore
+    // This is just for API compatibility
+    return { vat_calculation_mode: 'included' as const }
+  }
+  updateSettings = async (data: { vat_calculation_mode?: 'included' | 'excluded'; language?: string }) => {
+    // In Electron, settings are managed by settingsStore (localStorage)
+    return { success: true, message: 'Settings updated', settings: data }
+  }
 }
 
 export const ipcClient = new IpcClient()

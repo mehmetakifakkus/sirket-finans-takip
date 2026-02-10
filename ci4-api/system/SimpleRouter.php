@@ -106,6 +106,8 @@ $routes = [
         // Templates
         'api/templates' => ['TemplateController', 'index', true],
         'api/templates/due' => ['TemplateController', 'due', true],
+        // Settings
+        'api/settings' => ['SettingsController', 'index', true],
     ],
     'POST' => [
         'api/auth/login' => ['AuthController', 'login'],
@@ -148,8 +150,13 @@ $routes = [
         'api/setup/add-transaction-description' => ['SetupController', 'addTransactionDescription'],
         'api/setup/migrate-base-amount' => ['SetupController', 'migrateBaseAmount'],
         'api/setup/update-vat-20' => ['SetupController', 'updateVat20'],
+        'api/setup/add-user-settings' => ['SetupController', 'addUserSettings'],
         // Templates
         'api/templates' => ['TemplateController', 'create', true],
+    ],
+    'PUT' => [
+        // Settings
+        'api/settings' => ['SettingsController', 'update', true],
     ],
 ];
 
