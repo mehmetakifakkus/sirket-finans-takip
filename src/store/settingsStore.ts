@@ -3,6 +3,8 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import i18n from '../i18n/config'
 
 type Language = 'tr' | 'de' | 'en'
+type VatCalculationMode = 'included' | 'excluded'
+type TotalsCalculationBasis = 'base' | 'net' // base = KDV hariç, net = KDV dahil
 
 interface NotificationSettings {
   enabled: boolean
@@ -13,11 +15,15 @@ interface NotificationSettings {
 interface SettingsState {
   language: Language
   notifications: NotificationSettings
+  vatCalculationMode: VatCalculationMode
+  totalsCalculationBasis: TotalsCalculationBasis
   setLanguage: (lang: Language) => void
   setNotificationEnabled: (enabled: boolean) => void
   setReminderDays: (days: number[]) => void
   setShowOverdue: (show: boolean) => void
   updateNotificationSettings: (settings: Partial<NotificationSettings>) => void
+  setVatCalculationMode: (mode: VatCalculationMode) => void
+  setTotalsCalculationBasis: (basis: TotalsCalculationBasis) => void
 }
 
 const defaultNotificationSettings: NotificationSettings = {
@@ -31,6 +37,8 @@ export const useSettingsStore = create<SettingsState>()(
     (set) => ({
       language: (localStorage.getItem('language') as Language) || 'tr',
       notifications: defaultNotificationSettings,
+      vatCalculationMode: 'included' as VatCalculationMode,
+      totalsCalculationBasis: 'base' as TotalsCalculationBasis, // default: KDV hariç
 
       setLanguage: (lang: Language) => {
         i18n.changeLanguage(lang)
@@ -57,13 +65,21 @@ export const useSettingsStore = create<SettingsState>()(
         set((state) => ({
           notifications: { ...state.notifications, ...settings }
         })),
+
+      setVatCalculationMode: (mode: VatCalculationMode) =>
+        set({ vatCalculationMode: mode }),
+
+      setTotalsCalculationBasis: (basis: TotalsCalculationBasis) =>
+        set({ totalsCalculationBasis: basis }),
     }),
     {
       name: 'settings-storage',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         language: state.language,
-        notifications: state.notifications
+        notifications: state.notifications,
+        vatCalculationMode: state.vatCalculationMode,
+        totalsCalculationBasis: state.totalsCalculationBasis
       })
     }
   )

@@ -134,6 +134,7 @@
     "startDate": "Startdatum",
     "endDate": "Enddatum",
     "vatRate": "MwSt.-Satz (%)",
+    "vat": "MwSt.",
     "withholdingRate": "Quellensteuer (%)",
     "insuranceAmount": "Sozialversicherung",
     "salaryAmount": "Gehalt",
@@ -801,7 +802,15 @@
     "turkish": "Turkisch",
     "english": "Englisch",
     "german": "Deutsch",
-    "languageChanged": "Sprache geandert"
+    "languageChanged": "Sprache geandert",
+    "vatCalculationMode": "MwSt.-Berechnungsmodus",
+    "vatIncluded": "MwSt. inklusive",
+    "vatExcluded": "MwSt. exklusive",
+    "vatModeChanged": "MwSt.-Berechnungsmodus geandert",
+    "totalsCalculationBasis": "Summenberechnungsbasis",
+    "totalsVatExcluded": "Basierend auf MwSt. exklusive",
+    "totalsVatIncluded": "Basierend auf MwSt. inklusive",
+    "totalsBasisChanged": "Summenberechnungsbasis geändert"
   },
   "databaseOps": {
     "title": "Datenbankoperationen",

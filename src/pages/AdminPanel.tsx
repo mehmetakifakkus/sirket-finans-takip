@@ -70,7 +70,7 @@ export function AdminPanel() {
             active={activeTab === 'settings'}
             onClick={() => setActiveTab('settings')}
           >
-            {t('settings.language')}
+            {t('settings.title')}
           </TabButton>
         </nav>
       </div>
