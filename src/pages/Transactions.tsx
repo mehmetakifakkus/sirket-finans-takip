@@ -58,7 +58,8 @@ export function Transactions() {
   const [importSource, setImportSource] = useState<'file' | 'paste'>('file')
   const { addAlert } = useAppStore()
   const { user } = useAuthStore()
-  const { vatCalculationMode, totalsCalculationBasis } = useSettingsStore()
+  const vatCalculationMode = useSettingsStore((state) => state.vatCalculationMode)
+  const totalsCalculationBasis = useSettingsStore((state) => state.totalsCalculationBasis)
   const isAdmin = user?.role === 'admin'
 
   const [filters, setFilters] = useState({
@@ -170,8 +171,13 @@ export function Transactions() {
     }
   }
 
+  // Filter out grant income transactions for display (but keep them for totals)
+  const displayTransactions = useMemo(() => {
+    return transactions.filter(tr => !tr.is_grant_income)
+  }, [transactions])
+
   const sortedTransactions = useMemo(() => {
-    return [...transactions].sort((a, b) => {
+    return [...displayTransactions].sort((a, b) => {
       const aRaw = a[sortField]
       const bRaw = b[sortField]
 
@@ -191,7 +197,7 @@ export function Transactions() {
       const bNum = Number(bVal)
       return sortDirection === 'asc' ? aNum - bNum : bNum - aNum
     })
-  }, [transactions, sortField, sortDirection])
+  }, [displayTransactions, sortField, sortDirection])
 
   // Calculate totals based on setting (base = KDV hariç, net = KDV dahil)
   const totals = useMemo(() => {

@@ -152,6 +152,7 @@ export interface Transaction {
   grant_provider_name?: string;
   grant_provider_type?: 'tubitak' | 'kosgeb' | 'sponsor' | 'other';
   grant_funding_rate?: number;
+  is_grant_income?: number; // 1 if this is an auto-generated grant income
 }
 
 // Transaction Document types

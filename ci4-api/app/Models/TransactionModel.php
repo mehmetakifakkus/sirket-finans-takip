@@ -29,7 +29,8 @@ class TransactionModel extends BaseModel
             $sql = "SELECT t.*, p.name as party_name, c.name as category_name,
                     pr.title as project_name,
                     pg.provider_name as grant_provider_name, pg.provider_type as grant_provider_type, pg.funding_rate as grant_funding_rate,
-                    (SELECT COUNT(*) FROM transaction_documents td WHERE td.transaction_id = t.id) as document_count
+                    (SELECT COUNT(*) FROM transaction_documents td WHERE td.transaction_id = t.id) as document_count,
+                    IF(t.type = 'income' AND t.linked_transaction_id IS NOT NULL, 1, 0) as is_grant_income
                     FROM transactions t
                     LEFT JOIN parties p ON p.id = t.party_id
                     LEFT JOIN categories c ON c.id = t.category_id
@@ -39,7 +40,8 @@ class TransactionModel extends BaseModel
         } else {
             $sql = "SELECT t.*, p.name as party_name, c.name as category_name,
                     pr.title as project_name,
-                    (SELECT COUNT(*) FROM transaction_documents td WHERE td.transaction_id = t.id) as document_count
+                    (SELECT COUNT(*) FROM transaction_documents td WHERE td.transaction_id = t.id) as document_count,
+                    IF(t.type = 'income' AND t.linked_transaction_id IS NOT NULL, 1, 0) as is_grant_income
                     FROM transactions t
                     LEFT JOIN parties p ON p.id = t.party_id
                     LEFT JOIN categories c ON c.id = t.category_id
@@ -47,10 +49,8 @@ class TransactionModel extends BaseModel
                     WHERE 1=1";
         }
 
-        // Otomatik hibe gelirlerini listeden hariç tut (linked_transaction_id olan gelirler)
-        if ($hasGrantColumns) {
-            $sql .= " AND NOT (t.type = 'income' AND t.linked_transaction_id IS NOT NULL)";
-        }
+        // Hibe gelirleri artık dahil ediliyor (is_grant_income flag ile işaretli)
+        // Frontend'de listeden gizlenebilir ama toplamlara dahil edilir
 
         $params = [];
 
