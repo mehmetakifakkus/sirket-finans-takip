@@ -124,6 +124,7 @@ export interface IApiClient {
   createTransactionFromTemplate: (templateId: number, date: string, userId: number, overrides?: object) =>
     Promise<{ success: boolean; message: string; id?: number }>;
   getDueTemplates: () => Promise<object[]>;
+  processOverdueTemplates: (userId: number) => Promise<{ processed: number; transactionsCreated: number; errors: string[] }>;
 
   // File operations
   uploadFile: (documentPath?: string) => Promise<string | null>;

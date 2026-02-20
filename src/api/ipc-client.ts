@@ -134,6 +134,7 @@ class IpcClient implements IApiClient {
   createTransactionFromTemplate = (templateId: number, date: string, userId: number, overrides?: object) =>
     this.api.createTransactionFromTemplate(templateId, date, userId, overrides)
   getDueTemplates = () => this.api.getDueTemplates()
+  processOverdueTemplates = (userId: number) => this.api.processOverdueTemplates(userId)
 
   // File operations
   uploadFile = (documentPath?: string) => this.api.uploadFile(documentPath)

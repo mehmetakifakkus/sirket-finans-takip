@@ -532,6 +532,10 @@ function registerIpcHandlers() {
     return templateService.getDueTemplates()
   })
 
+  ipcMain.handle('templates:processOverdue', async (_, userId: number) => {
+    return templateService.processOverdueTemplates(userId)
+  })
+
   // File handlers
   ipcMain.handle('file:upload', async (_, documentPath?: string) => {
     const result = await dialog.showOpenDialog(mainWindow!, {

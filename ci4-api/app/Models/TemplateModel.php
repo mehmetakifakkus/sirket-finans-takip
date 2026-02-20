@@ -105,7 +105,7 @@ class TemplateModel extends BaseModel
     /**
      * Update template
      */
-    public function update(int $id, array $data): bool
+    public function update($id, array $data): bool
     {
         $sets = [];
         $values = [];
@@ -130,7 +130,7 @@ class TemplateModel extends BaseModel
     /**
      * Delete template
      */
-    public function delete(int $id): bool
+    public function delete($id): bool
     {
         return Database::execute(
             "DELETE FROM {$this->table} WHERE id = ?",

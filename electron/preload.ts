@@ -125,6 +125,7 @@ contextBridge.exposeInMainWorld('api', {
   createTransactionFromTemplate: (templateId: number, date: string, userId: number, overrides?: object) =>
     ipcRenderer.invoke('templates:createTransaction', templateId, date, userId, overrides),
   getDueTemplates: () => ipcRenderer.invoke('templates:getDue'),
+  processOverdueTemplates: (userId: number) => ipcRenderer.invoke('templates:processOverdue', userId),
 
   // File operations
   uploadFile: (documentPath?: string) => ipcRenderer.invoke('file:upload', documentPath),
@@ -282,6 +283,7 @@ export interface IElectronAPI {
   createTransactionFromTemplate: (templateId: number, date: string, userId: number, overrides?: object) =>
     Promise<{ success: boolean; message: string; id?: number }>;
   getDueTemplates: () => Promise<object[]>;
+  processOverdueTemplates: (userId: number) => Promise<{ processed: number; transactionsCreated: number; errors: string[] }>;
 
   // File operations
   uploadFile: (documentPath?: string) => Promise<string | null>;

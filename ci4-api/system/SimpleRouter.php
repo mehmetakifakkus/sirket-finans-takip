@@ -153,6 +153,7 @@ $routes = [
         'api/setup/add-user-settings' => ['SetupController', 'addUserSettings'],
         // Templates
         'api/templates' => ['TemplateController', 'create', true],
+        'api/templates/process-overdue' => ['TemplateController', 'processOverdue', true],
     ],
     'PUT' => [
         // Settings

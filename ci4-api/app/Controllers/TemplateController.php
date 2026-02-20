@@ -219,4 +219,87 @@ class TemplateController extends BaseController
 
         return $this->success('Vadesi gelen şablonlar', ['templates' => $templates]);
     }
+
+    /**
+     * Process all overdue recurring templates
+     * POST /api/templates/process-overdue
+     */
+    public function processOverdue()
+    {
+        $data = $this->getJsonInput();
+        $userId = $data['user_id'] ?? $this->getUserId();
+
+        $dueTemplates = $this->templateModel->getDue();
+        $today = date('Y-m-d');
+        $processed = 0;
+        $transactionsCreated = 0;
+        $errors = [];
+
+        foreach ($dueTemplates as $template) {
+            try {
+                $iterations = 0;
+                $maxIterations = 365;
+
+                while ($iterations < $maxIterations) {
+                    $current = $this->templateModel->getById($template['id']);
+                    if (!$current || !$current['next_date'] || $current['next_date'] > $today) {
+                        break;
+                    }
+
+                    $currentNextDate = $current['next_date'];
+
+                    // Create transaction from template
+                    $transactionData = [
+                        'type' => $current['type'],
+                        'category_id' => $current['category_id'],
+                        'party_id' => $current['party_id'],
+                        'amount' => $current['amount'] ?? 0,
+                        'currency' => $current['currency'],
+                        'vat_rate' => $current['vat_rate'],
+                        'withholding_rate' => $current['withholding_rate'],
+                        'description' => $current['description'],
+                        'date' => $currentNextDate,
+                        'created_by' => $userId,
+                    ];
+
+                    $grossAmount = (float)$transactionData['amount'];
+                    $vatRate = (float)$transactionData['vat_rate'];
+                    $withholdingRate = (float)$transactionData['withholding_rate'];
+                    $vatAmount = $grossAmount * ($vatRate / 100);
+                    $withholdingAmount = $grossAmount * ($withholdingRate / 100);
+                    $netAmount = $grossAmount + $vatAmount - $withholdingAmount;
+
+                    $transactionData['vat_amount'] = $vatAmount;
+                    $transactionData['withholding_amount'] = $withholdingAmount;
+                    $transactionData['net_amount'] = $netAmount;
+
+                    $this->transactionModel->insert($transactionData);
+
+                    // Update next_date
+                    if ($current['recurrence'] !== 'none' && $current['next_date']) {
+                        $this->templateModel->updateNextDate($template['id']);
+                    }
+
+                    $transactionsCreated++;
+                    $iterations++;
+
+                    // Check that next_date actually advanced (infinite loop protection)
+                    $updated = $this->templateModel->getById($template['id']);
+                    if (!$updated || $updated['next_date'] === $currentNextDate) {
+                        break;
+                    }
+                }
+
+                $processed++;
+            } catch (\Exception $e) {
+                $errors[] = $template['name'] . ': ' . $e->getMessage();
+            }
+        }
+
+        return $this->success('Tekrarlayan işlemler işlendi', [
+            'processed' => $processed,
+            'transactionsCreated' => $transactionsCreated,
+            'errors' => $errors,
+        ]);
+    }
 }

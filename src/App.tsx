@@ -5,6 +5,7 @@ import { useAuthStore } from './store/authStore'
 import { useSetupStore } from './store/setupStore'
 import { MainLayout } from './components/layout/MainLayout'
 import { useNotificationChecker } from './hooks/useNotificationChecker'
+import { useRecurringTemplateProcessor } from './hooks/useRecurringTemplateProcessor'
 import { Login } from './pages/Login'
 import { Setup } from './pages/Setup'
 import { Dashboard } from './pages/Dashboard'
@@ -19,6 +20,7 @@ import { Payments } from './pages/Payments'
 import { Reports } from './pages/Reports'
 import { PaymentReminders } from './pages/PaymentReminders'
 import { Settings } from './pages/Settings'
+import { RecurringTransactions } from './pages/RecurringTransactions'
 
 // Import i18n config
 import './i18n/config'
@@ -45,6 +47,8 @@ function ProtectedRoute() {
 
   // Check for payment notifications on startup
   useNotificationChecker()
+  // Process overdue recurring templates
+  useRecurringTemplateProcessor()
 
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />
@@ -77,9 +81,16 @@ function PublicRoute() {
 
 export default function App() {
   const { needsSetup, isChecking, checkSetupStatus } = useSetupStore()
+  const { isLoggedIn, checkAuth } = useAuthStore()
 
   useEffect(() => {
     checkSetupStatus()
+  }, [])
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      checkAuth()
+    }
   }, [])
 
   if (isChecking) {
@@ -122,6 +133,7 @@ export default function App() {
           <Route path="/payments" element={<Payments />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/reminders" element={<PaymentReminders />} />
+          <Route path="/recurring" element={<RecurringTransactions />} />
           <Route path="/settings" element={<Settings />} />
 
           {/* Admin only routes */}

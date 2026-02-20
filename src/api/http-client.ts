@@ -39,6 +39,12 @@ class HttpClient implements IApiClient {
     })
 
     if (!response.ok) {
+      if (response.status === 401) {
+        this.token = null
+        localStorage.removeItem('auth_token')
+        localStorage.removeItem('auth-storage')
+        window.location.href = '/login'
+      }
       const error = await response.json().catch(() => ({ message: 'Request failed' }))
       throw new Error(error.message || `HTTP ${response.status}`)
     }
@@ -83,7 +89,10 @@ class HttpClient implements IApiClient {
     }
   }
 
-  getCurrentUser = () => this.request('/auth/me')
+  getCurrentUser = async () => {
+    const result = await this.request<{ success: boolean; user: object }>('/auth/me')
+    return result.user || null
+  }
 
   // Transactions
   getTransactions = async (filters?: object) => {
@@ -436,6 +445,11 @@ class HttpClient implements IApiClient {
     const result = await this.request<{ templates: object[] }>('/templates/due')
     return result.templates || []
   }
+  processOverdueTemplates = (userId: number) =>
+    this.request<{ processed: number; transactionsCreated: number; errors: string[] }>('/templates/process-overdue', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId }),
+    })
 
   // File operations - Web implementations
   uploadFile = async (_documentPath?: string) => {

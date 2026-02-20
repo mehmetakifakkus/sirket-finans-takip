@@ -90,7 +90,8 @@
     "exchangeRates": "Döviz Kurları",
     "users": "Kullanıcılar",
     "databaseOperations": "Veritabanı",
-    "reminders": "Ödeme Hatırlatıcıları"
+    "reminders": "Ödeme Hatırlatıcıları",
+    "recurring": "Tekrarlayan İşlemler"
   },
   "reminders": {
     "title": "Ödeme Hatırlatıcıları",
@@ -171,7 +172,12 @@
     "transactionCreated": "Şablondan işlem oluşturuldu",
     "confirmDelete": "Bu şablonu silmek istediğinizden emin misiniz?",
     "selectTemplate": "Şablon seçin",
-    "fromTemplate": "Şablondan"
+    "fromTemplate": "Şablondan",
+    "autoProcessed": "{{count}} tekrarlayan işlem otomatik oluşturuldu",
+    "recurringTitle": "Tekrarlayan İşlemler",
+    "manualProcess": "Şimdi Çalıştır",
+    "processAll": "Tümünü İşle",
+    "noActiveRecurring": "Aktif tekrarlayan şablon yok"
   },
   "transactions": {
     "title": "Gelir / Gider İşlemleri",
@@ -194,6 +200,7 @@
     "vat": "KDV",
     "vatIncluded": "KDV dahil",
     "withholdingRate": "Stopaj Oranı (%)",
+    "withholding": "Stopaj",
     "insuranceAmount": "SGK Primi",
     "salaryAmount": "Maaş",
     "totalWithInsurance": "Toplam (Maaş + SGK)",

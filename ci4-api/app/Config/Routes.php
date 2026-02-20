@@ -159,6 +159,7 @@ $routes->group('api', function ($routes) {
         $routes->post('templates', 'TemplateController::create');
         $routes->put('templates/(:num)', 'TemplateController::update/$1');
         $routes->delete('templates/(:num)', 'TemplateController::delete/$1');
+        $routes->post('templates/process-overdue', 'TemplateController::processOverdue');
         $routes->post('templates/(:num)/create-transaction', 'TemplateController::createTransaction/$1');
 
         // Documents

@@ -88,7 +88,8 @@
     "categories": "Kategorien",
     "exchangeRates": "Wechselkurse",
     "users": "Benutzer",
-    "databaseOperations": "Datenbank"
+    "databaseOperations": "Datenbank",
+    "recurring": "Wiederkehrende Transaktionen"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -116,6 +117,39 @@
     "monthsShort": "Mo",
     "allTime": "Alle"
   },
+  "templates": {
+    "title": "Transaktionsvorlagen",
+    "newTemplate": "Neue Vorlage",
+    "editTemplate": "Vorlage bearbeiten",
+    "templateName": "Vorlagenname",
+    "templateNamePlaceholder": "Z.B. Monatliche Mietzahlung",
+    "createTransaction": "Transaktion erstellen",
+    "useTemplate": "Vorlage verwenden",
+    "noTemplates": "Noch keine Vorlagen erstellt",
+    "recurrence": "Wiederholung",
+    "recurrenceOptions": {
+      "none": "Keine",
+      "daily": "Taglich",
+      "weekly": "Wochentlich",
+      "monthly": "Monatlich",
+      "yearly": "Jahrlich"
+    },
+    "nextDate": "Nachstes Datum",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "templateCreated": "Vorlage erstellt",
+    "templateUpdated": "Vorlage aktualisiert",
+    "templateDeleted": "Vorlage geloscht",
+    "transactionCreated": "Transaktion aus Vorlage erstellt",
+    "confirmDelete": "Mochten Sie diese Vorlage wirklich loschen?",
+    "selectTemplate": "Vorlage auswahlen",
+    "fromTemplate": "Aus Vorlage",
+    "autoProcessed": "{{count}} wiederkehrende Transaktionen automatisch erstellt",
+    "recurringTitle": "Wiederkehrende Transaktionen",
+    "manualProcess": "Jetzt ausfuhren",
+    "processAll": "Alle verarbeiten",
+    "noActiveRecurring": "Keine aktiven wiederkehrenden Vorlagen"
+  },
   "transactions": {
     "title": "Einnahmen / Ausgaben Transaktionen",
     "income": "Einnahmen",
@@ -136,6 +170,7 @@
     "vatRate": "MwSt.-Satz (%)",
     "vat": "MwSt.",
     "withholdingRate": "Quellensteuer (%)",
+    "withholding": "Quellensteuer",
     "insuranceAmount": "Sozialversicherung",
     "salaryAmount": "Gehalt",
     "totalWithInsurance": "Gesamt (Gehalt + SV)",

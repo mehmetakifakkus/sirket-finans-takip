@@ -265,6 +265,50 @@ export class TemplateService {
     return this.formatDate(date)
   }
 
+  processOverdueTemplates(userId: number): { processed: number; transactionsCreated: number; errors: string[] } {
+    const dueTemplates = this.getDueTemplates()
+    let processed = 0
+    let transactionsCreated = 0
+    const errors: string[] = []
+
+    const today = this.formatDate(new Date())
+
+    for (const template of dueTemplates) {
+      try {
+        let iterations = 0
+        const maxIterations = 365 // safety limit
+
+        while (iterations < maxIterations) {
+          const current = this.getById(template.id)
+          if (!current || !current.next_date || current.next_date > today) {
+            break
+          }
+
+          const result = this.createTransactionFromTemplate(template.id, current.next_date, userId)
+          if (!result.success) {
+            errors.push(`${template.name}: ${result.message}`)
+            break
+          }
+
+          transactionsCreated++
+          iterations++
+
+          // Check that next_date actually advanced (infinite loop protection)
+          const updated = this.getById(template.id)
+          if (!updated || updated.next_date === current.next_date) {
+            break
+          }
+        }
+
+        processed++
+      } catch (error) {
+        errors.push(`${template.name}: ${(error as Error).message}`)
+      }
+    }
+
+    return { processed, transactionsCreated, errors }
+  }
+
   getDueTemplates(): TransactionTemplate[] {
     const today = this.formatDate(new Date())
 

@@ -90,7 +90,8 @@
     "exchangeRates": "Exchange Rates",
     "users": "Users",
     "databaseOperations": "Database",
-    "reminders": "Payment Reminders"
+    "reminders": "Payment Reminders",
+    "recurring": "Recurring Transactions"
   },
   "reminders": {
     "title": "Payment Reminders",
@@ -171,7 +172,12 @@
     "transactionCreated": "Transaction created from template",
     "confirmDelete": "Are you sure you want to delete this template?",
     "selectTemplate": "Select template",
-    "fromTemplate": "From Template"
+    "fromTemplate": "From Template",
+    "autoProcessed": "{{count}} recurring transactions automatically created",
+    "recurringTitle": "Recurring Transactions",
+    "manualProcess": "Run Now",
+    "processAll": "Process All",
+    "noActiveRecurring": "No active recurring templates"
   },
   "transactions": {
     "title": "Income / Expense Transactions",
@@ -194,6 +200,7 @@
     "vat": "VAT",
     "vatIncluded": "VAT included",
     "withholdingRate": "Withholding Rate (%)",
+    "withholding": "Withholding",
     "insuranceAmount": "Insurance Premium",
     "salaryAmount": "Salary",
     "totalWithInsurance": "Total (Salary + Insurance)",
