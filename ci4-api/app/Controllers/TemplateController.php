@@ -194,6 +194,7 @@ class TemplateController extends BaseController
         $transactionData['vat_amount'] = $vatAmount;
         $transactionData['withholding_amount'] = $withholdingAmount;
         $transactionData['net_amount'] = $netAmount;
+        $transactionData['base_amount'] = $grossAmount;
 
         try {
             $transactionId = $this->transactionModel->insert($transactionData);
@@ -272,6 +273,7 @@ class TemplateController extends BaseController
                     $transactionData['vat_amount'] = $vatAmount;
                     $transactionData['withholding_amount'] = $withholdingAmount;
                     $transactionData['net_amount'] = $netAmount;
+                    $transactionData['base_amount'] = $grossAmount;
 
                     $this->transactionModel->insert($transactionData);
 

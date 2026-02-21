@@ -209,8 +209,8 @@ export class TemplateService {
         INSERT INTO transactions
         (type, party_id, category_id, project_id, date, amount, currency,
          vat_rate, vat_amount, withholding_rate, withholding_amount, net_amount,
-         description, created_by, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         base_amount, description, created_by, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         template.type,
         template.party_id,
@@ -224,6 +224,7 @@ export class TemplateService {
         template.withholding_rate,
         withholdingAmount,
         netAmount,
+        amount,
         overrides?.description ?? (template.description ? `${template.name} - ${template.description}` : template.name),
         userId,
         now,
