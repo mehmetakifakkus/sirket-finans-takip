@@ -160,7 +160,7 @@ class TemplateController extends BaseController
             'currency' => $template['currency'],
             'vat_rate' => $template['vat_rate'],
             'withholding_rate' => $template['withholding_rate'],
-            'description' => $template['description'],
+            'description' => !empty($template['description']) ? $template['name'] . ' - ' . $template['description'] : $template['name'],
             'date' => $date,
             'created_by' => $userId
         ];
@@ -257,7 +257,7 @@ class TemplateController extends BaseController
                         'currency' => $current['currency'],
                         'vat_rate' => $current['vat_rate'],
                         'withholding_rate' => $current['withholding_rate'],
-                        'description' => $current['description'],
+                        'description' => !empty($current['description']) ? $current['name'] . ' - ' . $current['description'] : $current['name'],
                         'date' => $currentNextDate,
                         'created_by' => $userId,
                     ];

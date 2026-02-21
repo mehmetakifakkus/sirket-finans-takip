@@ -224,7 +224,7 @@ export class TemplateService {
         template.withholding_rate,
         withholdingAmount,
         netAmount,
-        overrides?.description ?? template.description,
+        overrides?.description ?? (template.description ? `${template.name} - ${template.description}` : template.name),
         userId,
         now,
         now
