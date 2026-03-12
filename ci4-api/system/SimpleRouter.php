@@ -310,8 +310,17 @@ if (!$handler && isset($dynamicRoutes[$method])) {
     }
 }
 
-// Not found
+// Not found - serve SPA frontend for non-API routes
 if (!$handler) {
+    if (strpos($uri, 'api/') !== 0) {
+        // Serve index.html for SPA routing
+        $indexFile = FCPATH . 'index.html';
+        if (file_exists($indexFile)) {
+            header('Content-Type: text/html; charset=utf-8');
+            readfile($indexFile);
+            exit;
+        }
+    }
     errorResponse('Endpoint bulunamadı', 404);
 }
 

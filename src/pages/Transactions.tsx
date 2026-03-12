@@ -1455,7 +1455,7 @@ export function Transactions() {
                   </span>
                 </th>
                 <th className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase">{t('transactions.documents.title')}</th>
-                <th className="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
+                <th className="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase sticky right-0 bg-gray-50">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -1512,7 +1512,14 @@ export function Transactions() {
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap text-sm text-right text-gray-600">{tr.base_amount ? formatCurrency(tr.base_amount, tr.currency as 'TRY' | 'USD' | 'EUR') : '-'}</td>
                     <td className="px-3 py-3 whitespace-nowrap text-sm text-right text-gray-600">{tr.vat_amount ? formatCurrency(tr.vat_amount, tr.currency as 'TRY' | 'USD' | 'EUR') : '-'}</td>
-                    <td className="px-3 py-3 whitespace-nowrap text-sm text-right font-medium">{formatCurrency(tr.net_amount || tr.amount, tr.currency as 'TRY' | 'USD' | 'EUR')}</td>
+                    <td className="px-3 py-3 whitespace-nowrap text-sm text-right font-medium">
+                      <div>{formatCurrency(tr.net_amount || tr.amount, tr.currency as 'TRY' | 'USD' | 'EUR')}</div>
+                      {tr.withholding_amount && tr.withholding_amount > 0 ? (
+                        <span className="inline-block mt-0.5 px-1.5 py-0.5 text-xs font-medium rounded bg-amber-100 text-amber-700">
+                          {t('transactions.withholding')}: -{formatCurrency(tr.withholding_amount, tr.currency as 'TRY' | 'USD' | 'EUR')}
+                        </span>
+                      ) : null}
+                    </td>
                     <td className="px-2 py-3 whitespace-nowrap text-sm text-center">
                       {tr.document_count && tr.document_count > 0 ? (
                         <button
@@ -1529,7 +1536,7 @@ export function Transactions() {
                         <span className="text-gray-300">-</span>
                       )}
                     </td>
-                    <td className="px-2 py-3 whitespace-nowrap text-right text-sm">
+                    <td className="px-2 py-3 whitespace-nowrap text-right text-sm sticky right-0 bg-white">
                       {isAdmin && (
                         <div className="flex items-center justify-end gap-1">
                           <button

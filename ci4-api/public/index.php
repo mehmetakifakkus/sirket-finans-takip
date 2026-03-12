@@ -50,5 +50,33 @@ if (file_exists($composerPath)) {
     require_once $composerPath;
 }
 
+// Serve static files directly (JS, CSS, images, fonts)
+$requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$staticFile = FCPATH . ltrim($requestUri, '/');
+if ($requestUri !== '/' && file_exists($staticFile) && !is_dir($staticFile) && !str_ends_with($requestUri, '.php')) {
+    $mimeTypes = [
+        'js' => 'application/javascript',
+        'css' => 'text/css',
+        'html' => 'text/html',
+        'svg' => 'image/svg+xml',
+        'png' => 'image/png',
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'gif' => 'image/gif',
+        'ico' => 'image/x-icon',
+        'woff' => 'font/woff',
+        'woff2' => 'font/woff2',
+        'ttf' => 'font/ttf',
+        'json' => 'application/json',
+        'map' => 'application/json',
+        'mjs' => 'application/javascript',
+    ];
+    $ext = strtolower(pathinfo($staticFile, PATHINFO_EXTENSION));
+    $mime = $mimeTypes[$ext] ?? mime_content_type($staticFile);
+    header("Content-Type: $mime");
+    readfile($staticFile);
+    exit;
+}
+
 // Use SimpleRouter for API (more stable for REST API)
 require_once ROOTPATH . 'system/SimpleRouter.php';

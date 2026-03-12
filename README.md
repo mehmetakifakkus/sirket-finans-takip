@@ -240,12 +240,51 @@ All monetary amounts are stored with their original currency. TRY equivalents ar
 2. Fallback to most recent available rate
 3. 1:1 ratio if no rate found (for TRY)
 
+## Web Version (PHP Backend)
+
+The project also has a web version using a CodeIgniter 4 PHP backend. Both API and frontend are served from a single PHP server.
+
+### Prerequisites (Web)
+
+- **PHP**: v8.1 or later
+- **Node.js**: v20 LTS
+
+### Running the Web Version
+
+**1. Build the frontend:**
+
+```bash
+npm run build -- --config vite.config.web.ts
+```
+
+**2. Copy the build output to CI4 public directory:**
+
+```bash
+cp -r dist-web/* ci4-api/public/
+```
+
+**3. Start the server:**
+
+```bash
+cd ci4-api
+php -S localhost:8080 -t public public/index.php
+```
+
+The application will be available at `http://localhost:8080/`
+
+> **Note:** API endpoints are served at `/api/...`, all other routes serve the React SPA.
+
 ## Available Scripts
 
 ```bash
-# Development
+# Development (Electron Desktop)
 npm run dev              # Start Vite dev server only
 npm run electron:dev     # Start full Electron app with hot reload
+
+# Web Version
+npm run build -- --config vite.config.web.ts  # Build frontend for web
+cp -r dist-web/* ci4-api/public/              # Deploy to CI4
+cd ci4-api && php -S localhost:8080 -t public public/index.php  # Start server
 
 # Production
 npm run build            # Build for current platform
